@@ -1,3 +1,27 @@
 = Incline
 
-This project rocks and uses MIT-LICENSE.
+Rails is a great framework and is very general in design.
+Inclines are railed devices designed to get from the bottom of a hill to the top.  There are two left in Pittsburgh,
+I can't speak for the rest of the world.  The point is they are designed to do one thing.
+
+This library builds on the Rails framework to quickly get to a certain point.
+
+== Installation
+
+Add these line to your application's Gemfile:
+    gem 'rails',    '4.2.8'
+    gem 'incline'
+
+And then execute
+    $ bundle
+
+Or install it yourself as:
+    $ gem install incline
+
+== Usage
+
+TODO: Fill me in!
+
+== License
+
+This gem is released under the MIT license.
