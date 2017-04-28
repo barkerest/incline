@@ -1,0 +1,17 @@
+# Compatible with DataTables (https://datatables.net).
+json.data do
+  json.array!(@<%= plural_table_name %>) do |<%= singular_table_name %>|
+    json.partial! '<%= plural_table_name %>/details', locals: { <%= singular_table_name %>: <%= singular_table_name %> }
+  end
+end
+json.options do
+  <%- attributes.each do |attribute| -%>
+    <%- if attribute.type == :references -%>
+  json.set! '<%= singular_table_name %>.<%= attribute.column_name %>' do
+    json.array! <%= attribute.name.classify %>.all.map{ |v| { label: h(v.to_s), value: h(v.id) } }.sort{ |a,b| a[:label] <=> b[:label] }
+  end
+    <%- end -%>
+  <%- end -%>
+  json.set! 'app.info', h(Rails.application.app_info)
+end
+

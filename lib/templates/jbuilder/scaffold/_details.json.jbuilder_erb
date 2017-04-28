@@ -1,0 +1,25 @@
+# Compatible with DataTables (https://datatables.net).
+unless <%= singular_table_name %>.new_record?
+  json.set! 'DT_RowId', "<%= singular_table_name %>_#{<%= singular_table_name %>.id}"
+  json.set! 'path', <%= singular_table_name %>_path(<%= singular_table_name %>)
+end
+json.set! '<%= singular_table_name %>' do
+  <%- attributes.reject(&:password_digest?).each do |attribute| -%>
+    <%- if attribute.type == :references -%>
+  json.set! '<%= attribute.name %>', <%= singular_table_name %>.<%= attribute.column_name %>
+    <%- elsif attribute.type == :datetime -%>
+  json.set! '<%= attribute.name %>', <%= singular_table_name %>.<%= attribute.name %>&.utc&.strftime('%Y-%m-%d')
+    <%- elsif attribute.type == :string || attribute.type == :text -%>
+  json.set! '<%= attribute.name %>', h(<%= singular_table_name %>.<%= attribute.name %>)
+    <%- else -%>
+  json.set! '<%= attribute.name %>', <%= singular_table_name %>.<%= attribute.name %>
+    <%- end -%>
+  <%- end -%>
+end
+<%- attributes.each do |attribute| -%>
+  <%- if attribute.type == :references -%>
+json.set! '<%= attribute.name.pluralize %>' do
+  json.set! 'label', h(<%= singular_table_name %>.<%= attribute.name %>.to_s)
+end
+  <%- end -%>
+<%- end -%>

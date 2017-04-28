@@ -1,6 +1,7 @@
 # Basic functionality
 require 'incline/work_path'
 require 'incline/json_log_formatter'
+require 'incline/global_status'
 
 # Class extensions
 require 'incline/extensions/object_extensions'
@@ -12,12 +13,21 @@ require 'incline/extensions/active_record_extensions'
 require 'incline/extensions/connection_adapter_extensions'
 require 'incline/extensions/fixture_set_extensions' if Rails.env.test?
 require 'incline/extensions/main_app_extensions'
-
+require 'incline/extensions/erb_scaffold_generator_extensions'
+require 'incline/extensions/jbuilder_generator_extensions'
+require 'incline/extensions/jbuilder_template_extensions'
+require 'incline/extensions/test_case_extensions'
 
 # Preloaded gems
 require 'jbuilder'
 require 'bootstrap-sass'
 require 'exception_notification'
+
+# Validators
+require 'incline/validators/email_validator'
+require 'incline/validators/safe_name_validator'
+require 'incline/validators/ip_address_validator'
+
 
 
 module Incline
@@ -26,6 +36,8 @@ module Incline
   # The Incline engine.
   class Engine < ::Rails::Engine
     isolate_namespace Incline
+
+    ActiveRecord::Base.columns
 
 
     ##
