@@ -4,9 +4,15 @@ require 'incline/json_log_formatter'
 
 # Class extensions
 require 'incline/extensions/object_extensions'
+require 'incline/extensions/numeric_extensions'
+require 'incline/extensions/string_extensions'
 require 'incline/extensions/application_extensions'
 require 'incline/extensions/application_configuration_extensions'
 require 'incline/extensions/active_record_extensions'
+require 'incline/extensions/connection_adapter_extensions'
+require 'incline/extensions/fixture_set_extensions' if Rails.env.test?
+require 'incline/extensions/main_app_extensions'
+
 
 # Preloaded gems
 require 'jbuilder'

@@ -46,13 +46,24 @@ module Incline
     private
 
     def self.skip?(level)
-      max_level = (Rails.logger&.level || 0)
-      if max_level > 0
+      filt_level = (log_level || 0)
+      if filt_level > 0
         return true if level == :debug
-        return true if level == :info && max_level > 1
-        return true if level == :warn && max_level > 2
+        return true if level == :info && filt_level > 1
+        return true if level == :warn && filt_level > 2
       end
       false
+    end
+
+    def self.rails
+      unless instance_variable_defined?(:@rails)
+        @rails = Object.const_defined?(:Rails) ? Object.const_get(:Rails) : nil
+      end
+      @rails
+    end
+
+    def self.log_level
+      rails&.logger&.level
     end
 
     def self.safe_log(level, msg)
@@ -65,8 +76,8 @@ module Incline
       c = "#{relative_path(c.path)}:#{c.lineno}:in `#{c.base_label}`"
       msg = "[#{c}] #{msg_to_str(msg)}"
 
-      if Rails.logger
-        Rails.logger.send level, msg
+      if rails&.logger
+        rails.logger.send level, msg
       else
         level = case level
                   when :error
@@ -79,7 +90,7 @@ module Incline
                     level.to_s.upcase
                 end
 
-        puts "#{level}: #{msg}"
+        $stderr.puts "#{level}: #{msg}"
       end
 
       msg

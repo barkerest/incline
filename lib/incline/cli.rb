@@ -1,5 +1,6 @@
 
 require 'incline/version'
+require 'incline/log'
 
 
 module Incline
