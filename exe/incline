@@ -1,3 +1,14 @@
 #!/usr/bin/env ruby
 
-puts 'This is just a placeholder for now...'
+# If installed as a gem, this won't do anything, however if we are
+# working from the source, this will ensure our lib path is searched
+# for require and include calls.
+git_path = File.expand_path('../../.git', __FILE__)
+if File.exist?(git_path)
+  $:.unshift File.expand_path('../../lib', __FILE__)
+end
+
+require 'incline/cli'
+
+Incline::Cli.new(*ARGV).run
+
