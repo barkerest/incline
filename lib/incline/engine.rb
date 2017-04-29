@@ -37,9 +37,6 @@ module Incline
   class Engine < ::Rails::Engine
     isolate_namespace Incline
 
-    ActiveRecord::Base.columns
-
-
     ##
     # If you want to report valid permissions on access denied, set this attribute to true.
     cattr_accessor :show_valid_permissions

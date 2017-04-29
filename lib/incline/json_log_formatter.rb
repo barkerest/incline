@@ -22,7 +22,7 @@ module Incline
       }[sev] || sev.to_s).upcase
 
       if msg.present? && AUTO_DEBUG_PATTERNS.find{|pattern| msg =~ pattern}
-        return '' if Rails.logger && Rails.logger.level > 0
+        return '' if debug_skip?
         level = 'DEBUG'
       end
 
@@ -41,8 +41,8 @@ module Incline
             level: level,
             time: time.strftime('%Y-%m-%d %H:%M:%S'),
             message: msg,
-            app_name: Rails.application.app_name,
-            app_version: Rails.application.app_version,
+            app_name: app_name,
+            app_version: app_version,
             process_id: Process.pid,
         }.to_json + "\r\n"
       else
@@ -51,6 +51,30 @@ module Incline
     end
 
     private
+
+    def app_name
+      if Object.const_defined?(:Rails)
+        Rails&.application&.app_name || 'Unknown'
+      else
+        'Unknown'
+      end
+    end
+
+    def app_version
+      if Object.const_defined?(:Rails)
+        Rails&.application&.app_version || '0.0.0'
+      else
+        '0.0.0'
+      end
+    end
+
+    def debug_skip?
+      if Object.const_defined?(:Rails)
+        (Rails&.logger&.level).to_s.to_i > 0
+      else
+        false
+      end
+    end
 
     def rm_fmt(msg)
       msg

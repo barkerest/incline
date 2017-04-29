@@ -42,8 +42,41 @@ module Incline
           end
     end
 
+    ##
+    # Set output to go to a file.
+    #
+    # If a +file+ is specified, it will be used for output.  This will bypass Rails logging.
+    # If +file+ is set to false or nil then the default logging behavior will be used.
+    def self.set_output(file)
+      if file
+        if file.respond_to?(:puts)
+          @output = file
+          @rails = nil
+        elsif file.is_a?(String)
+          @output = File.open(file, 'wt')
+          @rails = nil
+        else
+          raise ArgumentError, 'The file parameter must be an IO-like object, a string path, or a false value.'
+        end
+      else
+        # reset behavior
+        remove_instance_variable(:@output) if instance_variable_defined?(:@output)
+        remove_instance_variable(:@rails) if instance_variable_defined?(:@rails)
+      end
+    end
+
+    ##
+    # Gets the current logging output.
+    def self.get_output
+      rails&.logger || output
+    end
 
     private
+
+    def self.output
+      # always returns something.
+      (instance_variable_defined?(:@output) ? instance_variable_get(:@output) : $stderr) || $stderr
+    end
 
     def self.skip?(level)
       filt_level = (log_level || 0)
@@ -90,7 +123,7 @@ module Incline
                     level.to_s.upcase
                 end
 
-        $stderr.puts "#{level}: #{msg}"
+        output.puts "#{level}: #{msg}"
       end
 
       msg

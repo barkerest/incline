@@ -5,7 +5,7 @@ require 'fileutils'
 module Incline
   ##
   # Adds some informational methods to the Application class.
-  module ApplicationExtension
+  module ApplicationExtensions
 
     ##
     # Is the rails server running?
@@ -133,4 +133,4 @@ module Incline
 
 end
 
-Rails::Application.include Incline::ApplicationExtension
+Rails::Application.include Incline::ApplicationExtensions
