@@ -39,8 +39,8 @@ module Incline
     ##
     # Determines if any process has a lock on the status/lock file.
     def is_locked?
+      return true if have_lock?
       begin
-        return true if have_lock?
         return true unless acquire_lock
       ensure
         release_lock
