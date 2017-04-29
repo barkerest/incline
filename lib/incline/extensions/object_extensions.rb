@@ -7,7 +7,7 @@ module Incline
     ##
     # Gets the object_id formatted in hexadecimal with a leading '0x'.
     def object_pointer
-      '0x' + self.object_id.to_s(16).rjust(12,'0')
+      '0x' + self.object_id.to_s(16).rjust(12,'0').downcase
     end
 
   end
