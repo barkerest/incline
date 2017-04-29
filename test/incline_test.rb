@@ -4,12 +4,14 @@ class InclineTest < ActiveSupport::TestCase
 
   test 'modules and classes loaded' do
     assert Object.const_defined? :Incline
+
     assert Incline.const_defined? :VERSION
     assert Incline.const_defined? :Log
     assert Incline.const_defined? :Engine
     assert Incline.const_defined? :WorkPath
     assert Incline.const_defined? :JsonLogFormatter
     assert Incline.const_defined? :GlobalStatus
+
     assert Incline.const_defined? :ObjectExtensions
     assert Incline.const_defined? :NumericExtensions
     assert Incline.const_defined? :StringExtensions
@@ -23,6 +25,7 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline.const_defined? :JbuilderGeneratorExtensions
     assert Incline.const_defined? :JbuilderTemplateExtensions
     assert Incline.const_defined? :TestCaseExtensions
+
     assert Incline.const_defined? :EmailValidator
     assert Incline.const_defined? :SafeNameValidator
     assert Incline.const_defined? :IpAddressValidator

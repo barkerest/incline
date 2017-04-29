@@ -17,6 +17,10 @@ module Incline
             if value =~ /\//
               record.errors[attribute] << (options[:message] || 'must not contain a mask')
             end
+          elsif options[:require_mask]
+            unless value =~ /\//
+              record.errors[attribute] << (options[:message] || 'must contain a mask')
+            end
           end
         end
       rescue IPAddr::InvalidAddressError

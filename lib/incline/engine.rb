@@ -3,6 +3,11 @@ require 'incline/work_path'
 require 'incline/json_log_formatter'
 require 'incline/global_status'
 
+# Preloaded gems
+require 'jbuilder'
+require 'bootstrap-sass'
+require 'exception_notification'
+
 # Class extensions
 require 'incline/extensions/object_extensions'
 require 'incline/extensions/numeric_extensions'
@@ -17,11 +22,6 @@ require 'incline/extensions/erb_scaffold_generator_extensions'
 require 'incline/extensions/jbuilder_generator_extensions'
 require 'incline/extensions/jbuilder_template_extensions'
 require 'incline/extensions/test_case_extensions'
-
-# Preloaded gems
-require 'jbuilder'
-require 'bootstrap-sass'
-require 'exception_notification'
 
 # Validators
 require 'incline/validators/email_validator'

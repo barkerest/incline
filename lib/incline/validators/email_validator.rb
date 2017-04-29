@@ -2,6 +2,9 @@
 module Incline
   ##
   # Validates a string to ensure it contains a valid email address.
+  #
+  #   validates :email_address, 'incline/email' => true
+  #
   class EmailValidator < ActiveModel::EachValidator
 
     ##
@@ -21,3 +24,5 @@ module Incline
 
   end
 end
+
+
