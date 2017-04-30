@@ -49,7 +49,7 @@ module Incline
         value = value.to_s.downcase
 
         filt = test.map{|v| "(LOWER(\"#{v}\") = ?)"}.join(' OR ')
-        result = self.where(filt, *(test.map{value})).pluck(:id).to_a
+        result = self.where(filt, *(test.map{value})).order(:id).pluck(:id).to_a
 
         return nil if result.blank?
         return result.first if result.count == 1
@@ -63,7 +63,15 @@ module Incline
       # Always returns an array of items.
       def get(value)
         return value if value.class == self
-        result = where(id: get_id(value)).to_a
+        result = where(id: get_id(value))
+        if attribute_names.include?(:code) || attribute_names.include?('code')
+          result = result.order(:code, :id)
+        elsif attribute_names.include?(:name) || attribute_names.include?('name')
+          result = result.order(:name, :id)
+        else
+          result = result.order(:id)
+        end
+        result = result.to_a
         return nil if result.blank?
         result
       end

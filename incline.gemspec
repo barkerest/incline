@@ -34,8 +34,11 @@ Gem::Specification.new do |s|
   s.add_dependency 'ansi',                          '~> 1.5.0'
   s.add_dependency 'exception_notification',        '~> 4.2.1'
 
-  s.add_development_dependency 'sqlite3',           '~> 1.3.13'
-  s.add_development_dependency 'faker',             '~> 1.7.3'
-  s.add_development_dependency 'web-console',       '~> 3.3.0'
+  s.add_development_dependency 'sqlite3',                         '~> 1.3.13'
+  s.add_development_dependency 'faker',                           '~> 1.7.3'
+  s.add_development_dependency 'web-console',                     '~> 3.3.0'
+  s.add_development_dependency 'byebug',                          '~> 9.0.6'
+  s.add_development_dependency 'tiny_tds',                        '~> 1.3.0'
+  s.add_development_dependency 'activerecord-sqlserver-adapter',  '~> 4.2.18'
 
 end
