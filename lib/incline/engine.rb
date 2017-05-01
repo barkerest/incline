@@ -21,6 +21,7 @@ require 'incline/extensions/erb_scaffold_generator_extensions'
 require 'incline/extensions/jbuilder_generator_extensions'
 require 'incline/extensions/jbuilder_template_extensions'
 require 'incline/extensions/test_case_extensions'
+require 'incline/extensions/integer_value_extensions'
 
 # Validators
 require 'incline/validators/email_validator'

@@ -20,9 +20,9 @@ class NumericExtensionsTest < ActiveSupport::TestCase
         1000000 => '1 million',
         1050000 => '1.05 million',
         1000000000 => '1 billion',
-        1245000000 => '1.25 billion',
+        1245000000 => '1.25 billion', # verify that we are using round-to-nearest and not round-to-even.
         1255000000 => '1.26 billion',
-        999999999 => '1000 million',
+        999999999 => '1000 million',  # less than a billion, but rounding will put it at 1 billion.
         Integer('1234'.ljust(40,'0')) => '1.23 duodecillion'
     }.each do |v, s|
       assert_equal s, v.to_human
