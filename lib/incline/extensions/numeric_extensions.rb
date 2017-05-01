@@ -29,7 +29,9 @@ module Incline
     def to_human
       Incline::NumericExtensions::SHORT_SCALE.each do |(num,label)|
         if self >= num
-          s = ('%.2f' % (self.to_f / num)).gsub(/\.?0+\z/,'')
+          # Add 0.0001 to the value before rounding it off.
+          # This way we're telling the system that we want it to round up instead of round to even.
+          s = ('%.2f' % ((self.to_f / num) + 0.0001)).gsub(/\.?0+\z/,'')
           return "#{s} #{label}"
         end
       end
@@ -43,7 +45,8 @@ module Incline
         return self.to_s
       end
 
-      ('%.2f' % self.to_f).gsub(/\.?0+\z/,'')
+      # Again we want to add the 0.0001 to the value before rounding.
+      ('%.2f' % (self.to_f + 0.0001)).gsub(/\.?0+\z/,'')
     end
 
   end

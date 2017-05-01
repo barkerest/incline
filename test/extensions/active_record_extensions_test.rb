@@ -2,7 +2,7 @@ require 'test_helper'
 
 class ActiveRecordExtensionsTest < ActiveSupport::TestCase
 
-  TEST_TABLE_NAME = "test_table_#{SecureRandom.rand(1<<16).to_s(16).rjust(4,'0')}"
+  TEST_TABLE_NAME = "test_table_#{SecureRandom.random_number(1<<16).to_s(16).rjust(4,'0')}"
   TEST_TABLE_CLASS = TEST_TABLE_NAME.classify.to_sym
 
   def setup

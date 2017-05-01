@@ -20,7 +20,7 @@ class NumericExtensionsTest < ActiveSupport::TestCase
         1000000 => '1 million',
         1050000 => '1.05 million',
         1000000000 => '1 billion',
-        1245000000 => '1.24 billion',   # banker's rounding, always rounds towards even for 0.5 (e.g. - 1.245 => 1.24, 1.255 => 1.26)
+        1245000000 => '1.25 billion',
         1255000000 => '1.26 billion',
         999999999 => '1000 million',
         Integer('1234'.ljust(40,'0')) => '1.23 duodecillion'

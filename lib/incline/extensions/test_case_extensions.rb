@@ -6,64 +6,34 @@ module Incline
     ##
     # Determines if a user is logged into the test session
     def is_logged_in?
-      !session[:user_sid].nil?
+      !session[:user_id].nil?
     end
 
     ##
     # Logs in a test user
     def log_in_as(user, options = {})
-      password = options[:password]       || 'password123'
-      remember_me = options[:remember_me] || '1'
+      password =      options[:password]    || 'password123'
+      remember_me =   options[:remember_me] || '1'
       if integration_test?
         post incline.login_path, session: { email: user.email, password: password, remember_me: remember_me }
       else
-        session[:user_sid] = user.sid
+        session[:user_id] = user.id
       end
     end
 
-    ##
-    # Runs date tests against a field.
-    #
-    # FIXME: There is most likely a better way...
-    def run_date_field_tests(item, attr, can_be_nil = true)
-      eq = "#{attr}="
-      pre = "#{attr}_before_type_cast"
-
-      if can_be_nil
-        item.send(eq, nil)
-        assert_equal nil, item.send(attr), "#{attr} of #{item.class} did not return nil after being set."
-        assert_equal nil, item.send(pre), "#{pre} of #{item.class} did not return nil after being set."
-      end
-
-      dt = Date.today
-      dts = dt.strftime("%m/%d/%Y")
-      dtf = dt.strftime("%Y-%m-%d")
-      item.send(eq, dt)
-      assert_equal Date.parse(dtf), item.send(attr), "#{attr} of #{item.class} did not return #{dtf}."
-      assert_equal dts, item.send(pre), "#{pre} of #{item.class} did not return '#{dts}'."
-
-      dt = Time.zone.now
-      dts = dt.strftime("%m/%d/%Y")
-      dtf = dt.strftime("%Y-%m-%d")
-      item.send(eq, dt)
-      assert_equal Date.parse(dtf), item.send(attr), "#{attr} of #{item.class} did not return #{dtf}."
-      assert_equal dts, item.send(pre), "#{pre} of #{item.class} did not return '#{dts}'."
-
-      dt = "10/11/2015"
-      dtf = "2015-10-11"
-      item.send(eq, dt)
-      assert_equal Date.parse(dtf), item.send(attr), "#{attr} of #{item.class} did not return #{dtf}."
-      assert_equal dt, item.send(pre), "#{pre} of #{item.class} did not return '#{dt}'."
-    end
 
     ##
     # Tests a specific field for presence validation.
     #
-    # +model+ must respond to _attribute_ and _attribute=_ as well as _valid?_.
+    # model::
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_.
     #
-    # +attribute+ must provide the name of a valid attribute in the model.
+    # attribute::
+    #     This must provide the name of a valid attribute in the model.
     #
-    # +message+ is optional, but if provided it will be postfixed with the failure reason.
+    # message::
+    #     This is optional, but if provided it will be postfixed with the failure reason.
+    #
     def assert_required(model, attribute, message = nil)
       original_value = model.send(attribute)
       assert model.valid?, 'Model should be valid to start.'
@@ -84,13 +54,25 @@ module Incline
     ##
     # Tests a specific field for maximum length restriction.
     #
-    # +model+ must respond to _attribute_ and _attribute=_ as well as _valid?_.
+    # model::
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_.
     #
-    # +attribute+ must provide the name of a valid attribute in the model.
+    # attribute::
+    #     This must provide the name of a valid attribute in the model.
     #
-    # +max_length+ is the maximum valid length for the field.
+    # max_length::
+    #     This is the maximum valid length for the field.
     #
-    # +message+ is optional, but if provided it will be postfixed with the failure reason.
+    # message::
+    #     This is optional, but if provided it will be postfixed with the failure reason.
+    #
+    # options::
+    #     This is a list of options for the validation.
+    #     Currently :start and :end are recognized.
+    #     Use :start to specify a prefix for the tested string.
+    #     Use :end to specify a postfix for the tested string.
+    #     This would be most useful when you value has to follow a format (eg - email address :end => '@example.com')
+    #
     def assert_max_length(model, attribute, max_length, message = nil, options = {})
       original_value = model.send(attribute)
       assert model.valid?, 'Model should be valid to start.'
@@ -122,13 +104,25 @@ module Incline
     ##
     # Tests a specific field for maximum length restriction.
     #
-    # +model+ must respond to _attribute_ and _attribute=_ as well as _valid?_.
+    # model::
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_.
     #
-    # +attribute+ must provide the name of a valid attribute in the model.
+    # attribute::
+    #     This must provide the name of a valid attribute in the model.
     #
-    # +max_length+ is the maximum valid length for the field.
+    # min_length::
+    #     This is the minimum valid length for the field.
     #
-    # +message+ is optional, but if provided it will be postfixed with the failure reason.
+    # message::
+    #     This is optional, but if provided it will be postfixed with the failure reason.
+    #
+    # options::
+    #     This is a list of options for the validation.
+    #     Currently :start and :end are recognized.
+    #     Use :start to specify a prefix for the tested string.
+    #     Use :end to specify a postfix for the tested string.
+    #     This would be most useful when you value has to follow a format (eg - email address :end => '@example.com')
+    #
     def assert_min_length(model, attribute, min_length, message = nil, options = {})
       original_value = model.send(attribute)
       assert model.valid?, 'Model should be valid to start.'
@@ -141,7 +135,7 @@ module Incline
 
       pre = options[:start].to_s
       post = options[:end].to_s
-      len = max_length - pre.length - post.length
+      len = min_length - pre.length - post.length
 
       # try with minimum valid length.
       value = pre + ('a' * len) + post
@@ -160,18 +154,26 @@ module Incline
     ##
     # Tests a specific field for uniqueness.
     #
-    # +model+ must respond to _attribute_ and _attribute=_ as well as _valid?_.
-    # The model will be saved to perform uniqueness testing.
+    # model::
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_.
+    #     The model will be saved to perform uniqueness testing.
     #
-    # +attribute+ must provide the name of a valid attribute in the model.
+    # attribute::
+    #     This must provide the name of a valid attribute in the model.
     #
-    # +case_sensitive+ determines if changing case should change validation.
+    # case_sensitive::
+    #     This determines if changing case should change validation.
     #
-    # +message+ is optional, but if provided it will be postfixed with the failure reason.
+    # message::
+    #     This is optional, but if provided it will be postfixed with the failure reason.
     #
-    # +alternate_scopes+ is also optional.  If provided the keys of the hash will be used to
-    # set additional attributes on the model.  When these attributes are changed to the alternate
-    # values, the model should once again be valid.
+    # alternate_scopes::
+    #     This is also optional.  If provided the keys of the hash will be used to
+    #     set additional attributes on the model.  When these attributes are changed to the alternate
+    #     values, the model should once again be valid.
+    #     The alternative scopes are processed one at a time and the original values are restored
+    #     before moving onto the next scope.
+    #
     def assert_uniqueness(model, attribute, case_sensitive = false, message = nil, alternate_scopes = {})
       setter = :"#{attribute}="
       original_value = model.send(attribute)

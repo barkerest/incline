@@ -2,7 +2,7 @@ require 'test_helper'
 
 class ConnectionAdapterExtensionsTest < ActiveSupport::TestCase
 
-  TEST_OBJECT_NAME = "test_object_#{SecureRandom.rand(1<<16).to_s(16).rjust(4, '0')}"
+  TEST_OBJECT_NAME = "test_object_#{SecureRandom.random_number(1<<16).to_s(16).rjust(4, '0')}"
 
   def setup
     @conn = ActiveRecord::Base::connection
