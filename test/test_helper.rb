@@ -19,3 +19,17 @@ if ActiveSupport::TestCase.respond_to?(:fixture_path=)
   ActionDispatch::IntegrationTest.fixture_path = ActiveSupport::TestCase.fixture_path
   ActiveSupport::TestCase.fixtures :all
 end
+
+class MsSqlTestConn < ActiveRecord::Base
+  self.abstract_class = true
+
+  cfg = ActiveRecord::Base.configurations['mssql_test']
+  if cfg
+    establish_connection cfg
+  end
+
+  def self.skip_tests?
+    self.connection.class.name != 'ActiveRecord::ConnectionAdapters::SQLServerAdapter'
+  end
+
+end

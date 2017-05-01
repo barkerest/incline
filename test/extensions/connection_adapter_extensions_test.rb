@@ -24,7 +24,8 @@ class ConnectionAdapterExtensionsTest < ActiveSupport::TestCase
   end
 
   test 'should be able to execute a stored proc' do
-    skip unless @conn.class.name == 'ActiveRecord::ConnectionAdapters::SQLServerAdapter'
+    skip if MsSqlTestConn.skip_tests?
+    @conn = MsSqlTestConn.connection
 
     assert_not @conn.object_exists?(TEST_OBJECT_NAME)
 

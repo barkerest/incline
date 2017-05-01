@@ -18,14 +18,14 @@ module Incline
       base_error = model_errors[:base]
       field_errors = model_errors.reject{ |k,_| k == :base }
       unless base_error.blank?
-        set! 'error', "#{model_name.humanize} #{base_error.map{|e| h(e.to_s)}.join("\n<br>#{model_name.humanize} ")}"
+        set! 'error', "#{model_name.humanize} #{base_error.map{|e| h(e.to_s)}.join("<br>\n#{model_name.humanize} ")}"
       end
       unless field_errors.blank?
         set! 'fieldErrors' do
           array! field_errors do |k,v|
             set! 'name',   "#{model_name}.#{k}"
             set! 'status', v.is_a?(Array) ?
-                "#{k.to_s.humanize} #{v.map{|e| h(e.to_s)}.join("\n<br>" + k.to_s.humanize)}" :
+                "#{k.to_s.humanize} #{v.map{|e| h(e.to_s)}.join("<br>\n#{k.to_s.humanize} ")}" :
                 "#{k.to_s.humanize} #{h v.to_s}"
           end
         end

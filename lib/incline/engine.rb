@@ -16,7 +16,6 @@ require 'incline/extensions/application_extensions'
 require 'incline/extensions/application_configuration_extensions'
 require 'incline/extensions/active_record_extensions'
 require 'incline/extensions/connection_adapter_extensions'
-require 'incline/extensions/fixture_set_extensions' if Rails.env.test?
 require 'incline/extensions/main_app_extensions'
 require 'incline/extensions/erb_scaffold_generator_extensions'
 require 'incline/extensions/jbuilder_generator_extensions'

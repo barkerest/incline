@@ -23,6 +23,8 @@ module Incline
 
     ##
     # Runs date tests against a field.
+    #
+    # FIXME: There is most likely a better way...
     def run_date_field_tests(item, attr, can_be_nil = true)
       eq = "#{attr}="
       pre = "#{attr}_before_type_cast"

@@ -23,3 +23,13 @@ test:
 production:
   <<: *default
   database: db/incline_prod.sqlite3
+
+mssql_test:
+  adapter: sqlserver
+  host: 127.0.0.1
+  port: 1444
+  database: incline_test
+  username: <%= Rails.application.secrets['mssql_test']['user'] %>
+  password: <%= Rails.application.secrets['mssql_test']['password'] %>
+  timeout: 5000
+

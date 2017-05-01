@@ -16,10 +16,16 @@ module Incline
         undef copy_view_files
 
         def copy_view_files
-          %w(index show _details).each do |view|
+          available_views.each do |view|
             filename = filename_with_extensions(view)
-            template filename + '_erb', File.join('app/views', controller_file_path, filename)
+            template filename, File.join('app/views', controller_file_path, filename)
           end
+        end
+
+        protected
+
+        def available_views
+          %w(index show details)
         end
 
       end
