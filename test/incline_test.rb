@@ -11,25 +11,26 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline.const_defined? :WorkPath
     assert Incline.const_defined? :JsonLogFormatter
     assert Incline.const_defined? :GlobalStatus
+    assert Incline.const_defined? :DateTimeFormats
 
-    assert Incline.const_defined? :ObjectExtensions
-    assert Incline.const_defined? :NumericExtensions
-    assert Incline.const_defined? :StringExtensions
-    assert Incline.const_defined? :ApplicationExtensions
-    assert Incline.const_defined? :ApplicationConfigurationExtensions
-    assert Incline.const_defined? :ActiveRecordExtensions
-    assert Incline.const_defined? :ConnectionAdapterExtension
-    assert Incline.const_defined? :MainAppExtension
-    assert Incline.const_defined? :ErbScaffoldGeneratorExtensions
-    assert Incline.const_defined? :JbuilderGeneratorExtensions
-    assert Incline.const_defined? :JbuilderTemplateExtensions
-    assert Incline.const_defined? :TestCaseExtensions
-    assert Incline.const_defined? :DateFormats
-    assert Incline.const_defined? :IntegerValueExtensions
-    assert Incline.const_defined? :FloatValueExtensions
-    assert Incline.const_defined? :TimeZoneConverterExtensions
-    assert Incline.const_defined? :DateTimeValueExtensions
-
+    assert Incline.const_defined? :Extensions
+    assert Incline::Extensions.const_defined? :Object
+    assert Incline::Extensions.const_defined? :Numeric
+    assert Incline::Extensions.const_defined? :String
+    assert Incline::Extensions.const_defined? :Application
+    assert Incline::Extensions.const_defined? :ApplicationConfiguration
+    assert Incline::Extensions.const_defined? :ActiveRecordBase
+    assert Incline::Extensions.const_defined? :ConnectionAdapter
+    assert Incline::Extensions.const_defined? :MainApp
+    assert Incline::Extensions.const_defined? :ErbScaffoldGenerator
+    assert Incline::Extensions.const_defined? :JbuilderGenerator
+    assert Incline::Extensions.const_defined? :JbuilderTemplate
+    assert Incline::Extensions.const_defined? :TestCase
+    assert Incline::Extensions.const_defined? :IntegerValue
+    assert Incline::Extensions.const_defined? :FloatValue
+    assert Incline::Extensions.const_defined? :TimeZoneConverter
+    assert Incline::Extensions.const_defined? :DateTimeValue
+    assert Incline::Extensions.const_defined? :DateValue
 
     assert Incline.const_defined? :EmailValidator
     assert Incline.const_defined? :SafeNameValidator

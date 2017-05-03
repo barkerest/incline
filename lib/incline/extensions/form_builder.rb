@@ -1,9 +1,9 @@
 
 
-module Incline
+module Incline::Extensions
   ##
   # Adds additional helper methods to form builders.
-  module FormBuilderExtensions
+  module FormBuilder
 
     ##
     # Creates a date picker selection field using a bootstrap input group.
@@ -546,4 +546,4 @@ module Incline
   end
 end
 
-ActionView::Helpers::FormBuilder.include Incline::FormBuilderExtensions
+ActionView::Helpers::FormBuilder.include Incline::Extensions::FormBuilder

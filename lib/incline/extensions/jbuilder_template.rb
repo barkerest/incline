@@ -1,10 +1,10 @@
 require 'jbuilder/jbuilder_template'
 
-module Incline
+module Incline::Extensions
   ##
   # Adds the +api_errors+ method to be used in jbuilder views to easily list
   # errors for a model in a form that is compatible with the DataTables API.
-  module JbuilderTemplateExtensions
+  module JbuilderTemplate
 
     ##
     # List out the errors for the model.
@@ -35,5 +35,5 @@ module Incline
   end
 end
 
-JbuilderTemplate.include Incline::JbuilderTemplateExtensions
+JbuilderTemplate.include Incline::Extensions::JbuilderTemplate
 

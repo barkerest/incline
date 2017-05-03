@@ -1,7 +1,7 @@
-module Incline
+module Incline::Extensions
   ##
   # Creates a default database configuration to use when config/database.yml is not present.
-  module ApplicationConfigurationExtensions
+  module ApplicationConfiguration
 
     ##
     # Override the +database_configuration+ method to return something in development mode if
@@ -45,4 +45,4 @@ module Incline
   end
 end
 
-Rails::Application::Configuration.include Incline::ApplicationConfigurationExtensions
+Rails::Application::Configuration.include Incline::Extensions::ApplicationConfiguration

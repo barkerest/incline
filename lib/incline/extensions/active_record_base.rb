@@ -1,7 +1,7 @@
 require 'active_record'
 
-module Incline
-  module ActiveRecordExtensions
+module Incline::Extensions
+  module ActiveRecordBase
 
     def to_s # :nodoc:
       if respond_to?(:name)
@@ -94,4 +94,4 @@ module Incline
   end
 end
 
-ActiveRecord::Base.include Incline::ActiveRecordExtensions
+ActiveRecord::Base.include Incline::Extensions::ActiveRecordBase

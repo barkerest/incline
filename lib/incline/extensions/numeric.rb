@@ -1,9 +1,9 @@
 require 'bigdecimal'
 
-module Incline
+module Incline::Extensions
   ##
   # Adds to_human to numeric types (floats and integers).
-  module NumericExtensions
+  module Numeric
 
     ##
     # The short scale for humanizing a number.
@@ -27,7 +27,7 @@ module Incline
     ##
     # Formats the number using the short scale for any number over 1 million.
     def to_human
-      Incline::NumericExtensions::SHORT_SCALE.each do |(num,label)|
+      Incline::Extensions::Numeric::SHORT_SCALE.each do |(num,label)|
         if self >= num
           # Add 0.0001 to the value before rounding it off.
           # This way we're telling the system that we want it to round up instead of round to even.
@@ -52,4 +52,4 @@ module Incline
   end
 end
 
-Numeric.include Incline::NumericExtensions
+Numeric.include Incline::Extensions::Numeric

@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class DateFormatsTest < ActiveSupport::TestCase
+class DateTimeFormatsTest < ActiveSupport::TestCase
 
   test 'should process valid US dates' do
     {
@@ -19,7 +19,7 @@ class DateFormatsTest < ActiveSupport::TestCase
         '12/31/2016 11:35 PM' => { year: 2016, month: 12, day: 31, hour: 11, minute: 35, ampm: 'P' },
         '12/31/2016 11:35 P' => { year: 2016, month: 12, day: 31, hour: 11, minute: 35, ampm: 'P' },
     }.each do |dt, parts|
-      match = Incline::DateFormats::US_DATE_FORMAT.match(dt)
+      match = Incline::DateTimeFormats::US_DATE_FORMAT.match(dt)
       assert match, "Should match '#{dt}'."
       parts.each do |k,v|
         assert_equal v.to_s, match[k.to_s.upcase], "Part #{k} does not equal '#{v}' for '#{dt}'."
@@ -37,7 +37,7 @@ class DateFormatsTest < ActiveSupport::TestCase
         '12/31/2016 12 PM',
         '12/31/2016 12P'
     ].each do |dt|
-      assert_nil Incline::DateFormats::US_DATE_FORMAT.match(dt), "Should not match '#{dt}'."
+      assert_nil Incline::DateTimeFormats::US_DATE_FORMAT.match(dt), "Should not match '#{dt}'."
     end
   end
 
@@ -78,7 +78,7 @@ class DateFormatsTest < ActiveSupport::TestCase
         '2017-01-01T01:15' => { year: 2017, month: '01', day: '01', hour: '01', minute: 15 },
         '16-1-1' => { year: 16, month: 1, day: 1 },
     }.each do |dt, parts|
-      match = Incline::DateFormats::ALMOST_ISO_DATE_FORMAT.match(dt)
+      match = Incline::DateTimeFormats::ALMOST_ISO_DATE_FORMAT.match(dt)
       assert match, "Should match '#{dt}'."
       parts.each do |k,v|
         assert_equal v.to_s, match[k.to_s.upcase], "Part #{k} does not equal '#{v}' for '#{dt}'."
@@ -106,7 +106,7 @@ class DateFormatsTest < ActiveSupport::TestCase
         '2016-12-31 12:25 A',
         '2016-12-31 12:25A'
     ].each do |dt|
-      assert_nil Incline::DateFormats::ALMOST_ISO_DATE_FORMAT.match(dt), "Should not match '#{dt}'."
+      assert_nil Incline::DateTimeFormats::ALMOST_ISO_DATE_FORMAT.match(dt), "Should not match '#{dt}'."
     end
   end
 

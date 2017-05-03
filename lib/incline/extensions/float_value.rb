@@ -1,11 +1,11 @@
 
-module Incline
+module Incline::Extensions
 
   ##
   # Patches the ActiveRecord Float value type to accept more numbers.
   #
   # Specifically this will allow comma delimited numbers to be provided to active record models.
-  module FloatValueExtensions
+  module FloatValue
 
     ##
     # Patches the ActiveRecord Float value type.
@@ -54,4 +54,4 @@ module Incline
 
 end
 
-ActiveRecord::Type::Float.include Incline::FloatValueExtensions
+ActiveRecord::Type::Float.include Incline::Extensions::FloatValue

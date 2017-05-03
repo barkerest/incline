@@ -9,7 +9,7 @@ class MainAppExtensionsTest < ActiveSupport::TestCase
       end
     end
 
-    include Incline::MainAppExtension
+    include Incline::Extensions::MainApp
 
     attr_accessor :called
 

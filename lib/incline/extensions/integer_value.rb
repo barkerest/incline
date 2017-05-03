@@ -1,10 +1,10 @@
 
-module Incline
+module Incline::Extensions
   ##
   # Patches the ActiveRecord Integer type to be able to accept more numbers.
   #
   # Specifically this will allow comma delimited numbers to be provided to active record models.
-  module IntegerValueExtensions
+  module IntegerValue
 
     ##
     # Patches the ActiveRecord Integer type.
@@ -49,4 +49,4 @@ module Incline
   end
 end
 
-ActiveRecord::Type::Integer.include Incline::IntegerValueExtensions
+ActiveRecord::Type::Integer.include Incline::Extensions::IntegerValue

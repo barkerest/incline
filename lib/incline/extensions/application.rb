@@ -2,10 +2,10 @@ require 'cgi/util'
 require 'yaml'
 require 'fileutils'
 
-module Incline
+module Incline::Extensions
   ##
   # Adds some informational methods to the Application class.
-  module ApplicationExtensions
+  module Application
 
     ##
     # Is the rails server running?
@@ -133,4 +133,4 @@ module Incline
 
 end
 
-Rails::Application.include Incline::ApplicationExtensions
+Rails::Application.include Incline::Extensions::Application

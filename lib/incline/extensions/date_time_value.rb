@@ -1,12 +1,12 @@
-require 'incline/extensions/time_zone_converter_extensions'
+require 'incline/extensions/time_zone_converter'
 
-module Incline
+module Incline::Extensions
 
   ##
   # Patches the ActiveRecord DateTime value to accept more date formats.
   #
   # Specifically this will allow ActiveRecord models to receive dates in US format or ISO format.
-  module DateTimeValueExtensions
+  module DateTimeValue
 
     ##
     # Patches the ActiveRecord DateTime value type.
@@ -25,7 +25,7 @@ module Incline
 
             begin
               # if it matches either of our formats, we can try using it.
-              if (match = (Incline::DateFormats::US_DATE_FORMAT.match(string) || Incline::DateFormats::ALMOST_ISO_DATE_FORMAT.match(string)))
+              if (match = (Incline::DateTimeFormats::US_DATE_FORMAT.match(string) || Incline::DateTimeFormats::ALMOST_ISO_DATE_FORMAT.match(string)))
 
                 year = match['YEAR'].to_s.to_i
                 year += 2000 if year < 50
@@ -117,5 +117,5 @@ module Incline
 
 end
 
-ActiveRecord::Type::DateTime.include Incline::DateTimeValueExtensions
+ActiveRecord::Type::DateTime.include Incline::Extensions::DateTimeValue
 

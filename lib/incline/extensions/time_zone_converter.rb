@@ -1,7 +1,7 @@
-module Incline
+module Incline::Extensions
   ##
   # Patches the TimeZoneConverter to call super.
-  module TimeZoneConverterExtensions
+  module TimeZoneConverter
 
     ##
     # Patches the TimeZoneConverter to call super.
@@ -35,4 +35,4 @@ module Incline
   end
 end
 
-ActiveRecord::AttributeMethods::TimeZoneConversion::TimeZoneConverter.include Incline::TimeZoneConverterExtensions
+ActiveRecord::AttributeMethods::TimeZoneConversion::TimeZoneConverter.include Incline::Extensions::TimeZoneConverter

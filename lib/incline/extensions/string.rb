@@ -1,8 +1,8 @@
-module Incline
+module Incline::Extensions
 
   ##
   # Defines or overrides few string helper methods.
-  module StringExtensions
+  module String
 
     ##
     # Converts a hex string into a byte string.
@@ -38,4 +38,4 @@ module Incline
   end
 end
 
-String.include Incline::StringExtensions
+String.include Incline::Extensions::String

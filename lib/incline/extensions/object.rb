@@ -1,8 +1,8 @@
-module Incline
+module Incline::Extensions
 
   ##
   # Adds the +object_pointer+ method to all objects.
-  module ObjectExtensions
+  module Object
 
     ##
     # Gets the object_id formatted in hexadecimal with a leading '0x'.
@@ -13,4 +13,4 @@ module Incline
   end
 end
 
-Object.include Incline::ObjectExtensions
+Object.include Incline::Extensions::Object

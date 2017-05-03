@@ -1,7 +1,7 @@
-module Incline
+module Incline::Extensions
   ##
   # Adds some extra functionality to database connections.
-  module ConnectionAdapterExtension
+  module ConnectionAdapter
 
     ##
     # Searches the database to determine if an object with the specified name exists.
@@ -50,4 +50,4 @@ module Incline
   end
 end
 
-ActiveRecord::ConnectionAdapters::AbstractAdapter.include Incline::ConnectionAdapterExtension
+ActiveRecord::ConnectionAdapters::AbstractAdapter.include Incline::Extensions::ConnectionAdapter

@@ -1,10 +1,10 @@
 require 'rails/generators'
 require 'generators/rails/jbuilder_generator'
 
-module Incline
+module Incline::Extensions
   ##
   # Adds _details view to jbuilder.
-  module JbuilderGeneratorExtensions
+  module JbuilderGenerator
 
     ##
     # Overrides the copy_view_files method to include the _details view.
@@ -34,5 +34,5 @@ module Incline
   end
 end
 
-Rails::Generators::JbuilderGenerator.include Incline::JbuilderGeneratorExtensions
+Rails::Generators::JbuilderGenerator.include Incline::Extensions::JbuilderGenerator
 

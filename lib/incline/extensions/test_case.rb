@@ -1,7 +1,7 @@
-module Incline
+module Incline::Extensions
   ##
   # Adds some extra assertions and methods for use in tests.
-  module TestCaseExtensions
+  module TestCase
 
     ##
     # Determines if a user is logged into the test session
@@ -225,4 +225,4 @@ module Incline
   end
 end
 
-ActiveSupport::TestCase.include Incline::TestCaseExtensions
+ActiveSupport::TestCase.include Incline::Extensions::TestCase

@@ -1,8 +1,8 @@
-module Incline
+module Incline::Extensions
 
   ##
   # Makes 'main_app' automatically get searched for methods.
-  module MainAppExtension
+  module MainApp
 
     def self.included(base) # :nodoc:
       base.class_eval do
@@ -28,6 +28,6 @@ module Incline
 
 end
 
-ActionController::Base.include Incline::MainAppExtension
-ActionMailer::Base.include Incline::MainAppExtension
-ActionView::Base.include Incline::MainAppExtension
+ActionController::Base.include Incline::Extensions::MainApp
+ActionMailer::Base.include Incline::Extensions::MainApp
+ActionView::Base.include Incline::Extensions::MainApp

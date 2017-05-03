@@ -1,10 +1,10 @@
 require 'rails/generators'
 require 'rails/generators/erb/scaffold/scaffold_generator'
 
-module Incline
+module Incline::Extensions
   ##
   # Adds one more view to the standard ERB views.
-  module ErbScaffoldGeneratorExtensions
+  module ErbScaffoldGenerator
     ##
     # Override the "available_views" method to return one more view.
     def self.included(base)
@@ -27,5 +27,5 @@ module Incline
   end
 end
 
-Erb::Generators::ScaffoldGenerator.include Incline::ErbScaffoldGeneratorExtensions
+Erb::Generators::ScaffoldGenerator.include Incline::Extensions::ErbScaffoldGenerator
 
