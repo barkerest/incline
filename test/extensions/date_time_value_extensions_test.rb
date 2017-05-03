@@ -9,7 +9,8 @@ class DateTimeValueExtensionsTest < ActiveSupport::TestCase
     # Create a test table.
     silence_stream STDOUT do
       ActiveRecord::Migration::create_table TEST_TABLE_NAME do |t|
-        t.datetime :my_value
+        t.datetime :tz_value
+        t.datetime :utc_value
       end
     end
 
@@ -17,13 +18,15 @@ class DateTimeValueExtensionsTest < ActiveSupport::TestCase
     eval <<-EOM
 class #{TEST_TABLE_CLASS} < ActiveRecord::Base
   self.table_name = #{TEST_TABLE_NAME.inspect}
+  self.time_zone_aware_attributes = true
+  self.skip_time_zone_conversion_for_attributes << :utc_value
 end
     EOM
 
     @backup_ar_tz = ActiveRecord::Base.default_timezone
     @backup_tm_tz = Time.zone.name
     ActiveRecord::Base.default_timezone = :utc
-    Time.zone = 'UTC'
+    Time.zone = 'EST'
 
     # Store the model class for use.
     @model_class = self.class.const_get TEST_TABLE_CLASS
@@ -56,10 +59,12 @@ end
         '12/31/2016 12:20 PM' => Time.utc(2016,12,31,12,20),
         '12/31/2016 24:00' => Time.utc(2017,1,1,0,0),
         '2016-12-31T24:00' => Time.utc(2017,1,1,0,0),
-        '2016-12-31 24:00-01:00' => Time.utc(2016,12,31,23,0),
+        '2016-12-31 24:00+01:00' => Time.utc(2016,12,31,23,0),
     }.each do |s,v|
-      @item.my_value = s
-      assert_equal v, @item.my_value, "Should have accepted #{s.inspect}"
+      @item.utc_value = s
+      assert_equal v, @item.utc_value, "Should have accepted #{s.inspect}"
+      @item.tz_value = s
+      assert_equal v.in_time_zone, @item.tz_value, "Should have accepted #{s.inspect}"
     end
 
   end
@@ -78,8 +83,10 @@ end
         '1/1/2017 24:01',
         '12:30'
     ].each do |val|
-      @item.my_value = val
-      assert_nil @item.my_value, "Should have rejected #{val.inspect}"
+      @item.tz_value = val
+      assert_nil @item.tz_value, "Should have rejected #{val.inspect}"
+      @item.utc_value = val
+      assert_nil @item.utc_value, "Should have rejected #{val.inspect}"
     end
 
   end

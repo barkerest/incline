@@ -50,10 +50,12 @@ module Incline
                 # make sure the fraction is 6 chars in length, then convert to microseconds.
                 micros = match['FRACTION'].to_s[0...6].ljust(6,'0').to_i
 
-                if match['AMPM'].to_s.upcase == 'P' && hour < 12
-                  hour += 12
-                elsif match['AMPM'].to_s.upcase == 'A' && hour == 12
-                  hour = 0
+                if match.names.include?('AMPM')
+                  if match['AMPM'].to_s.upcase == 'P' && hour < 12
+                    hour += 12
+                  elsif match['AMPM'].to_s.upcase == 'A' && hour == 12
+                    hour = 0
+                  end
                 end
 
                 raise 'Invalid time (hour must be 0 to 24).' unless (0..24) === hour
@@ -71,13 +73,16 @@ module Incline
 
                 # compute the tz offset in seconds.
                 offset =
-                    if match['TZ']
-                      tz = match['TZ'].to_s.gsub(':','').upcase
-                      if %w(Z +0000 -0000).include?(tz)
-                        0
+                    if match.names.include?('TZ')
+                      if match['TZ']
+                        tz = match['TZ'].to_s.gsub(':','').upcase
+                        if %w(Z +0000 -0000).include?(tz)
+                          0
+                        else
+                          (tz[0] == '-' ? -1 : 1) * ((tz[1..2].to_i * 3600) + (tz[3..4].to_i * 60))
+                        end
                       else
-                        flag = tz[0] == '-' ? -1 : 1
-                        (tz[0] == '-' ? -1 : 1) * ((tz[1..2].to_i * 3600) + (tz[3..4].to_i * 60))
+                        nil
                       end
                     else
                       nil
