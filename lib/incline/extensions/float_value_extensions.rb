@@ -14,6 +14,8 @@ module Incline
       base.class_eval do
         private
 
+        undef cast_value
+
         def cast_value(value)
           begin
             case value
@@ -39,6 +41,7 @@ module Incline
                 end
             end
           rescue
+            Incline::Log::warn "Failed to parse #{value.inspect}."
             nil
           end
         end

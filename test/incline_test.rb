@@ -24,6 +24,12 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline.const_defined? :JbuilderGeneratorExtensions
     assert Incline.const_defined? :JbuilderTemplateExtensions
     assert Incline.const_defined? :TestCaseExtensions
+    assert Incline.const_defined? :DateFormats
+    assert Incline.const_defined? :IntegerValueExtensions
+    assert Incline.const_defined? :FloatValueExtensions
+    assert Incline.const_defined? :TimeZoneConverterExtensions
+    assert Incline.const_defined? :DateTimeValueExtensions
+
 
     assert Incline.const_defined? :EmailValidator
     assert Incline.const_defined? :SafeNameValidator

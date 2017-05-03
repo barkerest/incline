@@ -38,6 +38,7 @@ module Incline
                 end
             end
           rescue
+            Incline::Log::warn "Failed to parse #{value.inspect}."
             nil
           end
         end
