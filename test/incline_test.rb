@@ -12,6 +12,7 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline.const_defined? :JsonLogFormatter
     assert Incline.const_defined? :GlobalStatus
     assert Incline.const_defined? :DateTimeFormats
+    assert Incline.const_defined? :NumberFormats
 
     assert Incline.const_defined? :Extensions
     assert Incline::Extensions.const_defined? :Object
@@ -31,6 +32,7 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline::Extensions.const_defined? :TimeZoneConverter
     assert Incline::Extensions.const_defined? :DateTimeValue
     assert Incline::Extensions.const_defined? :DateValue
+    assert Incline::Extensions.const_defined? :DecimalValue
 
     assert Incline.const_defined? :EmailValidator
     assert Incline.const_defined? :SafeNameValidator

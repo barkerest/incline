@@ -1,3 +1,4 @@
+require 'incline/number_formats'
 
 module Incline::Extensions
 
@@ -25,10 +26,10 @@ module Incline::Extensions
                 0.0
               when ::String
                 # 1,234.56789
-                if value =~ /\A[+-]?(0|[1-9][0-9]{0,2}(,[0-9]{3})*)(\.[0-9]*)?\z/
+                if value =~ Incline::NumberFormats::WITH_DELIMITERS
                   value = value.gsub(',', '')
                 end
-                if value =~ /\A[+-]?([0-9]+)(\.[0-9]*)?\z/
+                if value =~ Incline::NumberFormats::WITHOUT_DELIMITERS
                   value.to_f
                 else
                   nil
@@ -41,7 +42,7 @@ module Incline::Extensions
                 end
             end
           rescue
-            Incline::Log::warn "Failed to parse #{value.inspect}."
+            Incline::Log::warn "Failed to parse #{value.inspect}: #{$!.message}"
             nil
           end
         end
