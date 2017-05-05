@@ -1,32 +1,47 @@
-<%%= form_for(@<%= singular_table_name %>) do |f| %>
-  <%% if @<%= singular_table_name %>.errors.any? %>
-    <div id="error_explanation">
-      <h2><%%= pluralize(@<%= singular_table_name %>.errors.count, "error") %> prohibited this <%= singular_table_name %> from being saved:</h2>
+<%%= error_summary @<%= singular_table_name %> %>
 
-      <ul>
-      <%% @<%= singular_table_name %>.errors.full_messages.each do |message| %>
-        <li><%%= message %></li>
-      <%% end %>
-      </ul>
+<div class="col-md-4 col-md-offset-4">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <%%= @<%= singular_table_name %>.new_record? ? 'New' : 'Update' %> <%= singular_table_name.titleize %>
     </div>
-  <%% end %>
+    <div class="panel-body">
+      <%%= form_for(@<%= singular_table_name %>) do |f| %>
+      <%- attributes.each do |attribute| -%>
+          <%- if attribute.type == :boolean -%>
+          <%%= checkbox_form_group f, :<%= attribute.column_name %> %>
+          <%- elsif attribute.type == 'datetime' && attribute.column_name =~ /date/ && ~(attribute.column_name =~ /time/) -%>
+          <%%= datepicker_form_group f, :<%= attribute.column_name %> %>
+          <%- elsif (attribute.type == :references) || (attribute.type == :integer && attribute.column_name =~ /_id$/)  -%>
+              <%- if (ref_class = (attribute.column_name.gsub(/_id$/,'').classify.constantize rescue nil)) -%>
+          <%%= select_form_group f, :<%= attribute.column_name %>, <%= ref_class %>.all, :id, :to_s, label_text: <%= attribute.column_name.gsub(/_id$/,'').humanize.inspect %>, field_class: 'form-control basic' %>
+              <%- else -%>
+          <%% if (ref_class = ("<%= attribute.column_name.gsub(/_id$/, '').classify %>".constantize rescue nil)) %>
+            <%%= select_form_group f, :<%= attribute.column_name %>, ref_class.all, :id, :to_s, label_text: <%= attribute.column_name.gsub(/_id$/, '').humanize.inspect %>, field_class: 'form-control basic' %>
+          <%% else %>
+            <%%= text_form_group f, :<%= attribute.column_name %>, field_type: :number, field_class: "form-control integer", label_text: <%= attribute.column_name.gsub(/_id$/, '').humanize.inspect %> %>
+          <%% end %>
+              <%- end -%>
+          <%- elsif attribute.type == :integer -%>
+          <%%= text_form_group f, :<%= attribute.column_name %>, field_type: :number, field_class: "form-control integer" %>
+          <%- elsif attribute.type == :float -%>
+          <%%= text_form_group f, :<%= attribute.column_name %>, field_type: :number, field_class: "form-control float" %>
+          <%- elsif attribute.type == :string -%>
+          <%%= text_form_group f, :<%= attribute.column_name %> %>
+          <%- elsif attribute.password_digest? -%>
+          <%%= text_form_group f, :password, field_type: :password %>
+          <%%= text_form_group f, :password_confirmation, field_type: :password %>
+          <%- else -%>
+          <div class="form-group">
+            <%%= f.label :<%= attribute.column_name %> %>
+            <%%= f.<%= attribute.field_type %> :<%= attribute.column_name %>, class: "form-control" %>
+          </div>
+          <%- end -%>
+      <%- end -%>
+      <%%= f.submit class: "btn btn-primary" %>
+      <%%= link_to "Cancel", @<%= singular_table_name %>.new_record? ? <%= index_helper %>_path : <%= singular_table_name %>_path(@<%= singular_table_name %>), class: "btn btn-default" %>
+      <%% end %>
+    </div>
+  </div>
+</div>
 
-<% attributes.each do |attribute| -%>
-  <div class="field">
-<% if attribute.password_digest? -%>
-    <%%= f.label :password %><br>
-    <%%= f.password_field :password %>
-  </div>
-  <div class="field">
-    <%%= f.label :password_confirmation %><br>
-    <%%= f.password_field :password_confirmation %>
-<% else -%>
-    <%%= f.label :<%= attribute.column_name %> %><br>
-    <%%= f.<%= attribute.field_type %> :<%= attribute.column_name %> %>
-<% end -%>
-  </div>
-<% end -%>
-  <div class="actions">
-    <%%= f.submit %>
-  </div>
-<%% end %>
