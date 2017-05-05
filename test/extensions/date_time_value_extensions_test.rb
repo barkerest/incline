@@ -46,6 +46,16 @@ end
     Time.zone = @backup_tm_tz
   end
 
+  test 'uses correct types' do
+    col = @model_class.columns.find{|c| c.name == 'tz_value'}
+    assert col
+    assert col.cast_type.is_a?(ActiveRecord::AttributeMethods::TimeZoneConversion::TimeZoneConverter)
+    col = @model_class.columns.find{|c| c.name == 'utc_value'}
+    assert col
+    assert_not col.cast_type.is_a?(ActiveRecord::AttributeMethods::TimeZoneConversion::TimeZoneConverter)
+    assert col.cast_type.is_a?(ActiveRecord::Type::DateTime)
+  end
+
   test 'accepts valid values' do
     {
         '2016-12-31' => Time.utc(2016,12,31),

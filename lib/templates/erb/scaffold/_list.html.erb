@@ -1,0 +1,62 @@
+<table id="dt-<%= plural_table_name %>" class="table" style="width: 100%;">
+  <thead>
+  <tr>
+    <%- attributes.reject(&:password_digest?).each do |attribute| -%>
+        <th><%= attribute.human_name %></th>
+    <%- end -%>
+    <th><%%= link_to 'New', new_<%= singular_table_name %>_path, class: 'btn btn-success btn-xs' %></th>
+  </tr>
+  </thead>
+</table>
+
+<%% provide :scripts do %>
+<script type="text/javascript">
+    //<![CDATA[
+    $(function() {
+        $('#dt-<%= plural_table_name %>').DataTable({
+            dom: '<"panel-body"<"col-sm-6 col-sm-offset-6"fr>>t<"panel-body"<"col-sm-6"i><"col-sm-6"p>>',
+            ajax: '<%%= api_path %>',
+            columns: [
+                <%- attributes.reject(&:password_digest?).each do |attribute| -%>
+                {
+                    data: '<%= attribute.type == :reference ? "#{attribute.name.pluralize}.label" : "#{singular_table_name}.#{attribute.name}" %>',
+                    render: function(data, type) {
+                        <%- if attribute.type == :integer -%>
+                        return type === 'display' ? $.number(data) : data;
+                        <%- elsif attribute.type == :float -%>
+                        return type === 'display' ? $.number(data, 2) : data;
+                        <%- elsif attribute.type == :datetime -%>
+                        return type === 'display' ? '<span title="' + moment(data).format() + '">' + moment(data).format('YYYY-MM-DD') + '</span>' : data
+                        <%- elsif attribute.type == :boolean -%>
+                        if (type === 'display')
+                            return data ? '<i class="glyphicon glyphicon-ok glyphicon-small"></i>' : '';
+                        else
+                            return data;
+                        <%- else -%>
+                        return data;
+                        <%- end -%>
+                    }
+                },
+                <%- end %>
+                {
+                    data: 'path',
+                    orderable: false,
+                    render: function(data,type) {
+                        var ret = data;
+                        if (type === 'display') {
+                            ret = '<div class="text-right">' +
+                                    '<a href="' + data + '" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>' +
+                                    '<a href="' + data + '/edit" title="Edit" class="btn btn-default btn-xs"><i class="glyphiocn glyphicon-pencil"></i></a>' +
+                                    '<a href="' + data + '" title="Remove" class="btn btn-danger btn-xs" data-method="delete" data-confirm="Are you sure you want to remove this <%= singular_table_name.humanize %>?"><i class="glyphicon glyphicon-trash"></i></a>' +
+                                    '</div>';
+                        }
+                        return ret;
+                    }
+                }
+            ],
+            responsive: true
+        });
+    });
+    //]]>
+</script>
+<%% end %>

@@ -1,11 +1,34 @@
-<p id="notice"><%%= notice %></p>
 
-<% attributes.reject(&:password_digest?).each do |attribute| -%>
-<p>
-  <strong><%= attribute.human_name %>:</strong>
-  <%%= @<%= singular_table_name %>.<%= attribute.name %> %>
-</p>
-
-<% end -%>
-<%%= link_to 'Edit', edit_<%= singular_table_name %>_path(@<%= singular_table_name %>) %> |
-<%%= link_to 'Back', <%= index_helper %>_path %>
+<div class="col-md-6 col-md-offset-3">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <%= singular_table_name.titleize %>
+      </h4>
+    </div>
+    <div class="panel-body">
+    <%- attributes.reject(&:password_digest?).each do |attribute| -%>
+      <div class="row">
+        <div class="col-sm-6 col-md-4">
+          <strong><%= attribute.human_name %>:</strong>
+        </div>
+        <div class="col-sm-6 col-md-8">
+          <%- if attribute.type == :boolean -%>
+          <%%= @<%= singular_table_name %>.<%= attribute.name %> ? 'Yes' : 'No' %>
+          <%- elsif attribute.type == :integer -%>
+          <%%= @<%= singular_table_name %>.<%= attribute.name %> ? number_with_delimiter(@<%= singular_table_name %>.<%= attribute.name %>) : '0' %>
+          <%- elsif attribute.type == :float -%>
+          <%%= @<%= singular_table_name %>.<%= attribute.name %> ? number_with_precision(@<%= singular_table_name %>.<%= attribute.name %>, delimiter: ',', precision: 2) : '0' %>
+          <%- elsif attribute.type == :datetime -%>
+          <%%= @<%= singular_table_name %>.<%= attribute.name %> ? @<%= singular_table_name %>.<%= attribute.name %>.strftime('%m/%d/%Y') : '[Invalid Date]'  %>
+          <%- else -%>
+          <%%= @<%= singular_table_name %>.<%= attribute.name %> %>
+          <%- end -%>
+        </div>
+      </div>
+    <%- end -%>
+      <br>
+      <%%= link_to 'Return to list', <%= index_helper %>_path, class: 'btn btn-default' %>
+    </div>
+  </div>
+</div>
