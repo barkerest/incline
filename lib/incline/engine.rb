@@ -1,7 +1,9 @@
 # Basic functionality
+require 'incline/errors'
 require 'incline/work_path'
 require 'incline/json_log_formatter'
 require 'incline/global_status'
+require 'incline/data_tables_request'
 
 # Preloaded gems
 require 'jbuilder'

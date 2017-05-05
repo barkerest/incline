@@ -19,7 +19,11 @@
             columns: [
                 <%- attributes.reject(&:password_digest?).each do |attribute| -%>
                 {
-                    data: '<%= attribute.type == :reference ? "#{attribute.name.pluralize}.label" : "#{singular_table_name}.#{attribute.name}" %>',
+                    // how DT references the data.
+                    data: '<%= attribute.type == :reference ? "#{attribute.name.pluralize}.label" : "#{attribute.name}" %>',
+                    // how the server references the data.
+                    name: '<%= attribute.name %>',
+                    // override the default behavior as needed, or remove the render option for this column.
                     render: function(data, type) {
                         <%- if attribute.type == :integer -%>
                         return type === 'display' ? $.number(data) : data;
@@ -35,12 +39,17 @@
                         <%- else -%>
                         return data;
                         <%- end -%>
-                    }
+                    },
+                    // can this column be used for sorting?
+                    orderable: true,
+                    // can this column be used for searching?
+                    searchable: true
                 },
                 <%- end %>
                 {
-                    data: 'path',
+                    data: 'DT_path',
                     orderable: false,
+                    searchable: false,
                     render: function(data,type) {
                         var ret = data;
                         if (type === 'display') {
@@ -54,7 +63,8 @@
                     }
                 }
             ],
-            responsive: true
+            responsive: true,
+            serverSide: true
         });
     });
     //]]>

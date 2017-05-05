@@ -5,12 +5,17 @@ class InclineTest < ActiveSupport::TestCase
   test 'modules and classes loaded' do
     assert Object.const_defined? :Incline
 
+    assert Incline.const_defined? :NotLoggedIn
+    assert Incline.const_defined? :NotAuthorized
+    assert Incline.const_defined? :InvalidApiCall
+
     assert Incline.const_defined? :VERSION
     assert Incline.const_defined? :Log
     assert Incline.const_defined? :Engine
     assert Incline.const_defined? :WorkPath
     assert Incline.const_defined? :JsonLogFormatter
     assert Incline.const_defined? :GlobalStatus
+    assert Incline.const_defined? :DataTablesRequest
     assert Incline.const_defined? :DateTimeFormats
     assert Incline.const_defined? :NumberFormats
 
