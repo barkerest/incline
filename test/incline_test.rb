@@ -28,6 +28,7 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline::Extensions.const_defined? :ActiveRecordBase
     assert Incline::Extensions.const_defined? :ConnectionAdapter
     assert Incline::Extensions.const_defined? :MainApp
+    assert Incline::Extensions.const_defined? :ActionControllerBase
     assert Incline::Extensions.const_defined? :ErbScaffoldGenerator
     assert Incline::Extensions.const_defined? :JbuilderGenerator
     assert Incline::Extensions.const_defined? :JbuilderTemplate

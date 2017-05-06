@@ -29,7 +29,7 @@ module Incline::Extensions
           end
         end
 
-        rescue_from NotLoggedIn do |exception|
+        rescue_from ::Incline::NotLoggedIn do |exception|
           flash[:info] = exception.message
           redirect_to incline.login_url
         end
