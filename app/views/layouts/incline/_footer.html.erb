@@ -1,0 +1,14 @@
+<div class="container">
+ <footer>
+  <small>
+   <%= Rails.application.app_info %>
+  </small>
+  <nav>
+   <ul>
+    <li><%= link_to 'About', incline.about_path %></li>
+    <li><%= link_to 'Contact', incline.contact_path %></li>
+   </ul>
+  </nav>
+ </footer>
+ <%= debug(params) if Rails.env.development? %>
+</div>

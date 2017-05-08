@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= full_title(yield(:title)) %></title>
+  <%= stylesheet_link_tag 'application', media: 'all' %>
+  <%= yield :styles %>
+  <script type="text/javascript">
+      var application_root_offset='<%= (root_url[-1] == '/' ? root_url[0...-1] : root_url).gsub("'", "\\'") %>';
+  </script>
+  <%= javascript_include_tag 'application' %>
+  <%= yield :scripts %>
+  <%= csrf_meta_tags %>
+  <%= render 'layouts/incline/shim' %>
+</head>
+<body>
+<%= render 'layouts/incline/header' %>
+<div class="container">
+  <%= render 'layouts/incline/messages' %>
+  <%= yield %>
+</div>
+<%= render 'layouts/incline/footer' %>
+</body>
+</html>
