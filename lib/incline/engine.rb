@@ -71,6 +71,7 @@ module Incline
       Incline::Engine::add_assets_to app
       Incline::Engine::notify_on_exceptions_from app
       Incline::Engine::add_migrations_to app
+      Incline::Engine::add_seeds_to app
       Incline::Engine::configure_generators_for app
 
       # preload the base controller in case the child app wants to extend it with their own functionality.
@@ -160,16 +161,24 @@ module Incline
     # Configures the application to use Incline migrations as opposed to copying the Incline migrations locally.
     def self.add_migrations_to(app)
       unless app.root.to_s.match root.to_s
-        config.paths['db/migrate'].expanded.each do |expanded_path|
+        migrate_path = File.expand_path('../../../db/migrate', __FILE__)
 
-          # this should be all that's required.
-          app.config.paths['db/migrate'] << expanded_path unless app.config.paths['db/migrate'].include?(expanded_path)
+        # this should be all that's required.
+        app.config.paths['db/migrate'] << migrate_path unless app.config.paths['db/migrate'].include?(migrate_path)
 
-          # however this gets set before the config is updated.
-          # so we'll add it here as well to ensure it gets set correctly.
-          ActiveRecord::Tasks::DatabaseTasks.migrations_paths << expanded_path unless ActiveRecord::Tasks::DatabaseTasks.migrations_paths.include?(expanded_path)
-        end
+        # however this gets set before the config is updated.
+        # so we'll add it here as well to ensure it gets set correctly.
+        ActiveRecord::Tasks::DatabaseTasks.migrations_paths << migrate_path unless ActiveRecord::Tasks::DatabaseTasks.migrations_paths.include?(migrate_path)
       end
+    end
+
+    ##
+    # Configures the application to use Incline seeds.
+    def self.add_seeds_to(app)
+      seeds_path = File.expand_path('../../../db/seeds.rb', __FILE__)
+
+      # Once again, this should be all that's required.
+      app.config.paths['db/seeds.rb'] << seeds_path unless app.config.paths['db/seeds.rb'].include?(seeds_path)
     end
 
     ##
