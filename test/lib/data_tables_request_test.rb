@@ -72,6 +72,7 @@ end
       @model_class.all
     end
     assert request.provided?
+    assert_not request.error?
     assert_equal 1, request.draw
     assert_equal 7, request.records_total
     assert_equal 7, request.records_filtered
@@ -86,6 +87,7 @@ end
     ) do
       @model_class.all
     end
+    assert_not request.error?
     assert_equal 10, request.draw
     assert_equal 7, request.records_total
     assert_equal 7, request.records_filtered
@@ -103,6 +105,7 @@ end
     ) do
       @model_class.all
     end
+    assert_not request.error?
     assert_equal 2, request.draw
     assert_equal 'Albert Einstein', request.records.first.name
 
@@ -129,6 +132,7 @@ end
     ) do
       @model_class.all
     end
+    assert_not request.error?
     assert_equal 3, request.draw
     assert_equal 7, request.records_total
     assert_equal 3, request.records_filtered
@@ -146,6 +150,7 @@ end
     ) do
       @model_class.all
     end
+    assert_not request.error?
     assert_equal 7, request.records_total
     assert_equal 2, request.records_filtered
     assert_equal 2, request.records.count
@@ -163,6 +168,7 @@ end
     ) do
       @model_class.all
     end
+    assert_not request.error?
     assert_equal 4, request.draw
     assert_equal 7, request.records_total
     assert_equal 2, request.records_filtered
@@ -180,10 +186,60 @@ end
     ) do
       @model_class.all
     end
+    assert_not request.error?
     assert_equal 7, request.records_total
     assert_equal 4, request.records_filtered
     assert_equal 4, request.records.count
     assert_equal 'Percy Jackson', request.records.first.name
   end
+
+  test 'should handle errors' do
+    request = Incline::DataTablesRequest.new(
+        draw: 5,
+        start: 0,
+        length: 5,
+        columns: @columns
+    ) do
+      raise 'Uh oh, something bad happened.'
+    end
+
+    assert request.provided?
+    assert request.error?
+    assert_equal 'Uh oh, something bad happened.', request.error
+    assert_equal 5, request.draw
+    assert_equal 0, request.records_total
+    assert_equal 0, request.records_filtered
+    assert_equal 0, request.records.count
+  end
+
+  test 'should refresh' do
+    request = Incline::DataTablesRequest.new(
+        draw: 6,
+        start: 0,
+        length: 5,
+        columns: @columns,
+        search: { value: 'toon', regex: false },
+        order: [ { column: 0, dir: 'desc' } ]
+    ) do
+      @model_class.all
+    end
+    assert_not request.error?
+    assert_equal 6, request.draw
+    assert_equal 7, request.records_total
+    assert_equal 3, request.records_filtered
+    assert_equal 3, request.records.count
+    assert_equal 'Homer Simpson', request.records.first.name
+
+    @model_class.create name: 'Lisa Simpson', classification: 'Cartoon Character'
+    assert_nil request.records.find{|i| i.name == 'Lisa Simpson'}
+
+    assert_equal request, request.refresh!
+    assert_equal 6, request.draw
+    assert_equal 8, request.records_total
+    assert_equal 4, request.records_filtered
+    assert_equal 4, request.records.count
+    assert_equal 'Lisa Simpson', request.records.first.name
+  end
+
 
 end

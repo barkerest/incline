@@ -72,7 +72,7 @@ module Incline::Extensions
     # will return false.
     # If the user is authorized, the method will return true.
     def authorize!(*accepted_groups)
-
+      # TODO: Fill in once user model is defined.
       true
     end
 

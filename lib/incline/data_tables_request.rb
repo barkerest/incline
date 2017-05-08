@@ -46,9 +46,8 @@ module Incline
     def initialize(params = {}, &block)
       raise ArgumentError, 'A block is required to return the starting ActiveRecord scope.' unless block_given?
 
-      @config         = {}
-      @starting_scope = block
-      @records        = nil
+      @config                   = {}
+      @config[:starting_scope]  = block
 
       params = params.symbolize_keys
 
@@ -108,9 +107,17 @@ module Incline
     end
 
     ##
+    # Refreshes the data and returns the request instance.
+    def refresh!
+      records true
+      self
+    end
+
+    ##
     # Gets the records returned by this request.
-    def records
-      @records ||= get_items_from @starting_scope.call
+    def records(refresh = false)
+      @config[:records] = nil if refresh
+      @config[:records] ||= load_records
     end
 
     ##
@@ -127,92 +134,119 @@ module Incline
       @config[:records_filtered]
     end
 
+    ##
+    # The error message, if any?
+    def error
+      records
+      @config[:error]
+    end
+
+    ##
+    # Is there an error to display?
+    def error?
+      !error.blank?
+    end
+
     private
 
     ##
     # Applies the request against an ActiveRecord::Relation object.
     #
     # Returns the results of executing the necessary queries and filters as an array of models.
-    def get_items_from(relation, filter_columns = false)
+    def load_records(relation = nil, filter_columns = false)
+      begin
+        # reset values.
+        # @config[:records] is set to the return of this method, we we won't change that here.
+        @config[:records_total] = 0
+        @config[:records_filtered] = 0
+        @config[:error] = nil
 
-      # store the unfiltered count.
-      @config[:records_total] = relation.count
+        # Get the default starting scope if necessary.
+        relation ||= @config[:starting_scope].call
 
-      if filter_columns
-        # only get the columns we care about.
-        cols = columns.map{|c| (c[:name] || c[:data]).to_s }.reject{|c| c.blank?}
-        cols << 'id' unless cols.include?('id')
-        relation = relation.select(cols)
-      end
+        # store the unfiltered count.
+        @config[:records_total] = relation.count
 
-      have_regex = search.is_a?(::Regexp) || columns.select{|c| c[:search].is_a?(::Regexp)}.any?
-
-      ###  Database Side Individual Filtering  ###
-      columns.reject{|c| c[:search].blank? || c[:search].is_a?(::Regexp)}.each do |col|
-        name = (col[:name] || col[:data]).to_s
-        unless name.blank?
-          relation = relation.where("(UPPER(\"#{name}\") LIKE ?)", "%#{col[:search].upcase}%")
+        if filter_columns
+          # only get the columns we care about.
+          cols = columns.map{|c| (c[:name] || c[:data]).to_s }.reject{|c| c.blank?}
+          cols << 'id' unless cols.include?('id')
+          relation = relation.select(cols)
         end
-      end
 
-      ###  Database Side Multiple Filtering  ###
-      if search.is_a?(::String) && !search.blank?
-        srch = "%#{search.upcase}%"
-        cols = columns.select{|c| c[:searchable]}.map{|c| (c[:name] || c[:data]).to_s }.reject{|c| c.blank?}
-        if cols.any?
-          relation = relation.where(
-              cols.map{|c| "(UPPER(\"#{c}\") LIKE ?)"}.join(' OR '),
-              *(cols.map{ srch })
-          )
-        end
-      end
+        have_regex = search.is_a?(::Regexp) || columns.select{|c| c[:search].is_a?(::Regexp)}.any?
 
-      ###  Database Side Ordering  ###
-      if ordering.blank?
-        relation = relation.order(id: :asc)
-      else
-        relation = relation.order(ordering)
-      end
-
-      # Now we have two paths, if we have a regex, we need to return everything up to this point and filter with the regular expression(s) before limiting the result set to a specific page.
-      # If we don't, then we can simply tell the database to limit the result set and return the results.
-      if have_regex
-        # execute the query
-        relation = relation.to_a
-
-        ###  Local Individual Filtering   ###
-        columns.select{|c| c[:search].is_a?(::Regexp)}.each do |col|
+        ###  Database Side Individual Filtering  ###
+        columns.reject{|c| c[:search].blank? || c[:search].is_a?(::Regexp)}.each do |col|
           name = (col[:name] || col[:data]).to_s
           unless name.blank?
-            relation = relation.select{|item| !item.respond_to?(name) || item.send(name).to_s =~ col[:search] }
+            relation = relation.where("(UPPER(\"#{name}\") LIKE ?)", "%#{col[:search].upcase}%")
           end
         end
 
-        ###  Local Multiple Filtering  ###
-        if search.is_a?(::Regexp)
+        ###  Database Side Multiple Filtering  ###
+        if search.is_a?(::String) && !search.blank?
+          srch = "%#{search.upcase}%"
           cols = columns.select{|c| c[:searchable]}.map{|c| (c[:name] || c[:data]).to_s }.reject{|c| c.blank?}
-          relation = relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col) =~ search} }
+          if cols.any?
+            relation = relation.where(
+                cols.map{|c| "(UPPER(\"#{c}\") LIKE ?)"}.join(' OR '),
+                *(cols.map{ srch })
+            )
+          end
         end
 
-        # store the filtered count.
-        @config[:records_filtered] = relation.count
-
-        # apply limits and return.
-        relation                   = relation[start..-1]
-        if length > 0
-          relation = relation[0...length]
+        ###  Database Side Ordering  ###
+        if ordering.blank?
+          relation = relation.order(id: :asc)
+        else
+          relation = relation.order(ordering)
         end
-        relation
-      else
-        # store the filtered count.
-        @config[:records_filtered] = relation.count
 
-        # apply limits and return.
-        relation                   = relation.offset(start)
-        if length > 0
-          relation = relation.limit(length)
+        # Now we have two paths, if we have a regex, we need to return everything up to this point and filter with the regular expression(s) before limiting the result set to a specific page.
+        # If we don't, then we can simply tell the database to limit the result set and return the results.
+        if have_regex
+          # execute the query
+          relation = relation.to_a
+
+          ###  Local Individual Filtering   ###
+          columns.select{|c| c[:search].is_a?(::Regexp)}.each do |col|
+            name = (col[:name] || col[:data]).to_s
+            unless name.blank?
+              relation = relation.select{|item| !item.respond_to?(name) || item.send(name).to_s =~ col[:search] }
+            end
+          end
+
+          ###  Local Multiple Filtering  ###
+          if search.is_a?(::Regexp)
+            cols = columns.select{|c| c[:searchable]}.map{|c| (c[:name] || c[:data]).to_s }.reject{|c| c.blank?}
+            relation = relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col) =~ search} }
+          end
+
+          # store the filtered count.
+          @config[:records_filtered] = relation.count
+
+          # apply limits and return.
+          relation                   = relation[start..-1]
+          if length > 0
+            relation = relation[0...length]
+          end
+          relation
+        else
+          # store the filtered count.
+          @config[:records_filtered] = relation.count
+
+          # apply limits and return.
+          relation                   = relation.offset(start)
+          if length > 0
+            relation = relation.limit(length)
+          end
+          relation.to_a
         end
-        relation.to_a
+      rescue =>err
+        @config[:error] = err.message
+        Incline::Log::error err
+        [ ]
       end
     end
 
