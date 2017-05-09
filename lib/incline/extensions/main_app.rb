@@ -8,7 +8,7 @@ module Incline::Extensions
       base.class_eval do
 
         # :nodoc:
-        alias :incline_original_method_missing :method_missing
+        alias :incline_mainapp_original_method_missing :method_missing
 
         def method_missing(method, *args, &block) # :nodoc:
           if respond_to?(:main_app)
@@ -18,7 +18,7 @@ module Incline::Extensions
             end
           end
 
-          incline_original_method_missing(method, *args, &block)
+          incline_mainapp_original_method_missing(method, *args, &block)
         end
 
       end

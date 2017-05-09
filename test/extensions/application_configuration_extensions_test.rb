@@ -5,18 +5,18 @@ class ApplicationConfigurationExtensionsTest < ActiveSupport::TestCase
   test 'Rails.application.config has extension' do
     cfg = Rails.application&.config
     skip unless cfg
-    assert cfg.respond_to?(:incline_original_database_configuration)
+    assert cfg.respond_to?(:incline_appconfig_original_database_configuration)
   end
 
   test 'provide default when config missing' do
     cfg = Rails::Application::Configuration.new
 
     # method must already be defined.
-    assert cfg.methods.include?(:incline_original_database_configuration)
+    assert cfg.methods.include?(:incline_appconfig_original_database_configuration)
 
     # first we'll confirm that the overridden method is getting called.
     silence_warnings do
-      def cfg.incline_original_database_configuration
+      def cfg.incline_appconfig_original_database_configuration
         raise 'Just Testing'
       end
     end
@@ -30,7 +30,7 @@ class ApplicationConfigurationExtensionsTest < ActiveSupport::TestCase
 
     # now we'll pretend there is no configuration file.
     silence_warnings do
-      def cfg.incline_original_database_configuration
+      def cfg.incline_appconfig_original_database_configuration
         raise 'Could not load database configuration. No such file - fake/database.yml'
       end
     end

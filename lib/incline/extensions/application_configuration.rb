@@ -17,11 +17,11 @@ module Incline::Extensions
     # database configuration or may actually be used to generate the configuration file.
     def self.included(base) #:nodoc:
       base.class_eval do
-        alias :incline_original_database_configuration :database_configuration
+        alias :incline_appconfig_original_database_configuration :database_configuration
 
         def database_configuration
           begin
-            incline_original_database_configuration
+            incline_appconfig_original_database_configuration
           rescue
             raise unless $!.inspect.include?('No such file -') && (!Rails.env.production?)
 
