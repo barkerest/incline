@@ -35,6 +35,15 @@ module Incline::Extensions
       end
     end
 
+    ##
+    # Converts a string into a boolean value.
+    #
+    # The following values are considered true: true, t, yes, y, on, 1
+    # Everything else will be false.
+    def to_bool
+      %w(true t yes y on 1).include?(self.downcase)
+    end
+
   end
 end
 

@@ -49,6 +49,14 @@ module Incline::Extensions
       ('%.2f' % (self.to_f + 0.0001)).gsub(/\.?0+\z/,'')
     end
 
+    ##
+    # Converts this value into a boolean.
+    #
+    # A value of 0 is false, any other value is true.
+    def to_bool
+      self != 0
+    end
+
   end
 end
 

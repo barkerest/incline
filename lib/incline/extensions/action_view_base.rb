@@ -1,5 +1,8 @@
 require 'cgi/util'
-require 'redcarpet'
+silence_warnings do
+  require 'redcarpet'
+end
+
 
 module Incline::Extensions
 
@@ -31,7 +34,7 @@ module Incline::Extensions
     # while leaving the view blank for a false value.
     #
     def show_check_if(bool_val)
-      if bool_val
+      if bool_val.to_bool
         '<i class="glyphicon glyphicon-ok glyphicon-small"></i>'.html_safe
       end
     end
@@ -47,15 +50,23 @@ module Incline::Extensions
     #   glyph('cloud')    # '<i class="glyphicon glyphicon-cloud"></i>'
     #
     def glyph(name, size = '')
-      size = size.to_s.downcase
-      if %w(small sm).include?(size)
-        size = 'glyphicon-small'
-      elsif %w(large lg).include?(size)
-        size = 'glyphicon-large'
-      else
-        size = ''
-      end
-      "<i class=\"glyphicon glyphicon-#{h name} #{size}\"></i>".html_safe
+      size =
+          case size.to_s.downcase
+            when 'small', 'sm'
+              'glyphicon-small'
+            when 'large', 'lg'
+              'glyphicon-large'
+            else
+              nil
+          end
+
+      name = name.to_s.strip
+      return nil if name.blank?
+
+      result = '<i class="glyphicon glyphicon-' + CGI::escape_html(name)
+      result += ' ' + size unless size.blank?
+      result += '"></i>'
+      result.html_safe
     end
 
     ##
@@ -89,46 +100,56 @@ module Incline::Extensions
     #     # render_alert :info, 'Hello World'
     #     <div class="alert alert-info alert-dismissible">
     #       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    #       Hello World
+    #       <span>Hello World</span>
     #     </div>
     #
     #     # render_alert :success, [ 'Item 1 was successful.', 'Item 2 was successful' ]
     #     <div class="alert alert-info alert-dismissible">
     #       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    #       Item 1 was successful.<br>
-    #       Item 2 was successful.
+    #       <span>Item 1 was successful.</span><br>
+    #       <span>Item 2 was successful.</span>
     #     </div>
     #
     #     # render_alert :error, { :name => [ 'cannot be blank', 'must be unique' ], :age => 'must be greater than 18' }
     #     <div class="alert alert-info alert-dismissible">
     #       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    #       Name
-    #       <ul>
-    #         <li>cannot be blank</li>
-    #         <li>must be unique</li>
-    #       </ul>
-    #       Age
-    #       <ul>
-    #         <li>must be greater than 18</li>
-    #       </ul>
+    #       <div>
+    #         Name
+    #         <ul>
+    #           <li>cannot be blank</li>
+    #           <li>must be unique</li>
+    #         </ul>
+    #       </div>
+    #       <div>
+    #         Age
+    #         <ul>
+    #           <li>must be greater than 18</li>
+    #         </ul>
+    #       </div>
     #     </div>
     #
     #     # render_alert :error, [ '__The model could not be saved.__', { :name => [ 'cannot be blank', 'must be unique' ], :age => 'must be greater than 18' } ]
     #     <div class="alert alert-info alert-dismissible">
     #       <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    #       <strong>The model could not be saved.</strong><br>
-    #       Name
-    #       <ul>
-    #         <li>cannot be blank</li>
-    #         <li>must be unique</li>
-    #       </ul>
-    #       Age
-    #       <ul>
-    #         <li>must be greater than 18</li>
-    #       </ul>
+    #       <span><strong>The model could not be saved.</strong></span><br>
+    #       <div>
+    #         Name
+    #         <ul>
+    #           <li>cannot be blank</li>
+    #           <li>must be unique</li>
+    #         </ul>
+    #       </div>
+    #       <div>
+    #         Age
+    #         <ul>
+    #           <li>must be greater than 18</li>
+    #         </ul>
+    #       </div>
     #     </div>
     #
     def render_alert(type, message, array_auto_hide = nil)
+      return nil if message.blank?
+
       if type.to_s =~ /\Asafe_/
         type = type.to_s[5..-1]
         message = message.to_s.html_safe
@@ -138,8 +159,11 @@ module Incline::Extensions
 
       type = :info if type == :notice
       type = :danger if type == :alert
+      type = :danger if type == :error
+      type = :warning if type == :warn
 
-      return nil unless [:info, :success, :danger, :warning].include?(type)
+      type = :info unless [:info, :success, :danger, :warning].include?(type)
+
       array_auto_hide = nil unless array_auto_hide.is_a?(Integer) && array_auto_hide > 0
 
       contents = render_alert_message(message, array_auto_hide)
@@ -167,30 +191,30 @@ module Incline::Extensions
     ##
     # Renders the error summary for the specified model.
     def error_summary(model)
-      if model.respond_to?(:errors) && model&.errors&.any?
-        contents = render_alert_message(
-            {
-                "__The form contains #{model.errors.count} error#{model.errors.count == 1 ? '' : 's'}.__" => model.errors.full_messages
-            },
-            5
-        )
+      return nil unless model&.respond_to?(:errors)
+      return nil unless model.errors&.any?
+      contents = render_alert_message(
+          {
+              "__The form contains #{model.errors.count} error#{model.errors.count == 1 ? '' : 's'}.__" => model.errors.full_messages
+          },
+          5
+      )
 
-        html = '<div id="error_explanation"><div class="alert alert-danger">' + contents[:text]
+      html = '<div id="error_explanation"><div class="alert alert-danger">' + contents[:text]
 
-        unless contents[:script].blank?
-          html += <<-EOS
+      unless contents[:script].blank?
+        html += <<-EOS
 <script type="text/javascript">
 <![CDATA[
 #{contents[:script]}
 ]]>
 </script>
-          EOS
-        end
-
-        html += '</div></div>'
-
-        html.html_safe
+        EOS
       end
+
+      html += '</div></div>'
+
+      html.html_safe
     end
 
 
@@ -201,17 +225,26 @@ module Incline::Extensions
     # If the +date+ is blank, then nil will be returned.
     def fmt_date(date)
       return nil if date.blank?
-      if date.respond_to?(:to_time) && !date.is_a?(::String)
+      # We want our date in a string format, so only convert to time if we aren't in a string, time, or date.
+      if date.respond_to?(:to_time) && !date.is_a?(::String) && !date.is_a?(::Time) && !date.is_a?(::Date)
         date = date.to_time
       end
-      if date.respond_to?(:utc)
-        date = date.utc
-      end
+      # Now if we have a Date or Time value, convert to string.
       if date.respond_to?(:strftime)
         date = date.strftime('%m/%d/%Y')
       end
-      return nil unless date =~ /\A\d+\/\d+\/\d+\z/
-      date
+      return nil unless date.is_a?(::String)
+
+      # Now the string has to match one of our expected formats.
+      if date =~ Incline::DateTimeFormats::ALMOST_ISO_DATE_FORMAT
+        m,d,y = [ $2, $3, $1 ].map{|v| v.to_i}
+        "#{m}/#{d}/#{y.to_s.rjust(4,'0')}"
+      elsif date =~ Incline::DateTimeFormats::US_DATE_FORMAT
+        m,d,y = [ $1, $2, $3 ].map{|v| v.to_i}
+        "#{m}/#{d}/#{y.to_s.rjust(4,'0')}"
+      else
+        nil
+      end
     end
 
     ##
@@ -219,13 +252,17 @@ module Incline::Extensions
     #
     # The +value+ can be any valid numeric expression that can be converted into a float.
     def fmt_num(value, places = 2)
+      return nil if value.blank?
+
       value =
           if value.respond_to?(:to_f)
             value.to_f
           else
             nil
           end
+
       return nil unless value.is_a?(::Float)
+
       "%0.#{places}f" % value.round(places)
     end
 
@@ -233,12 +270,13 @@ module Incline::Extensions
     private
 
     def redcarpet
-      @redcarpet ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML, no_intra_emphasis: true, fenced_code_blocks: true, strikethrough: true, autolink: true)
+      @redcarpet ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML.new(no_intra_emphasis: true, fenced_code_blocks: true, strikethrough: true, autolink: true))
     end
 
     def render_md(text)
       text = redcarpet.render(text)
-      if /\A<p>(.*)<\/p>\z/i =~ text
+      # Use /Z to match before a trailing newline.
+      if /\A<p>(.*)<\/p>\Z/i =~ text
         $1
       else
         text
@@ -251,7 +289,12 @@ module Incline::Extensions
       if message.is_a?(Array)
 
         # flatten the array, then map to the text values.
-        message = message.flatten.map { |v| render_alert_message(v, array_auto_hide, bottom, state)[:text] }
+        message = message.flatten
+                      .map { |v| render_alert_message(v, array_auto_hide, bottom, nil) }
+                      .map do |v|
+          state[:script] += v[:script]
+          v[:text]
+        end
 
         if array_auto_hide && message.count > array_auto_hide && array_auto_hide > 0
           # We want to hide some records.
@@ -271,7 +314,7 @@ module Incline::Extensions
                       "<a href=\"javascript:show_#{id}()\" title=\"Show #{remaining} more\">... plus #{remaining} more</a>" +
                       (bottom ? '</span>' : '</li>')
               ] +
-              message[init_count..-1].map{|v| v.gsub(/\A<(li|span)>/, "<\1 class=\"#{id}\" style=\"display: none;\">") }
+              message[init_count..-1].map{|v| v.gsub(/\A<(li|span|div)>/, "<\\1 class=\"#{id}\" style=\"display: none;\">") }
 
           state[:text] += message.join(bottom ? '<br>' : '')
 
@@ -284,7 +327,7 @@ module Incline::Extensions
       elsif message.is_a?(Hash)
         # Process each item as <li>::KEY::<ul>::VALUES::</ul></li>
         message.each do |k,v|
-          state[:text] += '<li>' unless bottom
+          state[:text] += bottom ? '<div>' : '<li>'
           if k.is_a?(Symbol)
             state[:text] += CGI::escape_html(k.to_s.humanize.capitalize)
           elsif k.is_a?(String)
@@ -292,8 +335,12 @@ module Incline::Extensions
           else
             state[:text] += CGI::escape_html(k.inspect)
           end
-          state[:text] += "<ul>#{render_alert_message(v, array_auto_hide, false, state)[:text]}</ul>" unless v.blank?
-          state[:text] += '</li>' unless bottom
+          unless v.blank?
+            state[:text] += '<ul>'
+            render_alert_message v, array_auto_hide, false, state
+            state[:text] += '</ul>'
+          end
+          state[:text] += bottom ? '</div>' : '</li>'
         end
       else
         # Make the text safe.

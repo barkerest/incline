@@ -77,6 +77,12 @@ class DateTimeFormatsTest < ActiveSupport::TestCase
         '2017-1-1T1:15' => { year: 2017, month: 1, day: 1, hour: 1, minute: 15 },
         '2017-01-01T01:15' => { year: 2017, month: '01', day: '01', hour: '01', minute: 15 },
         '16-1-1' => { year: 16, month: 1, day: 1 },
+        '2016-12-31 11:35 PM' => { year: 2016, month: 12, day: 31, hour: 11, minute: 35, ampm: 'P' },
+        '2016-12-31 11:35:48 PM' => { year: 2016, month: 12, day: 31, hour: 11, minute: 35, second: 48, ampm: 'P' },
+        '2016-12-31 11:35P' => { year: 2016, month: 12, day: 31, hour: 11, minute: 35, ampm: 'P' },
+        '2016-12-31 11:35:48P' => { year: 2016, month: 12, day: 31, hour: 11, minute: 35, second: 48, ampm: 'P' },
+        '2016-12-31 11:35:48.1024 PM -05:00' => { year: 2016, month: 12, day: 31, hour: 11, minute: 35, second: 48, fraction: 1024, tz: '-05:00', ampm: 'P' },
+        '2016-12-31 11:35:48.1024P-05:00' => { year: 2016, month: 12, day: 31, hour: 11, minute: 35, second: 48, fraction: 1024, tz: '-05:00', ampm: 'P' },
     }.each do |dt, parts|
       match = Incline::DateTimeFormats::ALMOST_ISO_DATE_FORMAT.match(dt)
       assert match, "Should match '#{dt}'."
@@ -96,15 +102,7 @@ class DateTimeFormatsTest < ActiveSupport::TestCase
         '2016-12-31-05:00',
         '2016-12-31 11:45:00 05:00',
         '2016-12-31Z',
-        '2016-12-31 Z',
-        '2016-12-31 12:25 PM',
-        '2016-12-31 12:25PM',
-        '2016-12-31 12:25 P',
-        '2016-12-31 12:25P',
-        '2016-12-31 12:25 AM',
-        '2016-12-31 12:25AM',
-        '2016-12-31 12:25 A',
-        '2016-12-31 12:25A'
+        '2016-12-31 Z'
     ].each do |dt|
       assert_nil Incline::DateTimeFormats::ALMOST_ISO_DATE_FORMAT.match(dt), "Should not match '#{dt}'."
     end
