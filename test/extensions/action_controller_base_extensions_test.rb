@@ -12,6 +12,8 @@ class ActionControllerBaseExtensionsTest < ActiveSupport::TestCase
     assert ac.respond_to?(:map_api_action)
     assert ac.respond_to?(:enable_auto_api?)
     assert ac.respond_to?(:process_api_action)
+    assert ac.respond_to?(:redirect_back_or)
+    assert ac.respond_to?(:store_location)
 
   end
 

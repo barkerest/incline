@@ -34,6 +34,8 @@ class ActionViewBaseExtensionsTest < ActiveSupport::TestCase
     assert @view.respond_to?(:error_summary)
     assert @view.respond_to?(:fmt_date)
     assert @view.respond_to?(:fmt_num)
+    assert @view.respond_to?(:gravatar_for)
+    assert @view.respond_to?(:panel)
   end
 
   test 'full_title should work as expected' do
@@ -252,6 +254,14 @@ class ActionViewBaseExtensionsTest < ActiveSupport::TestCase
     expected = expected.gsub('52444', id)
 
     assert_equal expected, val
+  end
+
+  test 'gravatar_for should work as expected' do
+    # TODO: Fill in test.
+  end
+
+  test 'panel should work as expected' do
+    # TODO: Fill in test.
   end
 
 end

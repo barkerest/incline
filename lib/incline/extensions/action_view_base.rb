@@ -266,6 +266,80 @@ module Incline::Extensions
       "%0.#{places}f" % value.round(places)
     end
 
+    ##
+    # Returns the Gravatar for the given user.
+    #
+    # Based on the tutorial from [www.railstutorial.org](www.railstutorial.org).
+    #
+    # The +user+ is the user you want to get the gravatar for.
+    #
+    # Valid options:
+    # size::
+    #     The size (in pixels) for the returned gravatar.  The gravatar will be a square image using this
+    #     value as both the width and height.  The default is 80 pixels.
+    # default::
+    #     The default image to return when no image is set. This can be nil, :mm, :identicon, :monsterid,
+    #     :wavatar, or :retro.  The default is :identicon.
+    def gravatar_for(user, options = {})
+      return nil unless user
+
+      options = { size: 80, default: :identicon }.merge(options || {})
+      options[:default] = options[:default].to_s.to_sym unless options[:default].nil? || options[:default].is_a?(Symbol)
+      gravatar_id = Digest::MD5::hexdigest(user.email.downcase)
+      size = options[:size]
+      default = [:mm, :identicon, :monsterid, :wavatar, :retro].include?(options[:default]) ? "&d=#{options[:default]}" : ''
+      gravatar_url = "https://secure.gravatar.com/avatar/#{gravatar_id}?s=#{size}#{default}"
+      image_tag(gravatar_url, alt: user.name, class: 'gravatar', style: "width: #{size}px, height: #{size}px")
+    end
+
+    ##
+    # Creates a panel with the specified title.
+    #
+    # Valid options:
+    # type::
+    #     Type can be :primary, :success, :info, :warning, or :danger.  Default value is :primary.
+    # size::
+    #     Size can be any value from 1 through 12.  Default value is 6.
+    # offset::
+    #     Offset can be any value from 1 through 12.  Default value is 3.
+    #     Common sense is required, for instance you would likely never use an offset of 12, but it is available.
+    #     Likewise an offset of 8 with a size of 8 would usually have the same effect as an offset of 12 because
+    #     there are only 12 columns to fit your 8 column wide panel in.
+    # open_body::
+    #     This can be true or false.  Default value is true.
+    #     If true, the body division is opened (and closed) by this helper.
+    #     If false, then the panel is opened and closed, but the body division is not created.
+    #     This allows you to add tables and divisions as you see fit.
+    #
+    # Provide a block to render content within the panel.
+    def panel(title, options = { }, &block)
+      options = {
+          type: 'primary',
+          size: 6,
+          offset: 3,
+          open_body: true
+      }.merge(options || {})
+
+      options[:type] = options[:type].to_s.downcase
+      options[:type] = 'primary' unless %w(primary success info warning danger).include?(options[:type])
+      options[:size] = 6 unless (1..12).include?(options[:size])
+      options[:offset] = 3 unless (0..12).include?(options[:offset])
+
+      ret = "<div class=\"col-md-#{options[:size]} col-md-offset-#{options[:offset]}\"><div class=\"panel panel-#{options[:type]}\"><div class=\"panel-heading\"><h4 class=\"panel-title\">#{h title}</h4></div>"
+      ret += '<div class="panel-body">' if options[:open_body]
+
+      if block_given?
+        content = capture { block.call }
+        content = CGI::escape_html(content) unless content.html_safe?
+        ret += content
+      end
+
+      ret += '</div>' if options[:open_body]
+      ret += '</div></div>'
+
+      ret.html_safe
+    end
+
 
     private
 

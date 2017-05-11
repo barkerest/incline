@@ -184,6 +184,21 @@ module Incline::Extensions
       end
     end
 
+    ##
+    # A redirects to a previously stored location or to the default location.
+    #
+    # Usually this will be used to return to an action after a user logs in.
+    def redirect_back_or(default)
+      redirect_to session[:forwarding_url] || default
+      session.delete :forwarding_url
+    end
+
+    ##
+    # Stores the current URL to be used with #redirect_back_or.
+    def store_location
+      session[:forwarding_url] = request.url if request.get?
+    end
+
     private
 
     def raise_authorize_failure(message, log_message = nil)

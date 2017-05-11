@@ -1,4 +1,4 @@
-
+require 'cgi/util'
 
 module Incline::Extensions
   ##
@@ -490,6 +490,46 @@ module Incline::Extensions
       end
       fld = gopt[:wrap].call(collection_select(method, collection, value_method, text_method, opt, fopt))
       form_group lbl, fld, gopt
+    end
+
+    ##
+    # Adds a recaptcha challenge to the form configured to set the specified attribute to the recaptcha response.
+    #
+    # Valid options:
+    # theme::
+    #     Can be :dark or :light, defaults to :light.
+    # type::
+    #     Can be :image or :audio, defaults to :image.
+    # size::
+    #     Can be :compact or :normal, defaults to :normal.
+    # tab_index::
+    #     Can be any valid integer if you want a specific tab order, defaults to 0.
+    #
+    def recaptcha(method, options = {})
+      options = {
+          theme: :light,
+          type: :image,
+          size: :normal,
+          tab_index: 0
+      }.merge((options || {}).symbolize_keys)
+
+      fld_id = object_name.scan(/[a-z0-9]+/i).join('_') + '_' + method.to_s.scan(/[a-z0-9]+/i).join('_')
+
+      # Define the field.
+      ret = hidden_field(method, id: fld_id)
+
+      # Add the div.
+
+
+      # Add the javascript.
+      ret += <<-EOS
+
+      EOS
+
+
+
+
+
     end
 
 
