@@ -72,6 +72,12 @@ module Incline
     end
 
     ##
+    # Gets the email formatted with the name.
+    def formatted_email
+      "#{name} <#{email}>"
+    end
+
+    ##
     # Is this user a system administrator?
     def system_admin?
       enabled && system_admin

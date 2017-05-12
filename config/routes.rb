@@ -1,8 +1,7 @@
 Incline::Engine.routes.draw do
 
-  root 'welcome#home'
   get 'signup' => 'users#new'
 
-  resources :users
+  resources :users, except: [ :new ]
 
 end

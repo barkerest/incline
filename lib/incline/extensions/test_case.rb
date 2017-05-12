@@ -68,10 +68,10 @@ module Incline::Extensions
     #
     # options::
     #     This is a list of options for the validation.
-    #     Currently :start and :end are recognized.
-    #     Use :start to specify a prefix for the tested string.
-    #     Use :end to specify a postfix for the tested string.
-    #     This would be most useful when you value has to follow a format (eg - email address :end => '@example.com')
+    #     Currently :start_with and :end_with are recognized.
+    #     Use :start_with to specify a prefix for the tested string.
+    #     Use :end_with to specify a postfix for the tested string.
+    #     This would be most useful when you value has to follow a format (eg - email address :end_with => '@example.com')
     #
     def assert_max_length(model, attribute, max_length, message = nil, options = {})
       original_value = model.send(attribute)
@@ -83,8 +83,8 @@ module Incline::Extensions
         message = nil
       end
 
-      pre = options[:start].to_s
-      post = options[:end].to_s
+      pre = options[:start_with].to_s
+      post = options[:end_with].to_s
       len = max_length - pre.length - post.length
 
       # try with maximum valid length.
@@ -118,10 +118,10 @@ module Incline::Extensions
     #
     # options::
     #     This is a list of options for the validation.
-    #     Currently :start and :end are recognized.
-    #     Use :start to specify a prefix for the tested string.
-    #     Use :end to specify a postfix for the tested string.
-    #     This would be most useful when you value has to follow a format (eg - email address :end => '@example.com')
+    #     Currently :start_with and :end_with are recognized.
+    #     Use :start_with to specify a prefix for the tested string.
+    #     Use :end_with to specify a postfix for the tested string.
+    #     This would be most useful when you value has to follow a format (eg - email address :end_with => '@example.com')
     #
     def assert_min_length(model, attribute, min_length, message = nil, options = {})
       original_value = model.send(attribute)
@@ -133,8 +133,8 @@ module Incline::Extensions
         message = nil
       end
 
-      pre = options[:start].to_s
-      post = options[:end].to_s
+      pre = options[:start_with].to_s
+      post = options[:end_with].to_s
       len = min_length - pre.length - post.length
 
       # try with minimum valid length.
