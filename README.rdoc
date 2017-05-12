@@ -2,9 +2,16 @@
 
 Rails is a great framework and is very general in design.
 Inclines are railed devices designed to get from the bottom of a hill to the top.  There are two left in Pittsburgh,
-I can't speak for the rest of the world.  The point is they are designed to do one thing.
+I can't speak for the rest of the world.  The point is they are designed to do one thing and they do it pretty well.
 
-This library builds on the Rails framework to quickly get to a certain point.
+This library builds on the Rails framework to quickly get to a certain point.  That certain point is an application
+with a fairly simple layout, built-in authentication and authorization, and quite a few helper methods bolted onto
+the various Rails classes (e.g. - ActiveRecord::Base, ActionView::Base, ActionController::Base, etc).
+
+The scaffold generator has also been updated to be more useful out of the box by scaffolding with bootstrap themed
+views and the [DataTables](https://datatables.net) library being used for the index views.  The ActionController::Base
+class has also been updated to support passing the API calls from the [DataTables Editor](https://editor.datatables.net)
+library as well.
 
 == Installation
 
