@@ -183,29 +183,27 @@ module Incline
       ##
       # Generates the reCAPTCHA data.
       def render
-        opts = {}
-        add_default_name_and_id opts
-        response_id = opts[:id] + '_response'
-        remote_ip_id = opts[:id] + '_remote_ip'
+        response_id = tag_id + '_response'
+        remote_ip_id = tag_id + '_remote_ip'
 
-        opts[:remote_ip] =
+        remote_ip =
             if @template_object&.respond_to?(:request) && @template_object.send(:request)&.respond_to?(:remote_ip)
               @template_object.request.remote_ip
             else
               ENV['REMOTE_ADDR']
             end
 
-        ret =   tag('input', type: 'hidden', id: remote_ip_id, name: opts[:name] + '[remote_ip]', value: opts[:remote_ip])
-        ret +=  tag('input', type: 'hidden', id: response_id, name: opts[:name] + '[response]', value: '')
+        ret =   tag('input', type: 'hidden', id: remote_ip_id, name: tag_name + '[remote_ip]', value: remote_ip)
+        ret +=  tag('input', type: 'hidden', id: response_id, name: tag_name + '[response]', value: '')
 
         opts = {
             'class'           => 'g-recaptcha',
             'data-sitekey'    => CGI::escape_html(Incline::Recaptcha::public_key),
             'data-callback'   => 'update_' + response_id,
-            'data-tabindex'   => options[:tab_index].to_s.to_i,
-            'data-theme'      => make_valid(options[:theme], VALID_THEMES, :light),
-            'data-type'       => make_valid(options[:type], VALID_TYPES, :image),
-            'data-size'       => make_valid(options[:size], VALID_SIZES, :normal)
+            'data-tabindex'   => @options[:tab_index].to_s.to_i,
+            'data-theme'      => make_valid(@options[:theme], VALID_THEMES, :light),
+            'data-type'       => make_valid(@options[:type], VALID_TYPES, :image),
+            'data-size'       => make_valid(@options[:size], VALID_SIZES, :normal)
         }
 
         ret +=  tag('div', opts)

@@ -441,3 +441,4 @@ module Incline::Extensions
 end
 
 ActionView::Base.include Incline::Extensions::ActionViewBase
+ActionDispatch::IntegrationTest.include Incline::Extensions::ActionViewBase

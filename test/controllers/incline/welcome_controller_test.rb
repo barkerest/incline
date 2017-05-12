@@ -1,15 +1,12 @@
 require 'test_helper'
 
-module Incline
-  class WelcomeControllerTest < ActionController::TestCase
-    setup do
-      @routes = Engine.routes
-    end
+class WelcomeControllerTest < ActionDispatch::IntegrationTest
 
-    test "should get home" do
-      get root_path
-      assert_response :success
-    end
-
+  test 'should get root_path' do
+    get root_path
+    assert_response :success
+    # assert_select 'title', full_title
+    assert_select 'div.jumbotron'
   end
+
 end

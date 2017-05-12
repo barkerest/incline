@@ -45,6 +45,7 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline::Extensions.const_defined? :DateTimeValue
     assert Incline::Extensions.const_defined? :DateValue
     assert Incline::Extensions.const_defined? :DecimalValue
+    assert Incline::Extensions.const_defined? :FormBuilder
 
     assert Incline.const_defined? :EmailValidator
     assert Incline.const_defined? :SafeNameValidator

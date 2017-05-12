@@ -102,4 +102,5 @@ ActionView::Base.include Incline::Extensions::Session::Common
 ActionMailer::Base.include Incline::Extensions::Session::Common
 ActionController::Base.include Incline::Extensions::Session::Common
 ActionController::Base.include Incline::Extensions::Session::Controller
+ActionDispatch::IntegrationTest.include Incline::Extensions::Session::Common
 

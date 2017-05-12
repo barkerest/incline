@@ -69,7 +69,7 @@ module Incline::Extensions
       if options[:pre_calendar]
         pre = '<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>'
       elsif options[:pre_label]
-        pre = "<span class=\"input-group-addon\">#{h options[:pre_label]}</span>"
+        pre = "<span class=\"input-group-addon\">#{CGI::escape_html options[:pre_label]}</span>"
       else
         pre = ''
       end
@@ -78,7 +78,7 @@ module Incline::Extensions
       if options[:post_calendar]
         post = '<span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>'
       elsif options[:post_label]
-        post = "<span class=\"input-group-addon\">#{h options[:post_label]}</span>"
+        post = "<span class=\"input-group-addon\">#{CGI::escape_html options[:post_label]}</span>"
       else
         post = ''
       end
@@ -258,7 +258,7 @@ module Incline::Extensions
       fld = text_field(method, options)
 
       # return the value.
-      "<div class=\"input-symbol\"><span>#{h sym}</span>#{fld}</div>".html_safe
+      "<div class=\"input-symbol\"><span>#{CGI::escape_html sym}</span>#{fld}</div>".html_safe
     end
 
     ##
@@ -279,7 +279,7 @@ module Incline::Extensions
       text = options.delete(:text) || method.to_s.humanize
       small_text = options.delete(:small_text)
       label(method, text, options) +
-          (small_text ? " <small>(#{h small_text})</small>" : '').html_safe
+          (small_text ? " <small>(#{CGI::escape_html small_text})</small>" : '').html_safe
     end
 
     ##
@@ -357,7 +357,7 @@ module Incline::Extensions
     def static_form_group(method, options = {})
       gopt, lopt, fopt = split_form_group_options(options)
       lbl = label_w_small(method, lopt)
-      fld = gopt[:wrap].call("<input type=\"text\" class=\"form-control disabled\" readonly=\"readonly\" value=\"#{h(fopt[:value] || object.send(method))}\">")
+      fld = gopt[:wrap].call("<input type=\"text\" class=\"form-control disabled\" readonly=\"readonly\" value=\"#{CGI::escape_html(fopt[:value] || object.send(method))}\">")
       form_group lbl, fld, gopt
     end
 
@@ -446,7 +446,7 @@ module Incline::Extensions
       lbl = label method do
         check_box(method, fopt) +
             h(lopt[:text] || method.to_s.humanize) +
-            (lopt[:small_text] ? " <small>(#{h lopt[:small_text]})</small>" : '').html_safe
+            (lopt[:small_text] ? " <small>(#{CGI::escape_html lopt[:small_text]})</small>" : '').html_safe
       end
 
       "<div class=\"#{gopt[:h_align] ? 'row' : 'form-group'}\"><div class=\"#{gopt[:class]}\">#{lbl}</div></div>".html_safe
@@ -514,9 +514,9 @@ module Incline::Extensions
 
     def form_group(lbl, fld, opt)
       ret = '<div'
-      ret += " class=\"#{h opt[:class]}" unless opt[:class].blank?
+      ret += " class=\"#{CGI::escape_html opt[:class]}" unless opt[:class].blank?
       ret += '"'
-      ret += " style=\"#{h opt[:style]}\"" unless opt[:style].blank?
+      ret += " style=\"#{CGI::escape_html opt[:style]}\"" unless opt[:style].blank?
       ret += ">#{lbl}#{fld}</div>"
       ret.html_safe
     end

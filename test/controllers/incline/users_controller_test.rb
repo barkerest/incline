@@ -1,15 +1,11 @@
 require 'test_helper'
 
-module Incline
-  class UsersControllerTest < ActionController::TestCase
-    setup do
-      @routes = Engine.routes
-    end
+class UsersControllerTest < ActionDispatch::IntegrationTest
 
-    test "should get new" do
-      get signup_path
-      assert_response :success
-    end
+  test 'should get signup_path' do
+    get incline.signup_path
+    assert_response :success
 
   end
+
 end
