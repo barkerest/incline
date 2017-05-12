@@ -506,30 +506,7 @@ module Incline::Extensions
     #     Can be any valid integer if you want a specific tab order, defaults to 0.
     #
     def recaptcha(method, options = {})
-      options = {
-          theme: :light,
-          type: :image,
-          size: :normal,
-          tab_index: 0
-      }.merge((options || {}).symbolize_keys)
-
-      fld_id = object_name.scan(/[a-z0-9]+/i).join('_') + '_' + method.to_s.scan(/[a-z0-9]+/i).join('_')
-
-      # Define the field.
-      ret = hidden_field(method, id: fld_id)
-
-      # Add the div.
-
-
-      # Add the javascript.
-      ret += <<-EOS
-
-      EOS
-
-
-
-
-
+      Incline::Recaptcha::Tag.new(@object_name, method, @template, options).render
     end
 
 

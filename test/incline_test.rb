@@ -18,6 +18,8 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline.const_defined? :DataTablesRequest
     assert Incline.const_defined? :DateTimeFormats
     assert Incline.const_defined? :NumberFormats
+    assert Incline.const_defined? :Recaptcha
+    assert Incline::Recaptcha.const_defined? :Tag
 
     assert Incline.const_defined? :Extensions
     assert Incline::Extensions.const_defined? :Object
@@ -47,6 +49,7 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline.const_defined? :EmailValidator
     assert Incline.const_defined? :SafeNameValidator
     assert Incline.const_defined? :IpAddressValidator
+    assert Incline.const_defined? :RecaptchaValidator
 
     # Should not be loaded except by the 'incline' script.
     assert_not Incline.const_defined? :Cli

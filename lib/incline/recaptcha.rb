@@ -18,6 +18,19 @@ module Incline
   #       password: top_secret
   #
   class Recaptcha
+
+    ##
+    # Gets the valid themes for the reCAPTCHA field.
+    VALID_THEMES = [ :dark, :light ]
+
+    ##
+    # Gets the valid types for the reCAPTCHA field.
+    VALID_TYPES = [ :audio, :image ]
+
+    ##
+    # Gets the valid sizes for the reCAPTCHA field.
+    VALID_SIZES = [ :compact, :normal ]
+
     ##
     # Determines if recaptcha is disabled either due to a test environment or because :recaptcha_public or :recaptcha_private is not defined in +secrets.yml+.
     def self.disabled?
@@ -42,9 +55,10 @@ module Incline
       @proxy ||= (Rails.application.secrets[:recaptcha_proxy] || {}).symbolize_keys
     end
 
+
     ##
     # Generates the bare minimum code needed to include a reCAPTCHA challenge in a form.
-    def self.add_recaptcha_challenge
+    def self.add
       unless recaptcha_disabled?
         "<div class=\"g-recaptcha\" data-sitekey=\"#{CGI::escape_html(public_key)}\"></div>\n<script src=\"https://www.google.com/recaptcha/api.js\"></script><br>".html_safe
       end
@@ -57,7 +71,9 @@ module Incline
     # model::
     #     Sets the model that this challenge is verifying.
     # attribute::
-    #     If a model is provided, you can supply an attribute name to assign any error to.
+    #     If a model is provided, you can supply an attribute to retrieve the response data from.
+    #     This attribute should return a hash with :response and :remote_ip keys.
+    #     If this is provided, then the remaining options are ignored.
     # response::
     #     If specified, defines the response from the reCAPTCHA challenge that we want to verify.
     #     If not specified, then the request parameters (if any) are searched for the "g-recaptcha-response" value.
@@ -70,7 +86,7 @@ module Incline
     #
     # Returns true on success, or false on failure.
     #
-    def self.verify_recaptcha_challenge(options = {})
+    def self.verify(options = {})
       # always true in tests.
       return true if recaptcha_disabled?
 
@@ -83,13 +99,20 @@ module Incline
             nil
           end
 
+      remote_ip = nil
+
+      if response.is_a?(::Hash)
+        remote_ip = response[:remote_ip]
+        response = response[:response]
+      end
+
       # model must respond to the 'errors' message and the result of that must respond to 'add'
       if !model || !model.respond_to?('errors') || !model.send('errors').respond_to?('add')
         model = nil
       end
 
       response ||= options[:response]
-      remote_ip = options[:remote_ip]
+      remote_ip ||= options[:remote_ip]
 
       if response.blank? || remote_ip.blank?
         request = options[:request]
@@ -139,6 +162,75 @@ module Incline
       end
 
       false
+    end
+
+
+    ##
+    # Defines a reCAPTCHA tag that can be used to supply a field in a model with a hash of values.
+    #
+    # Basically we define two fields for the model attribute, one for :remote_ip and one for :response.
+    # The :remote_ip field is set automatically and shouldn't be changed.
+    # The :response field is set when the user completes the challenge.
+    #
+    #   Incline::Recaptcha::Tag.new(my_model, :is_robot).render
+    #
+    #   <input type="hidden" name="my_model[is_robot][remote_ip]" id="my_model_is_robot_remote_ip" value="10.11.12.13">
+    #   <input type="hidden" name="my_model[is_robot][response]" id="my_model_is_robot_response" value="">
+    #
+    #   Incline::Recaptcha::verify model: my_model, attribute: :is_robot
+    class Tag < ActionView::Helpers::Tags::Base
+
+      ##
+      # Generates the reCAPTCHA data.
+      def render
+        opts = {}
+        add_default_name_and_id opts
+        response_id = opts[:id] + '_response'
+        remote_ip_id = opts[:id] + '_remote_ip'
+
+        opts[:remote_ip] =
+            if @template_object&.respond_to?(:request) && @template_object.send(:request)&.respond_to?(:remote_ip)
+              @template_object.request.remote_ip
+            else
+              ENV['REMOTE_ADDR']
+            end
+
+        ret =   tag('input', type: 'hidden', id: remote_ip_id, name: opts[:name] + '[remote_ip]', value: opts[:remote_ip])
+        ret +=  tag('input', type: 'hidden', id: response_id, name: opts[:name] + '[response]', value: '')
+
+        opts = {
+            'class'           => 'g-recaptcha',
+            'data-sitekey'    => CGI::escape_html(Incline::Recaptcha::public_key),
+            'data-callback'   => 'update_' + response_id,
+            'data-tabindex'   => options[:tab_index].to_s.to_i,
+            'data-theme'      => make_valid(options[:theme], VALID_THEMES, :light),
+            'data-type'       => make_valid(options[:type], VALID_TYPES, :image),
+            'data-size'       => make_valid(options[:size], VALID_SIZES, :normal)
+        }
+
+        ret +=  tag('div', opts)
+
+        ret += <<-EOS
+<script type="text/javascript">
+<![CDATA[
+function update_#{response_id}(response) { $('##{response_id}').val(response); }
+]]>
+</script>
+<script type="text/javascript" src="https://www.google.com/recaptcha/api.js"></script>
+        EOS
+
+        ret.html_safe
+      end
+
+      private
+
+      def make_valid(value, valid, default)
+        return default if value.blank?
+        value = value.to_sym
+        return default unless valid.include?(value)
+        value
+      end
+
     end
 
   end

@@ -1,0 +1,24 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: George Jetson
+  email: g.jetson@spacely.com
+  activated: true
+  enabled: true
+  system_admin: false
+  password_digest: xxxxxxxxxxxxxxxxxxxxxxxxxxx
+  activated_at: 2017-05-11 19:01:26
+  last_login_at: 2017-05-11 19:01:26
+  last_login_ip: 10.20.30.40
+
+two:
+  name: Fred Flintstone
+  email: fred1@bedrock.org
+  activated: true
+  enabled: true
+  system_admin: false
+  password_digest: xxxxxxxxxxxxx
+  activated_at: 2017-05-11 19:01:26
+  last_login_at: 2017-05-11 19:01:26
+  last_login_ip: 1:2::3:4
+

@@ -4,6 +4,7 @@ require 'incline/work_path'
 require 'incline/json_log_formatter'
 require 'incline/global_status'
 require 'incline/data_tables_request'
+require 'incline/recaptcha'
 
 # Preloaded gems
 require 'jbuilder'
@@ -36,6 +37,7 @@ require 'incline/extensions/date_value'
 require 'incline/validators/email_validator'
 require 'incline/validators/safe_name_validator'
 require 'incline/validators/ip_address_validator'
+require 'incline/validators/recaptcha_validator'
 
 
 

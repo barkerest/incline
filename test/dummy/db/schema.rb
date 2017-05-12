@@ -11,6 +11,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 0) do
+ActiveRecord::Schema.define(version: 20170511230126) do
+
+  create_table "incline_users", force: :cascade do |t|
+    t.string   "name",              limit: 100,                 null: false
+    t.string   "email",             limit: 250,                 null: false
+    t.boolean  "activated",                     default: false, null: false
+    t.boolean  "enabled",                       default: true,  null: false
+    t.boolean  "system_admin",                  default: false, null: false
+    t.string   "activation_digest", limit: 100
+    t.string   "password_digest",   limit: 100
+    t.string   "remember_digest",   limit: 100
+    t.string   "reset_digest",      limit: 100
+    t.datetime "activated_at"
+    t.datetime "reset_sent_at"
+    t.string   "disabled_by",       limit: 250
+    t.datetime "disabled_at"
+    t.string   "disabled_reason",   limit: 200
+    t.datetime "last_login_at"
+    t.string   "last_login_ip",     limit: 64
+    t.datetime "created_at",                                    null: false
+    t.datetime "updated_at",                                    null: false
+  end
+
+  add_index "incline_users", ["email"], name: "ux_incline_users_email", unique: true
 
 end

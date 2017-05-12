@@ -3,7 +3,7 @@
     <%= f.text_form_group :email, field_type: 'email' %>
     <%= f.text_form_group :password, field_type: 'password' %>
     <%= f.text_form_group :password_confirmation, field_type: 'password' %>
-    <%= @user.new_record? ? add_recaptcha_challenge : '' %>
+    <%= f.recaptcha :recaptcha %>
 
-    <%= f.submit current_user?(@user) ? (@user.new_record? ? 'Create my account' : 'Update my account') : 'Update account', class: 'btn btn-primary' %>
+    <%= f.submit (@user.new_record? ? 'Create account' : 'Update account'), class: 'btn btn-primary' %>
 <% end %>
