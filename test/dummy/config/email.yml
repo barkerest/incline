@@ -1,0 +1,21 @@
+default: &default
+  default_recipient: support@barkerest.com
+  sender: support@barkerest.com
+  auth: :plain
+  start_tls: false
+  ssl:  true
+  server: smtp.zoho.com
+  port: 465
+
+test:
+  <<: *default
+  default_url: example.com
+
+development:
+  <<: *default
+  default_url: localhost:3000
+
+production:
+  <<: *default
+  default_url: www.barkerest.com
+

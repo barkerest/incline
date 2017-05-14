@@ -1,0 +1,6 @@
+Hello <%= @data[:user].name %>,
+
+Welcome to <%= Rails.application.app_name %>!  Before you can begin to use the site, you need to click on the link below to activate your account.
+
+<%= edit_account_activation_url(@data[:user].activation_token, email: @data[:user].email) %>
+

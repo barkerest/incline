@@ -13,7 +13,7 @@ module Incline
     ##
     # Gets the default sender for messages.
     def self.default_sender
-      @default_sender ||= Incline::email_config[:default_sender]
+      @default_sender ||= Incline::email_config[:sender]
     end
 
     ##
@@ -22,7 +22,13 @@ module Incline
       @default_recipient ||= Incline::email_config[:default_recipient]
     end
 
-    default from: ApplicationMailerBase.default_sender, to: ApplicationMailerBase.default_recipient
+    default(
+        {
+            from: default_sender,
+            to: default_recipient
+        }
+    )
+
 
     layout 'mailer'
 
