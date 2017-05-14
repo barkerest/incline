@@ -51,7 +51,7 @@ class ObjectExtensionsTest < ActiveSupport::TestCase
     # integers
     assert_not 0.to_bool
     assert 1.to_bool
-    assert -1.to_bool
+    assert (-1.to_bool)
 
     # floats
     assert_not 0.0.to_bool

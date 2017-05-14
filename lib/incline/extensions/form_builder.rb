@@ -166,7 +166,7 @@ module Incline::Extensions
         fields[meth][:placeholder] ||= label
       end
 
-     if %w(sm small input-group-sm).include?(options[:input_group_size])
+      if %w(sm small input-group-sm).include?(options[:input_group_size])
         options[:input_group_size] = 'input-group-sm'
       elsif %w(lg large input-group-lg).include?(options[:input_group_size])
         options[:input_group_size] = 'input-group-lg'

@@ -9,6 +9,7 @@ require 'incline/recaptcha'
 # Preloaded gems
 require 'jbuilder'
 require 'bootstrap-sass'
+require 'jquery-rails'
 require 'exception_notification'
 
 # Class extensions

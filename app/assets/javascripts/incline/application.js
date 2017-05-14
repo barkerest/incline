@@ -10,4 +10,22 @@
 // Read Sprockets README (https://github.com/rails/sprockets#sprockets-directives) for details
 // about supported directives.
 //
-//= require_tree .
+//= require jquery
+//= require jquery_ujs
+//= require bootstrap
+//= require incline/bootstrap-datepicker
+//= require incline/jquery.doubleScroll
+//= require incline/jquery.number
+//= require incline/datatables
+//= require incline/escapeHtml
+//= require incline/regexMask
+
+
+// Apply things when document is ready.
+$(function() {
+  $('div.date').datepicker({ format: "yyyy-mm-dd", todayBtn: "linked", todayHighlight: true, clearBtn: true });
+  $('input.float').regexMask('float');
+  $('input.integer').regexMask('integer');
+  $('.double-scroll').doubleScroll({ onlyIfScroll: true, resetOnWindowResize: true });
+  $('select.select2').select2();
+});

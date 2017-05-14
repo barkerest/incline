@@ -58,6 +58,11 @@ textarea {
   padding: 0;
 }
 
+.gravatar {
+  float: left;
+  margin-right: 10px;
+}
+
 
 /* typography */
 
@@ -97,6 +102,13 @@ p {
     color: white;
     border-style: none;
   }
+  img {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-style: none;
+    margin: 3px;
+  }
 }
 
 
@@ -126,13 +138,31 @@ footer {
   }
 }
 
-.debug_dump {
-  clear: both;
-  float: left;
-  width: 100%;
-  margin-top: 45px;
-  @include box_sizing;
+/* sidebar */
+
+aside {
+  section {
+    padding: 10px 0;
+    margin-top: 20px;
+    &:first-child {
+      border: 0;
+      padding-top: 0;
+    }
+    span {
+      display: block;
+      margin-bottom: 3px;
+      line-height: 1;
+    }
+    h1 {
+      font-size: 1.4em;
+      text-align: left;
+      letter-spacing: -1px;
+      margin-bottom: 3px;
+      margin-top: 0px;
+    }
+  }
 }
+
 
 /* forms */
 
@@ -187,5 +217,17 @@ label.plain, div.plain-label label {
   padding: 2px;
   background-color: red;
   display: table;
+}
+
+.debug_dump {
+  clear: both;
+  float: left;
+  width: 100%;
+  margin-top: 45px;
+  @include box_sizing;
+}
+
+.gravatar_edit {
+  margin-top: 15px;
 }
 

@@ -54,6 +54,19 @@ module Incline
     validates :recaptcha,
               'incline/recaptcha' => true
 
+
+    ##
+    # Gets all known users.
+    scope :known, ->{ where.not(email: ANONYMOUS_EMAIL) }
+
+    ##
+    # Gets all of the currently enabled users.
+    scope :enabled, ->{ where(enabled: true, activated: true) }
+
+    ##
+    # Sorts the users by name.
+    scope :sorted, ->{ order(name: :asc) }
+
     ##
     # Gets the email address in a partially obfuscated fashion.
     def partial_email
@@ -206,24 +219,6 @@ module Incline
     # Generates a new random token in (url safe) base64.
     def self.new_token
       SecureRandom.urlsafe_base64(32)
-    end
-
-    ##
-    # Gets all known users.
-    def self.known
-      where.not(email: ANONYMOUS_EMAIL)
-    end
-
-    ##
-    # Gets all of the currently enabled users.
-    def self.enabled
-      where(enabled: true, activated: true)
-    end
-
-    ##
-    # Sorts the users by name.
-    def self.sorted
-      order(name: :asc)
     end
 
     ##

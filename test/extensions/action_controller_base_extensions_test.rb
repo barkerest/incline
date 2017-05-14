@@ -6,14 +6,15 @@ class ActionControllerBaseExtensionsTest < ActiveSupport::TestCase
     ac = ActionController::Base.new
 
     assert ac.respond_to?(:render_csv)
-    assert ac.respond_to?(:authorize!)
-    assert ac.respond_to?(:json_request?)
-    assert ac.respond_to?(:allow_http_for_request)
-    assert ac.respond_to?(:map_api_action)
-    assert ac.respond_to?(:enable_auto_api?)
-    assert ac.respond_to?(:process_api_action)
     assert ac.respond_to?(:redirect_back_or)
     assert ac.respond_to?(:store_location)
+
+    assert ac.class.respond_to?(:enable_auto_api)
+    assert ac.class.respond_to?(:disable_auto_api)
+    assert ac.class.respond_to?(:auto_api?)
+    assert ac.class.respond_to?(:allow_non_ssl)
+    assert ac.class.respond_to?(:allow_anon)
+    assert ac.class.respond_to?(:require_admin)
 
   end
 

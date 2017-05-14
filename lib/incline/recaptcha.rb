@@ -40,13 +40,13 @@ module Incline
     ##
     # Gets the public key.
     def self.public_key
-      @public_key ||= Rails.application.secrets[:recaptca_public].to_s.strip
+      @public_key ||= Rails.application.secrets[:recaptcha_public].to_s.strip
     end
 
     ##
     # Gets the private key.
     def self.private_key
-      @private_key ||= Rails.application.secrets[:recaptca_private].to_s.strip
+      @private_key ||= Rails.application.secrets[:recaptcha_private].to_s.strip
     end
 
     ##
@@ -194,25 +194,31 @@ module Incline
             end
 
         ret =   tag('input', type: 'hidden', id: remote_ip_id, name: tag_name + '[remote_ip]', value: remote_ip)
+        ret +=  "\n"
         ret +=  tag('input', type: 'hidden', id: response_id, name: tag_name + '[response]', value: '')
+        ret +=  "\n"
 
         opts = {
-            'class'           => 'g-recaptcha',
-            'data-sitekey'    => CGI::escape_html(Incline::Recaptcha::public_key),
-            'data-callback'   => 'update_' + response_id,
-            'data-tabindex'   => @options[:tab_index].to_s.to_i,
-            'data-theme'      => make_valid(@options[:theme], VALID_THEMES, :light),
-            'data-type'       => make_valid(@options[:type], VALID_TYPES, :image),
-            'data-size'       => make_valid(@options[:size], VALID_SIZES, :normal)
+            :class           => 'g-recaptcha',
+            :data => {
+                :sitekey     => CGI::escape_html(Incline::Recaptcha::public_key),
+                :callback    => 'update_' + response_id,
+                :tabindex    => @options[:tab_index].to_s.to_i,
+                :theme       => make_valid(@options[:theme], VALID_THEMES, :light),
+                :type        => make_valid(@options[:type], VALID_TYPES, :image),
+                :size        => make_valid(@options[:size], VALID_SIZES, :normal)
+            }
         }
 
-        ret +=  tag('div', opts)
+        ret +=  tag('div', class: 'form-group')
+        ret +=  tag('div', opts, true)
+        ret +=  "</div></div>\n".html_safe
 
-        ret += <<-EOS
+        ret += <<-EOS.html_safe
 <script type="text/javascript">
-<![CDATA[
+// <![CDATA[
 function update_#{response_id}(response) { $('##{response_id}').val(response); }
-]]>
+// ]]>
 </script>
 <script type="text/javascript" src="https://www.google.com/recaptcha/api.js"></script>
         EOS
