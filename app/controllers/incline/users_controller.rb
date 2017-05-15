@@ -5,20 +5,14 @@ module Incline
 
     before_action :set_user,          except: [ :index, :new, :create ]
     before_action :set_disable_info,  only: [ :disable_confirm, :disable ]
-    before_action :must_be_anon,      only: [ :new, :create ]
     before_action :correct_user,      only: [ :edit, :update ]
     before_action :not_current,       only: [ :destroy, :disable, :disable_confirm, :enable ]
 
     # Only anonymous users can signup.
-    # This gets us past the valid_user? check.
-    # Then we use :must_be_anon to redirect any user that is currently logged in.
-    # Since this is the only valid place I can think of requiring anonymous access,
-    # I chose not to add a helper like :require_admin.
-    allow_anon :new, :create
+    require_anon :new, :create
 
     # Only admins can delete/disable/enable users.
     require_admin :destroy, :disable, :disable_confirm, :enable
-
 
     ##
     # GET /incline/users
@@ -136,10 +130,6 @@ module Incline
       unless [ :show, :edit, :update ].include?(params[:action].to_sym) && current_user?(@user)
         super
       end
-    end
-
-    def must_be_anon
-      redirect_to current_user if logged_in?
     end
 
     def set_user

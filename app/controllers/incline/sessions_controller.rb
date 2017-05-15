@@ -14,7 +14,7 @@ module Incline
     ##
     # POST /incline/login
     def create
-      if (@user = BarkestCore::UserManager.authenticate(params[:session][:email], params[:session][:password], request.remote_ip))
+      if (@user = Incline::UserManager.authenticate(params[:session][:email], params[:session][:password], request.remote_ip))
         if @user.activated?
           # log the user in.
           log_in @user

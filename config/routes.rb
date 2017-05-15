@@ -24,4 +24,11 @@ Incline::Engine.routes.draw do
   # password reset routes
   resources :password_resets, only: [ :new, :create, :edit, :update ]
 
+  # contact routes
+  get   'contact' => 'contact#new'
+  post  'contact' => 'contact#create'
+
+  # welcome route.
+  get '/' => 'welcome#home', as: :welcome
+
 end
