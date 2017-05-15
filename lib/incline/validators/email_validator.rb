@@ -16,10 +16,19 @@ module Incline
 
     ##
     # Validates attributes to determine if they contain valid email addresses.
+    #
+    # Does not perform an in depth check, but does verify that the format is valid.
     def validate_each(record, attribute, value)
       unless value.blank?
         record.errors[attribute] << (options[:message] || 'is not a valid email address') unless value =~ VALID_EMAIL_REGEX
       end
+    end
+
+    ##
+    # Validates that an email address is valid based on format.
+    def self.valid?(email)
+      return false if email.blank?
+      !!(email =~ VALID_EMAIL_REGEX)
     end
 
   end

@@ -6,6 +6,8 @@ module Incline
 
     ANONYMOUS_EMAIL = 'anonymous@server.local'
 
+    has_many :login_histories
+
     before_save :downcase_email
     before_create :create_activation_digest
 
