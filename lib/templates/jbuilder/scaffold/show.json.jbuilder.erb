@@ -3,7 +3,7 @@ if @<%= singular_table_name %>.errors.any?
 else
   json.data do
     json.array! [ @<%= singular_table_name %> ] do |<%= singular_table_name %>|
-      json.partial! '<%= plural_table_name %>/details', locals: { <%= singular_table_name %>: <%= singular_table_name %> }
+      json.partial! 'details', locals: { <%= singular_table_name %>: <%= singular_table_name %> }
     end
   end
 end

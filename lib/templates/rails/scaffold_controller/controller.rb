@@ -109,12 +109,5 @@ class <%= controller_class_name %>Controller < ApplicationController
     <%- end -%>
   end
 
-  def valid_user
-    # Without parameters, only require a logged in user.
-    # With true, require an admin.
-    # With one or more strings, require having at least one of the named groups.
-    authorize!
-  end
-
 end
 <% end -%>

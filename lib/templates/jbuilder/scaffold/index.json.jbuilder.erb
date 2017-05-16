@@ -4,7 +4,7 @@ if @dt_request&.provided?
   json.set! 'recordsFiltered', @dt_request.records_filtered
   json.data do
     json.array!(@dt_request.records) do |<%= singular_table_name %>|
-      json.partial! '<%= plural_table_name %>/details', locals: { <%= singular_table_name %>: <%= singular_table_name %> }
+      json.partial! 'details', locals: { <%= singular_table_name %>: <%= singular_table_name %> }
     end
   end
   if @dt_request.error?

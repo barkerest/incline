@@ -20,7 +20,7 @@
                 <%- attributes.reject(&:password_digest?).each do |attribute| -%>
                 {
                     // how DT references the data.
-                    data: '<%= attribute.type == :reference ? "#{attribute.name.pluralize}.label" : "#{attribute.name}" %>',
+                    data: '<%= attribute.name %>',
                     // how the server references the data.
                     name: '<%= attribute.name %>',
                     // override the default behavior as needed, or remove the render option for this column.

@@ -9,28 +9,24 @@
       <%%= form_for(@<%= singular_table_name %>) do |f| %>
       <%- attributes.each do |attribute| -%>
           <%- if attribute.type == :boolean -%>
-          <%%= checkbox_form_group f, :<%= attribute.column_name %> %>
+          <%%= f.checkbox_form_group :<%= attribute.column_name %> %>
           <%- elsif attribute.type == 'datetime' && attribute.column_name =~ /date/ && ~(attribute.column_name =~ /time/) -%>
-          <%%= datepicker_form_group f, :<%= attribute.column_name %> %>
-          <%- elsif (attribute.type == :references) || (attribute.type == :integer && attribute.column_name =~ /_id$/)  -%>
-              <%- if (ref_class = (attribute.column_name.gsub(/_id$/,'').classify.constantize rescue nil)) -%>
-          <%%= select_form_group f, :<%= attribute.column_name %>, <%= ref_class %>.all, :id, :to_s, label_text: <%= attribute.column_name.gsub(/_id$/,'').humanize.inspect %>, field_class: 'form-control basic' %>
+          <%%= f.datepicker_form_group :<%= attribute.column_name %> %>
+          <%- elsif (attribute.type == :references) || (attribute.type == :integer && attribute.column_name =~ /_id\z/)  -%>
+              <%- if (ref_class = (attribute.column_name.gsub(/_id\z/,'').classify.constantize rescue nil)) -%>
+          <%%= f.select_form_group :<%= attribute.column_name %>, <%= ref_class %>.all, :id, :to_s, label_text: <%= attribute.column_name.gsub(/_id\z/,'').humanize.inspect %>, field_class: 'form-control select2' %>
               <%- else -%>
-          <%% if (ref_class = ("<%= attribute.column_name.gsub(/_id$/, '').classify %>".constantize rescue nil)) %>
-            <%%= select_form_group f, :<%= attribute.column_name %>, ref_class.all, :id, :to_s, label_text: <%= attribute.column_name.gsub(/_id$/, '').humanize.inspect %>, field_class: 'form-control basic' %>
-          <%% else %>
-            <%%= text_form_group f, :<%= attribute.column_name %>, field_type: :number, field_class: "form-control integer", label_text: <%= attribute.column_name.gsub(/_id$/, '').humanize.inspect %> %>
-          <%% end %>
+          <%%= f.text_form_group :<%= attribute.column_name %>, field_type: :number, field_class: "form-control integer", label_text: <%= attribute.column_name.gsub(/_id\z/, '').humanize.inspect %> %>
               <%- end -%>
           <%- elsif attribute.type == :integer -%>
-          <%%= text_form_group f, :<%= attribute.column_name %>, field_type: :number, field_class: "form-control integer" %>
+          <%%= f.text_form_group :<%= attribute.column_name %>, field_type: :number, field_class: "form-control integer" %>
           <%- elsif attribute.type == :float -%>
-          <%%= text_form_group f, :<%= attribute.column_name %>, field_type: :number, field_class: "form-control float" %>
+          <%%= f.text_form_group :<%= attribute.column_name %>, field_type: :number, field_class: "form-control float" %>
           <%- elsif attribute.type == :string -%>
-          <%%= text_form_group f, :<%= attribute.column_name %> %>
+          <%%= f.text_form_group :<%= attribute.column_name %> %>
           <%- elsif attribute.password_digest? -%>
-          <%%= text_form_group f, :password, field_type: :password %>
-          <%%= text_form_group f, :password_confirmation, field_type: :password %>
+          <%%= f.text_form_group :password, field_type: :password %>
+          <%%= f.text_form_group :password_confirmation, field_type: :password %>
           <%- else -%>
           <div class="form-group">
             <%%= f.label :<%= attribute.column_name %> %>
