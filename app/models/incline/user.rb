@@ -121,14 +121,11 @@ module Incline
     ##
     # Does this user have the equivalent of one or more of these groups?
     def has_any_group?(*group_list)
-      return true if system_admin?
+      return :system_admin if system_admin?
 
-      group_list.each do |group|
-        group = group.to_s.upcase
-        return true if effective_groups.include?(group)
-      end
+      r = group_list.select{|g| effective_groups.include?(g.upcase)}
 
-      false
+      r.blank? ? false : r
     end
 
     ##

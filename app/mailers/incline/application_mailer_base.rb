@@ -4,35 +4,8 @@ module Incline
   #
   class ApplicationMailerBase < ActionMailer::Base
 
-    ##
-    # Gets the default hostname for messages.
-    def self.default_hostname
-      @default_hostname ||= Incline::email_config[:default_hostname]
-    end
-
-    ##
-    # Gets the default sender for messages.
-    def self.default_sender
-      @default_sender ||= Incline::email_config[:sender]
-    end
-
-    ##
-    # Gets the default recipient for messages.
-    def self.default_recipient
-      @default_recipient ||= Incline::email_config[:default_recipient]
-    end
-
-    default(
-        {
-            from: default_sender,
-            to: default_recipient
-        }
-    )
-
 
     layout 'mailer'
 
   end
 end
-
-# TODO: Move this to an extension to make it automatic.

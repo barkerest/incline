@@ -250,8 +250,53 @@ module Incline::Extensions
     # will return false.
     # If the user is authorized, the method will return true.
     def authorize!(*accepted_groups) #:doc:
-      # TODO: Fill in once user model is defined.
+      begin
+
+        # an authenticated user must exist.
+        unless logged_in?
+          store_location
+
+          raise_not_logged_in "You need to login to access '#{request.fullpath}'.",
+                              'nobody is logged in'
+        end
+
+        if system_admin?
+          log_authorize_success 'user is system admin'
+        else
+          # clean up the group list.
+          accepted_groups ||= []
+          accepted_groups.delete false
+          accepted_groups.delete ''
+
+          if accepted_groups.include?(true)
+            # group_list contains "true" so only a system admin may continue.
+            raise_authorize_failure "Your are not authorized to access '#{request.fullpath}'.",
+                                      'requires system administrator'
+
+          elsif accepted_groups.blank?
+            # group_list is empty or contained nothing but empty strings and boolean false.
+            # everyone can continue.
+            log_authorize_success 'only requires authenticated user'
+
+          else
+            # the group list contains one or more authorized groups.
+            # we want them to all be uppercase strings.
+            accepted_groups = accepted_groups.map{|v| v.to_s.upcase}.sort
+            result = current_user.has_any_group?(*accepted_groups)
+            unless result
+              raise_authorize_failure "You are not authorized to access '#{request.fullpath}'.",
+                                      "requires one of: #{accepted_groups.inspect}"
+            end
+            log_authorize_success "user has #{result.inspect}"
+          end
+        end
+
+      rescue ::Incline::NotAuthorized => err
+        flash[:danger] = err.message
+        redirect_to root_url and return false
+      end
       true
+
     end
 
     ##

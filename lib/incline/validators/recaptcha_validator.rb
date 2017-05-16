@@ -13,6 +13,7 @@ module Incline
       # If the user form includes the recaptcha field, then something will come in
       # and then we want to check it.
       # If the user form does not include the recaptcha field, then we don't need to check it.
+      byebug
       if value.is_a?(Hash)
         unless Incline::Recaptcha::verify(response: value[:response], remote_ip: value[:remote_ip])
           record.errors[:base] << (options[:message] || 'requires reCAPTCHA challenge to be completed')

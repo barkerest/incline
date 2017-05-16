@@ -23,6 +23,7 @@ require 'incline/extensions/active_record_base'
 require 'incline/extensions/connection_adapter'
 require 'incline/extensions/main_app'
 require 'incline/extensions/action_controller_base'
+require 'incline/extensions/action_mailer_base'
 require 'incline/extensions/action_view_base'
 require 'incline/extensions/session'
 require 'incline/extensions/erb_scaffold_generator'
@@ -81,8 +82,7 @@ module Incline
       Incline::Engine::add_seeds_to app
       Incline::Engine::configure_generators_for app
 
-      # preload the base controller in case the child app wants to extend it with their own functionality.
-      require_relative '../../app/controllers/incline/application_controller'
+
     end
 
 
@@ -198,6 +198,7 @@ module Incline
         g.javascripts           false   # no need for a javascript file for every controller.
       end
     end
+
 
   end
 end

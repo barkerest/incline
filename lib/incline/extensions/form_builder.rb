@@ -326,7 +326,7 @@ module Incline::Extensions
     # For field options, see {FormHelper#text_area}[http://apidock.com/rails/ActionView/Helpers/FormHelper/text_area].
     def textarea_form_group(method, options = {})
       gopt, lopt, fopt = split_form_group_options(options)
-      lbl = label_with_small method, lopt.delete(:text), lopt
+      lbl = label_w_small method, lopt
       fld = gopt[:wrap].call(text_area(method, fopt))
       form_group lbl, fld, gopt
     end

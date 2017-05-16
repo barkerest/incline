@@ -1,9 +1,11 @@
 module Incline
   class ContactController < ApplicationController
 
+    allow_anon true
+
     ##
     # GET /incline/contact
-    def index
+    def new
       @msg = Incline::ContactMessage.new
     end
 
@@ -17,14 +19,16 @@ module Incline
         flash[:success] = 'Your message has been sent.'
         redirect_to root_url
       else
-        render 'index'
+        render 'new'
       end
     end
 
     private
 
     def get_message
-      Incline::ContactMessage.new(params.require(:contact_message).permit(:your_name, :your_email, :related_to, :subject, :body))
+      p = params.require(:contact_message).permit(:your_name, :your_email, :related_to, :subject, :body, :recaptcha)
+      byebug
+      Incline::ContactMessage.new(p)
     end
 
   end

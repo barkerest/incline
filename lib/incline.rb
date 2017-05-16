@@ -1,6 +1,5 @@
 require 'incline/version'
 require 'incline/log'
-require 'incline/engine'
 
 ##
 # A Rails quick start library.
@@ -128,3 +127,6 @@ module Incline
   end
 
 end
+
+# Include engine after defining base module.
+require 'incline/engine'

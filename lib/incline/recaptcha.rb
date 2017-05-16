@@ -193,9 +193,9 @@ module Incline
               ENV['REMOTE_ADDR']
             end
 
-        ret =   tag('input', type: 'hidden', id: remote_ip_id, name: tag_name + '[remote_ip]', value: remote_ip)
+        ret =   tag('input', type: 'hidden', id: remote_ip_id, name: tag_name + '[][remote_ip]', value: remote_ip)
         ret +=  "\n"
-        ret +=  tag('input', type: 'hidden', id: response_id, name: tag_name + '[response]', value: '')
+        ret +=  tag('input', type: 'hidden', id: response_id, name: tag_name + '[][response]', value: '')
         ret +=  "\n"
 
         opts = {

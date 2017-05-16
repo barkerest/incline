@@ -5,6 +5,8 @@ module Incline
   # An innocuous controller that simply hosts the home page of the application.
   class WelcomeController < ApplicationController
 
+    allow_anon true
+
     ##
     # Get /incline
     #
