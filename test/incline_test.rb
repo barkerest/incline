@@ -18,6 +18,7 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline.const_defined? :DataTablesRequest
     assert Incline.const_defined? :DateTimeFormats
     assert Incline.const_defined? :NumberFormats
+    assert Incline.const_defined? :UserManager
     assert Incline.const_defined? :Recaptcha
     assert Incline::Recaptcha.const_defined? :Tag
 

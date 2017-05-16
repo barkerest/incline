@@ -28,6 +28,38 @@ class EmailValidatorTest < ActiveSupport::TestCase
     assert @item.valid?
   end
 
+  test 'domain regex accepts valid domains' do
+    [
+        'localhost.localdoman',
+        'www.com',
+        '123.com',
+        '1.2.3.4.5.6.7.8.9.com',
+        'a.b.c.d.e.f.g.h.i.j.org',
+        'www.google.com',
+        'www.test-one-two-three.com',
+        'a.one---two.com',
+    ].each do |dom|
+      assert Incline::EmailValidator::VALID_DOMAIN_REGEX =~ dom, "Domain #{dom.inspect} should be valid"
+    end
+  end
+
+  test 'domain regex rejects invalid domains' do
+    [
+        'localdomain',
+        'www.123',
+        'www.-hello-world-.com',
+        'www.-hello.com',
+        'www.world-.com',
+        'www.hello-world',
+        'www..com',
+        '.com',
+        'www.',
+        'www-com'
+    ].each do |dom|
+      assert_not Incline::EmailValidator::VALID_DOMAIN_REGEX =~ dom, "Domain #{dom.inspect} should not be valid"
+    end
+  end
+
   test 'should accept valid addresses' do
     valid = %w(
         user@example.com

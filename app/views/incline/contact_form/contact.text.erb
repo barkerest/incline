@@ -1,0 +1,13 @@
+From:       <%= @data[:msg].your_name %> <<%= @data[:msg].your_email %>>
+IP Address: <%= @data[:msg].remote_ip %>
+Date/time:  <%= Time.zone.now %>
+
+Application:
+    <%= Rails.application.app_info %>
+Key Gems:
+<% @data[:gems].each do |name,ver| %>
+    <%= name %> (<%= ver %>)
+<% end %>
+
+Message:
+<%= @data[:msg].body %>

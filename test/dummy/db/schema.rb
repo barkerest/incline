@@ -11,7 +11,48 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170511230126) do
+ActiveRecord::Schema.define(version: 20170515151058) do
+
+  create_table "incline_access_group_group_members", force: :cascade do |t|
+    t.integer  "group_id",   null: false
+    t.integer  "member_id",  null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "incline_access_group_group_members", ["group_id", "member_id"], name: "ux_incline_access_group_group_members", unique: true
+  add_index "incline_access_group_group_members", ["group_id"], name: "index_incline_access_group_group_members_on_group_id"
+  add_index "incline_access_group_group_members", ["member_id"], name: "index_incline_access_group_group_members_on_member_id"
+
+  create_table "incline_access_group_user_members", force: :cascade do |t|
+    t.integer  "group_id",   null: false
+    t.integer  "member_id",  null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "incline_access_group_user_members", ["group_id", "member_id"], name: "ux_incline_access_group_user_members", unique: true
+  add_index "incline_access_group_user_members", ["group_id"], name: "index_incline_access_group_user_members_on_group_id"
+  add_index "incline_access_group_user_members", ["member_id"], name: "index_incline_access_group_user_members_on_member_id"
+
+  create_table "incline_access_groups", force: :cascade do |t|
+    t.string   "name",       limit: 100, null: false
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+  end
+
+  add_index "incline_access_groups", ["name"], name: "ux_incline_access_groups_name", unique: true
+
+  create_table "incline_user_login_histories", force: :cascade do |t|
+    t.integer  "user_id",                null: false
+    t.string   "ip_address", limit: 64,  null: false
+    t.boolean  "successful"
+    t.string   "message",    limit: 200
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+  end
+
+  add_index "incline_user_login_histories", ["user_id"], name: "index_incline_user_login_histories_on_user_id"
 
   create_table "incline_users", force: :cascade do |t|
     t.string   "name",              limit: 100,                 null: false

@@ -34,7 +34,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'ansi',                          '~> 1.5.0'
   s.add_dependency 'exception_notification',        '~> 4.2.1'
   s.add_dependency 'redcarpet',                     '~> 3.4.0'
-  s.add_dependency 'net-ldap',                      '~> 0.16.0'
 
   s.add_development_dependency 'sqlite3',                         '~> 1.3.13'
   s.add_development_dependency 'faker',                           '~> 1.7.3'

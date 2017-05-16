@@ -1,0 +1,64 @@
+<table id="dt-users" class="table" style="width: 100%;">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Created</th>
+      <th>Comments</th>
+      <th></th>
+    </tr>
+  </thead>
+</table>
+
+<% provide :scripts do %>
+<script type="text/javascript">
+  //<![CDATA[
+  $(function() {
+    $('#dt-users').DataTable({
+      dom: '<"panel-body"<"col-sm-6 col-sm-offset-6"fr>>t<"panel-body"<"col-sm-6"i><"col-sm-6"p>>',
+      ajax: '<%= api_path %>',
+      columns: [
+        {
+          data: 'name',
+          orderable: true,
+          searchable: true
+        },
+        {
+          data: 'email',
+          orderable: true,
+          searchable: true
+        },
+        {
+          data: 'created_at',
+          orderable: true,
+          searchable: true
+        },
+        {
+          data: 'comments',
+          orderable: false,
+          searchable: true
+        },
+        {
+          data: 'DT_path',
+          orderable: false,
+          searchable: false,
+          render: function(data,type) {
+            var ret = data;
+            if (type === 'display') {
+              ret = '<div class="text-right">' +
+                '<a href="' + data + '" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>' +
+                '<a href="' + data + '/edit" title="Edit" class="btn btn-default btn-xs"><i class="glyphiocn glyphicon-pencil"></i></a>' +
+                '<a href="' + data + '" title="Remove" class="btn btn-danger btn-xs" data-method="delete" data-confirm="Are you sure you want to remove this user?"><i class="glyphicon glyphicon-trash"></i></a>' +
+                '</div>';
+            }
+            return ret;
+          }
+        }
+      ],
+      responsive: true,
+      serverSide: true
+    });
+  });
+  //]]>
+</script>
+<% end %>

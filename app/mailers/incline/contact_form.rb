@@ -10,7 +10,7 @@ module Incline
       @data = {
           msg: msg,
           client_ip: msg.remote_ip,
-          gems: BarkestCore.gem_list(Rails.application.class.parent_name.underscore, 'rails', 'barkest*'),  # FIXME
+          gems: Incline::gem_list
       }
       mail subject: msg.full_subject, reply_to: msg.your_email
     end

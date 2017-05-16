@@ -86,6 +86,45 @@ module Incline
             cfg.freeze
           end
         end
+
+  end
+
+  ##
+  # Gets a list of key gems with their versions.
+  #
+  # This is useful for informational displays.
+  #
+  # Supply one or more patterns for gem names.
+  # If you supply none, then the default pattern list is used.
+  def self.gem_list(*patterns)
+    patterns =
+        if patterns.blank?
+          default_gem_patterns
+        elsif patterns.first.is_a?(TrueClass)
+          default_gem_patterns + patterns[1..-1]
+        else
+          patterns
+        end
+
+    patterns = patterns.flatten.inject([]) { |m,v| m << v unless m.include?(v); m }
+
+    gems = Gem::Specification.to_a.sort{ |a,b| a.name <=> b.name }
+
+    patterns.inject([]) do |ret,pat|
+      gems
+          .select { |g| (pat.is_a?(::String) && g.name == pat) || (pat.is_a?(::Regexp) && g.name =~ pat) }
+          .each do |g|
+        ret << [ g.name, g.version.to_s ] unless ret.find { |(name,ver)| name == g.name }
+      end
+      ret
+    end
+
+  end
+
+  private
+
+  def self.default_gem_patterns
+    @default_gem_patterns ||= [ Rails.application.class.parent_name.underscore, 'rails', /\Aincline(?:-.*)\z/ ]
   end
 
 end

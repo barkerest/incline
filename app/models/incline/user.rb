@@ -6,7 +6,11 @@ module Incline
 
     ANONYMOUS_EMAIL = 'anonymous@server.local'
 
-    has_many :login_histories
+    has_many :login_histories, class_name: 'Incline::UserLoginHistory'
+
+    has_many :access_group_user_members, class_name: 'Incline::AccessGroupUserMember', foreign_key: 'member_id'
+    private :access_group_user_members, :access_group_user_members=
+    has_many :groups, class_name: 'Incline::AccessGroup', through: :access_group_user_members
 
     before_save :downcase_email
     before_create :create_activation_digest
@@ -99,6 +103,35 @@ module Incline
     end
 
     ##
+    # Gets the effective group membership of this user.
+    def effective_groups(refresh = false)
+      @effective_groups = nil if refresh
+      @effective_groups ||= if system_admin?
+                              AccessGroup.all.map{ |g| g.to_s.upcase }
+                            else
+                              groups
+                                  .collect{ |g| g.effective_groups }
+                                  .flatten
+                                  .inject([]){ |memo,item| memo << item unless memo.include?(item); memo }
+                            end
+                                .map{ |g| g.to_s.upcase }
+                                .sort
+    end
+
+    ##
+    # Does this user have the equivalent of one or more of these groups?
+    def has_any_group?(*group_list)
+      return true if system_admin?
+
+      group_list.each do |group|
+        group = group.to_s.upcase
+        return true if effective_groups.include?(group)
+      end
+
+      false
+    end
+
+    ##
     # Generates a remember token and saves the digest to the user model.
     def remember
       self.remember_token = Incline::User::new_token
@@ -184,6 +217,55 @@ module Incline
     # Is this the anonymous user?
     def anonymous?
       email == ANONYMOUS_EMAIL
+    end
+
+    ##
+    # Gets the last successful login for this user.
+    def last_successful_login
+      @last_successful_login ||= login_histories.where(successful: true).order(created_at: :desc).first
+    end
+
+    ##
+    # Gets the last failed login for this user.
+    def last_failed_login
+      @last_failed_login ||= login_histories.where.not(successful: true).order(created_at: :desc).first
+    end
+
+    ##
+    # Gets the failed logins for a user since the last successful login.
+    def failed_login_streak
+      @failed_login_streak ||=
+          begin
+            results = login_histories.where.not(successful: true)
+            if last_successful_login
+              results = results.where('created_at > ?', last_successful_login.created_at)
+            end
+            results.order(created_at: :desc)
+          end
+    end
+
+    ##
+    # Gets some brief comments regarding the user.
+    def comments
+      @comments ||=
+          begin
+            if enabled?
+              if failed_login_streak.count > 1
+                "Failed Login Streak: #{failed_login_streak.count}\nMost Recent Attempt: #{last_failed_login.date_and_ip}\n"
+              elsif failed_login_streak.count == 1
+                "Failed Login Attempt: #{last_failed_login.date_and_ip}\n"
+              else
+                ''
+              end +
+                  if last_successful_login
+                    "Most Recent Login: #{last_successful_login}"
+                  else
+                    'Most Recent Login: Never'
+                  end
+            else
+              "Disabled #{disabled_at ? disabled_at.in_time_zone.strftime('%m/%d/%Y') : 'some time in the past'} by #{disabled_by.blank? ? 'somebody' : disabled_by}.\n#{disabled_reason}"
+            end
+          end
     end
 
     ##

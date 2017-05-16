@@ -7,12 +7,20 @@ module Incline
   #
   class EmailValidator < ActiveModel::EachValidator
 
+    INTERNAL_DOM_REGEX = '[a-z\d]+(?:-+[a-z\d]+)*(?:\.[a-z\d]+(?:-+[a-z\d]+)*)*\.[a-z]+'
+    private_constant :INTERNAL_DOM_REGEX
+
     ##
     # This regular expression should validate 99.9% of common email addresses.
     #
     # There are some weird rules that it doesn't account for, but they should be rare.
     #
-    VALID_EMAIL_REGEX = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d]+)*\.[a-z]+\z/i
+    VALID_EMAIL_REGEX = /\A[\w+\-.]+@#{INTERNAL_DOM_REGEX}\z/i
+
+    ##
+    # This regular expression should validate any domain.
+    VALID_DOMAIN_REGEX = /\A#{INTERNAL_DOM_REGEX}\z/i
+
 
     ##
     # Validates attributes to determine if they contain valid email addresses.

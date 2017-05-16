@@ -308,6 +308,30 @@ module Incline::Extensions
     end
 
     ##
+    # Creates a form group including a label and a text area.
+    #
+    # The +options+ is a hash containing label, field, and group options.
+    # Prefix label options with +label_+ and field options with +field_+.
+    # All other options will apply to the group itself.
+    #
+    # Group options:
+    #
+    # class::
+    #     The CSS class for the form group.  Defaults to 'form-group'.
+    #
+    # style::
+    #     Any styles to apply to the form group.
+    #
+    # For label options, see #label_w_small.
+    # For field options, see {FormHelper#text_area}[http://apidock.com/rails/ActionView/Helpers/FormHelper/text_area].
+    def textarea_form_group(method, options = {})
+      gopt, lopt, fopt = split_form_group_options(options)
+      lbl = label_with_small method, lopt.delete(:text), lopt
+      fld = gopt[:wrap].call(text_area(method, fopt))
+      form_group lbl, fld, gopt
+    end
+
+    ##
     # Creates a standard form group with a label and currency field.
     #
     # The +options+ is a hash containing label, field, and group options.

@@ -6,7 +6,7 @@ class CreateInclineUserLoginHistories < ActiveRecord::Migration
       t.boolean     :successful
       t.string      :message,                       limit: 200
 
-      t.timestamps null: false
+      t.timestamps                  null: false
     end
   end
 end
