@@ -19,6 +19,7 @@
 //= require incline/datatables
 //= require incline/escapeHtml
 //= require incline/regexMask
+//= require incline/select2/select2.full
 
 
 // Apply things when document is ready.

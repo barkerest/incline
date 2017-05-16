@@ -14,6 +14,5 @@
  *= require incline/bootstrap-theme.min
  *= require incline/datepicker3
  *= require incline/datatables
- *= require_tree .
- *= require_self
+ *= require incline/select2
  */

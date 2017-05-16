@@ -1,0 +1,22 @@
+<% provide :title, 'Contact Form' %>
+
+<%= error_summary(@msg) %>
+<div class="col-md-6 col-md-offset-3">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h4 class="panel-title">Contact Form</h4>
+    </div>
+    <div class="panel-body">
+      <%= form_for @msg, url: contact_url, method: :post do |f| %>
+          <%= f.text_form_group :your_name %>
+          <%= f.text_form_group :your_email, field_type: 'email' %>
+          <%= f.select_form_group :related_to, [ 'Program Error', 'Broken Link', 'Feature Request', 'Other' ] %>
+          <%= f.text_form_group :subject %>
+          <%= f.textarea_form_group :body %>
+          <%= f.recaptcha :recaptcha %>
+          <%= f.submit 'Send', class: 'btn btn-success' %>
+          <%= link_to 'Cancel', root_url, class: 'btn btn-default' %>
+      <% end %>
+    </div>
+  </div>
+</div>

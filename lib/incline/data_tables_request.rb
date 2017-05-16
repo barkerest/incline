@@ -49,7 +49,7 @@ module Incline
       @config                   = {}
       @config[:starting_scope]  = block
 
-      params = params.symbolize_keys
+      params = params.deep_symbolize_keys
 
       if params[:draw]
         @config[:draw]   = params[:draw].to_s.to_i
@@ -57,24 +57,33 @@ module Incline
         @config[:length] = params[:length].to_s.to_i
 
         tmp = params[:search]
-        if tmp && tmp[:regex]
-          @config[:search] = Regexp.new(tmp[:value])
-        elsif tmp
-          @config[:search] = tmp[:value].to_s
+        if tmp && !tmp[:value].blank?
+          if tmp[:regex].to_bool
+            @config[:search] = Regexp.new(tmp[:value])
+          elsif tmp
+            @config[:search] = tmp[:value].to_s
+          end
+        else
+          @config[:search] = nil
         end
 
         tmp               = params[:columns]
         @config[:columns] = [ ]
         if tmp
-          tmp.each do |col|
-            col = col.symbolize_keys
+          tmp.each do |id, col|
+            col[:id] = id.to_s.to_i
+            col[:name] = col[:data] if col[:name].blank?
+            col[:searchable] = col[:searchable].to_bool
+            col[:orderable] = col[:orderable].to_bool
 
-            if col[:search]
-              if col[:search][:regex]
+            if col[:search] && !col[:search][:value].blank?
+              if col[:search][:regex].to_bool
                 col[:search] = Regexp.new(col[:search][:value])
               else
                 col[:search] = col[:search][:value].to_s
               end
+            else
+              col[:search] = nil
             end
 
             @config[:columns] << col
@@ -85,9 +94,10 @@ module Incline
         tmp             = params[:order]
         @config[:order] = { }
         if tmp
-          tmp.each do |order|
+          tmp.each do |_, order|
             order = order.symbolize_keys
-            col = columns[order[:column]]
+            col_id = order[:column].to_i
+            col = columns.find{|c| c[:id] == col_id}
             if col
               @config[:order][col[:name]] = ((order[:dir] || 'asc').downcase).to_sym
             end
@@ -97,6 +107,7 @@ module Incline
       else
         @config[:draw] = :not_provided
       end
+
     end
 
 
@@ -169,7 +180,7 @@ module Incline
 
         if filter_columns
           # only get the columns we care about.
-          cols = columns.map{|c| (c[:name] || c[:data]).to_s }.reject{|c| c.blank?}
+          cols = columns.map{|c| c[:name].to_s }.reject{|c| c.blank?}
           cols << 'id' unless cols.include?('id')
           relation = relation.select(cols)
         end
@@ -178,7 +189,7 @@ module Incline
 
         ###  Database Side Individual Filtering  ###
         columns.reject{|c| c[:search].blank? || c[:search].is_a?(::Regexp)}.each do |col|
-          name = (col[:name] || col[:data]).to_s
+          name = col[:name].to_s
           unless name.blank?
             relation = relation.where("(UPPER(\"#{name}\") LIKE ?)", "%#{col[:search].upcase}%")
           end
@@ -187,7 +198,7 @@ module Incline
         ###  Database Side Multiple Filtering  ###
         if search.is_a?(::String) && !search.blank?
           srch = "%#{search.upcase}%"
-          cols = columns.select{|c| c[:searchable]}.map{|c| (c[:name] || c[:data]).to_s }.reject{|c| c.blank?}
+          cols = columns.select{|c| c[:searchable]}.map{|c| c[:name].to_s }.reject{|c| c.blank?}
           if cols.any?
             relation = relation.where(
                 cols.map{|c| "(UPPER(\"#{c}\") LIKE ?)"}.join(' OR '),
@@ -211,7 +222,7 @@ module Incline
 
           ###  Local Individual Filtering   ###
           columns.select{|c| c[:search].is_a?(::Regexp)}.each do |col|
-            name = (col[:name] || col[:data]).to_s
+            name = col[:name].to_s
             unless name.blank?
               relation = relation.select{|item| !item.respond_to?(name) || item.send(name).to_s =~ col[:search] }
             end
@@ -219,7 +230,7 @@ module Incline
 
           ###  Local Multiple Filtering  ###
           if search.is_a?(::Regexp)
-            cols = columns.select{|c| c[:searchable]}.map{|c| (c[:name] || c[:data]).to_s }.reject{|c| c.blank?}
+            cols = columns.select{|c| c[:searchable]}.map{|c| c[:name].to_s }.reject{|c| c.blank?}
             relation = relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col) =~ search} }
           end
 
