@@ -10,14 +10,19 @@ module Incline
     # The value of the attribute should be a hash with two keys: :response, :remote_ip
     def validate_each(record, attribute, value)
       # Do NOT raise an error if nil.
+      return if value.blank?
+
       # If the user form includes the recaptcha field, then something will come in
       # and then we want to check it.
-      # If the user form does not include the recaptcha field, then we don't need to check it.
-      if value.is_a?(Hash)
-        unless Incline::Recaptcha::verify(response: value[:response], remote_ip: value[:remote_ip])
-          record.errors[:base] << (options[:message] || 'requires reCAPTCHA challenge to be completed')
+      remote_ip, _, response = value.partition('|')
+      if remote_ip.blank? || response.blank?
+        record.errors[:base] << (options[:message] || 'requires reCAPTCHA challenge to be completed')
+      else
+        unless Incline::Recaptcha::verify(response: response, remote_ip: remote_ip)
+          record.errors[:base] << (options[:message] || 'invalid response from reCAPTCHA challenge')
         end
       end
+
     end
 
   end

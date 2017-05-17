@@ -1,4 +1,5 @@
 require 'cgi/util'
+require 'net/http'
 
 module Incline
   ##
@@ -87,9 +88,6 @@ module Incline
     # Returns true on success, or false on failure.
     #
     def self.verify(options = {})
-      # always true in tests.
-      return true if recaptcha_disabled?
-
       model = options[:model]
 
       response =
@@ -121,49 +119,78 @@ module Incline
         remote_ip = request.respond_to?(:remote_ip) ? request.send(:remote_ip) : ENV['REMOTE_ADDR']
       end
 
-      begin
-        if proxy.blank?
-          http = Net::HTTP
-        else
-          http = Net::HTTP::Proxy(proxy.host, proxy.port, proxy.user, proxy.password)
-        end
-
-        verify_hash = {
-            secret: private_key,
-            remoteip: remote_ip,
-            response: response
-        }
-
-        recaptcha = nil
-        Timeout::timeout(5) do
-          uri = URI.parse('https://www.google.com/recaptcha/api/siteverify')
-          http_instance = http.new(uri.host, uri.port)
-          if uri.port == 443
-            http_instance.use_ssl = true
+      if disabled?
+        # In tests or environments where reCAPTCHA is disabled,
+        # the response should be 'disabled' to verify successfully.
+        return response == 'disabled'
+      else
+        begin
+          if proxy.blank?
+            http = Net::HTTP
+          else
+            http = Net::HTTP::Proxy(proxy.host, proxy.port, proxy.user, proxy.password)
           end
-          request = Net::HTTP::Post.new(uri.request_uri)
-          request.set_form_data(verify_hash)
-          recaptcha = http_instance.request(request)
-        end
-        answer = JSON.parse(recaptcha.body)
 
-        unless answer['success'].to_s.downcase == 'true'
+          verify_hash = {
+              secret: private_key,
+              remoteip: remote_ip,
+              response: response
+          }
+
+          recaptcha = nil
+          Timeout::timeout(5) do
+            uri = URI.parse('https://www.google.com/recaptcha/api/siteverify')
+            http_instance = http.new(uri.host, uri.port)
+            if uri.port == 443
+              http_instance.use_ssl = true
+            end
+            request = Net::HTTP::Post.new(uri.request_uri)
+            request.set_form_data(verify_hash)
+            recaptcha = http_instance.request(request)
+          end
+          answer = JSON.parse(recaptcha.body)
+
+          unless answer['success'].to_s.downcase == 'true'
+            if model
+              model.errors.add(options[:attribute] || :base, 'Recaptcha verification failed.')
+            end
+            return false
+          end
+
+          return true
+        rescue Timeout::Error
           if model
-            model.errors.add(options[:attribute] || :base, 'Recaptcha verification failed.')
+            model.errors.add(:base, 'Recaptcha unreachable.')
           end
-          return false
-        end
-
-        return true
-      rescue Timeout::Error
-        if model
-          model.errors.add(:base, 'Recaptcha unreachable.')
         end
       end
 
       false
     end
 
+    ##
+    # Contains a collection of onload callbacks for explicit reCAPTCHA fields.
+    #
+    # Used by the Incline::Recaptcha::Tag helper.
+    def self.onload_callbacks
+      # FIXME: Should probably move this to the session.
+      @onload_callbacks ||= []
+    end
+
+    ##
+    # Generates a script block to load reCAPTCHA and activate any reCAPTCHA fields.
+    def self.script_block
+      if onload_callbacks.any?
+        ret = "<script type=\"text/javascript\">\n// <![CDATA[\nfunction recaptcha_onload() { "
+        onload_callbacks.each { |onload| ret += CGI::escape_html(onload) + '(); ' }
+        ret += "}\n// ]]>\n</script>\n<script type=\"text/javascript\" src=\"https://www.google.com/recaptcha/api.js?onload=recaptcha_onload&amp;render=explicit\" async defer></script>"
+
+        # clear the cache.
+        onload_callbacks.clear
+
+        ret.html_safe
+      end
+    end
 
     ##
     # Defines a reCAPTCHA tag that can be used to supply a field in a model with a hash of values.
@@ -183,9 +210,6 @@ module Incline
       ##
       # Generates the reCAPTCHA data.
       def render
-        response_id = tag_id + '_response'
-        remote_ip_id = tag_id + '_remote_ip'
-
         remote_ip =
             if @template_object&.respond_to?(:request) && @template_object.send(:request)&.respond_to?(:remote_ip)
               @template_object.request.remote_ip
@@ -193,35 +217,55 @@ module Incline
               ENV['REMOTE_ADDR']
             end
 
-        ret =   tag('input', type: 'hidden', id: remote_ip_id, name: tag_name + '[][remote_ip]', value: remote_ip)
-        ret +=  "\n"
-        ret +=  tag('input', type: 'hidden', id: response_id, name: tag_name + '[][response]', value: '')
+        if Incline::Recaptcha::disabled?
+          # very simple, if recaptcha is disabled, send the IP and 'disabled' to the form.
+          # for validation, recaptcha must still be disabled or it will fail.
+          return tag('input', type: 'hidden', id: tag_id, name: tag_name, value: "#{remote_ip}|disabled")
+        end
+
+        # reCAPTCHA is not disabled, so put everything we need into the form.
+        ret =   tag('input', type: 'hidden', id: tag_id, name: tag_name, value: remote_ip)
         ret +=  "\n"
 
-        opts = {
-            :class           => 'g-recaptcha',
-            :data => {
-                :sitekey     => CGI::escape_html(Incline::Recaptcha::public_key),
-                :callback    => 'update_' + response_id,
-                :tabindex    => @options[:tab_index].to_s.to_i,
-                :theme       => make_valid(@options[:theme], VALID_THEMES, :light),
-                :type        => make_valid(@options[:type], VALID_TYPES, :image),
-                :size        => make_valid(@options[:size], VALID_SIZES, :normal)
-            }
-        }
+        div_id = tag_id + '_div'
 
-        ret +=  tag('div', class: 'form-group')
-        ret +=  tag('div', opts, true)
+        ret +=  tag('div', { class: 'form-group' }, true)
+        ret +=  tag('div', { id: div_id }, true)
         ret +=  "</div></div>\n".html_safe
+
+        sitekey = CGI::escape_html(Incline::Recaptcha::public_key)
+        onload = 'onload_' + tag_id
+        callback = 'update_' + tag_id
+        tabindex = @options[:tab_index].to_s.to_i
+        theme = make_valid(@options[:theme], VALID_THEMES, :light).to_s
+        type = make_valid(@options[:type], VALID_TYPES, :image).to_s
+        size = make_valid(@options[:size], VALID_SIZES, :normal).to_s
+
 
         ret += <<-EOS.html_safe
 <script type="text/javascript">
 // <![CDATA[
-function update_#{response_id}(response) { $('##{response_id}').val(response); }
+function #{onload}() {
+  grecaptcha.render(#{div_id.inspect}, {
+    "sitekey"     : #{sitekey.inspect},
+    "callback"    : #{callback.inspect},
+    "tabindex"    : #{tabindex},
+    "theme"       : #{theme.inspect},
+    "type"        : #{type.inspect},
+    "size"        : #{size.inspect}
+  });
+}
+function #{callback}(response) {
+  var fld = $('##{tag_id}');
+  var val = fld.val();
+  if (val) { val = val.split('|'); val = val[0]; } else { val = ''; }
+  fld.val(val + '|' + response);
+}
 // ]]>
 </script>
-<script type="text/javascript" src="https://www.google.com/recaptcha/api.js"></script>
         EOS
+
+        Incline::Recaptcha::onload_callbacks << onload
 
         ret.html_safe
       end

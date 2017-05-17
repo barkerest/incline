@@ -27,7 +27,6 @@ module Incline
 
     def get_message
       p = params.require(:contact_message).permit(:your_name, :your_email, :related_to, :subject, :body, :recaptcha)
-      byebug
       Incline::ContactMessage.new(p)
     end
 
