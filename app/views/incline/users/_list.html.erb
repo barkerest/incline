@@ -16,7 +16,10 @@
   $(function() {
     $('#dt-users').DataTable({
       dom: '<"panel-body"<"col-sm-6 col-sm-offset-6"fr>>t<"panel-body"<"col-sm-6"i><"col-sm-6"p>>',
-      ajax: '<%= api_path %>',
+      ajax: {
+          url: '<%= api_path %>',
+          type: 'POST'
+      },
       columns: [
         {
           data: 'name',

@@ -3,16 +3,17 @@ require_dependency "incline/application_controller"
 module Incline
   class UsersController < ApplicationController
 
-    before_action :set_user,          except: [ :index, :new, :create ]
+    before_action :set_user,          except: [ :index, :new, :create, :api ]
     before_action :set_disable_info,  only: [ :disable_confirm, :disable ]
-    before_action :correct_user,      only: [ :edit, :update ]
     before_action :not_current,       only: [ :destroy, :disable, :disable_confirm, :enable ]
+
+    layout :use_layout, except: [ :index, :new, :create ]
 
     # Only anonymous users can signup.
     require_anon :new, :create
 
     # Only admins can delete/disable/enable users.
-    require_admin :destroy, :disable, :disable_confirm, :enable
+    require_admin :index, :show, :edit, :update, :destroy, :disable, :disable_confirm, :enable
 
     ##
     # GET /incline/users
@@ -47,13 +48,13 @@ module Incline
     ##
     # GET /incline/users/1
     def show
-
+      render 'show'
     end
 
     ##
     # GET /incline/users/1/edit
     def edit
-
+      render 'edit'
     end
 
     ##
@@ -106,7 +107,7 @@ module Incline
     end
 
     ##
-    # PUT /incline/user/1/enable
+    # PUT /incline/users/1/enable
     def enable
       if @user.enabled?
         flash[:warning] = "User #{@user} is already enabled."
@@ -122,11 +123,23 @@ module Incline
       redirect_to users_path
     end
 
+    # GET/POST /incline/users/api?action=...
+    def api
+      process_api_action
+    end
+
     private
+
+    # if the "inline" parameter evaluates to true then don't use a layout, otherwise use the inherited layout.
+    def use_layout
+      params[:inline].to_bool ? false : nil
+    end
 
     def valid_user?
       # The current user can show or edit their own details without any further validation,
       # any other action requires authorization.
+      # This allows us to override the "require_admin" setting for these actions which means that these
+      # actions are only available to the current user and to system admins.
       unless [ :show, :edit, :update ].include?(params[:action].to_sym) && current_user?(set_user)
         super
       end
@@ -155,11 +168,6 @@ module Incline
       params[:disable_info] ?
           params.require(:disable_info).permit(:reason) :
           { }
-    end
-
-    def correct_user
-      # the current user can edit their details and so can a system administrator.
-      redirect_to(root_url) unless current_user?(@user) || system_admin?
     end
 
     def not_current

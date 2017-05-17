@@ -183,9 +183,12 @@ module Incline
 
         # If any of these is true, then filtering must be done locally in our code.
         filter_local = (
+            # main search is a regex.
             search.is_a?(::Regexp) ||
+            # one or more column searches is a regex.
             columns.select{|c| c[:search].is_a?(::Regexp)}.any? ||
-            columns.reject {|c| relation.model.column_names.include?(c[:name].to_s)}.any?
+            # one or more searchable columns is not in the database model.
+            columns.reject {|c| !c[:searchable] || relation.model.column_names.include?(c[:name].to_s)}.any?
         )
 
         Incline::Log::debug "Filtering will be done #{filter_local ? 'application' : 'database'}-side."

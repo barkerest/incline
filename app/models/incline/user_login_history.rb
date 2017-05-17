@@ -2,6 +2,7 @@ module Incline
   class UserLoginHistory < ActiveRecord::Base
 
     belongs_to :user
+    after_save :update_user_comments
 
     validates :user, presence: true
     validates :ip_address, presence: true, length: { maximum: 64 }, 'incline/ip_address' => { no_mask: true }
@@ -17,6 +18,12 @@ module Incline
 
     def to_s
       "Login #{successful ? 'succeeded' : 'failed'} on #{time_and_ip}"
+    end
+
+    private
+
+    def update_user_comments
+      user.refresh_comments
     end
 
   end

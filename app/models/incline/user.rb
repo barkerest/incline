@@ -14,6 +14,7 @@ module Incline
 
     before_save :downcase_email
     before_create :create_activation_digest
+    after_save :refresh_comments
 
     attr_accessor :recaptcha
 
@@ -158,7 +159,7 @@ module Incline
           disabled_at: Time.zone.now,
           disabled_reason: reason,
           enabled: false
-      )
+      ) && refresh_comments
     end
 
     ##
@@ -169,7 +170,7 @@ module Incline
           disabled_at: nil,
           disabled_reason: nil,
           enabled: true
-      )
+      ) && refresh_comments
     end
 
     ##
@@ -179,7 +180,7 @@ module Incline
           activated: true,
           activated_at: Time.zone.now,
           activation_digest: nil
-      )
+      ) && refresh_comments
     end
 
     ##
@@ -236,31 +237,12 @@ module Incline
     end
 
     ##
-    # Gets some brief comments regarding the user.
-    def comments
-      @comments ||=
-          begin
-            if enabled?
-              if activated?
-                if failed_login_streak.count > 1
-                  "Failed Login Streak: #{failed_login_streak.count}\nMost Recent Attempt: #{last_failed_login.date_and_ip}\n"
-                elsif failed_login_streak.count == 1
-                  "Failed Login Attempt: #{last_failed_login.date_and_ip}\n"
-                else
-                  ''
-                end +
-                    if last_successful_login
-                      "Most Recent Login: #{last_successful_login.date_and_ip}"
-                    else
-                      'Most Recent Login: Never'
-                    end
-              else
-                'Not Activated'
-              end
-            else
-              "Disabled #{disabled_at ? disabled_at.in_time_zone.strftime('%m/%d/%Y') : 'some time in the past'} by #{disabled_by.blank? ? 'somebody' : disabled_by}.\n#{disabled_reason}"
-            end
-          end
+    # Generates some brief comments about the user account and stores them in the comments attribute.
+    #
+    # This gets updated automatically on every login attempt.
+    def refresh_comments
+      update_columns :comments => generate_comments
+      comments
     end
 
     ##
@@ -384,6 +366,29 @@ module Incline
 
 
     private
+
+    def generate_comments
+      if enabled?
+        if activated?
+          if failed_login_streak.count > 1
+            "Failed Login Streak: #{failed_login_streak.count}\nMost Recent Attempt: #{last_failed_login.date_and_ip}\n"
+          elsif failed_login_streak.count == 1
+            "Failed Login Attempt: #{last_failed_login.date_and_ip}\n"
+          else
+            ''
+          end +
+              if last_successful_login
+                "Most Recent Login: #{last_successful_login.date_and_ip}"
+              else
+                'Most Recent Login: Never'
+              end
+        else
+          'Not Activated'
+        end
+      else
+        "Disabled #{disabled_at ? disabled_at.in_time_zone.strftime('%m/%d/%Y') : 'some time in the past'} by #{disabled_by.blank? ? 'somebody' : disabled_by}.\n#{disabled_reason}"
+      end
+    end
 
     def downcase_email
       email.downcase!

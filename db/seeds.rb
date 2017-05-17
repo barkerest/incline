@@ -1,3 +1,4 @@
+require 'securerandom'
 
 Incline::Recaptcha::pause_for do
 
@@ -12,15 +13,48 @@ Incline::Recaptcha::pause_for do
         name = Faker::Name.name
         email = "user-#{n+1}@example.com"
         password = 'password'
-        Incline::User.create!(
+        r = SecureRandom.random_number
+        activated = (r < 0.8) ? (5 + (r * 25).to_i).days.ago : nil
+        created = (activated ? activated : (5 + (r * 25).to_i).days.ago) - 1.hour
+
+        u = Incline::User.create!(
             name: name,
             email: email,
             password: password,
             password_confirmation: password,
-            activated: (n % 5 < 3),
-            activated_at: (n % 5 < 3) ? Time.zone.now : nil,
-            recaptcha: Incline::Recaptcha::DISABLED
+            activated: !!activated,
+            activated_at: activated,
+            recaptcha: Incline::Recaptcha::DISABLED,
+            created_at: created
         )
+        if activated
+          hist =
+              if SecureRandom.random_number < 0.25
+                :fail
+              elsif SecureRandom.random_number < 0.5
+                :mix
+              else
+                :success
+              end
+
+          r += 0.2 if r < 0.2
+          while activated < Time.zone.now
+
+            success,message = if hist == :fail
+                                [ false, 'Invalid email or password.' ]
+                              elsif hist == :success
+                                [ true, 'User logged in successfully.' ]
+                              elsif SecureRandom.random_number <= 0.5
+                                [ false, 'Invalid email or password.' ]
+                              else
+                                [ true, 'User logged in successfully.' ]
+                              end
+
+            u.login_histories.create!(ip_address: '127.0.0.1', successful: success, message: message, created_at: activated)
+
+            activated += r.days
+          end
+        end
       end
     end
     unless Incline::User.where(enabled: false).count >= 5
@@ -29,14 +63,14 @@ Incline::Recaptcha::pause_for do
         name = Faker::Name.name
         email = "disabled-#{n+1}@example.com"
         password = 'password'
-        Incline::User.create!(
+        u = Incline::User.create!(
             name: name,
             email: email,
             password: password,
             password_confirmation: password,
             enabled: false,
             disabled_by: admin_user.email,
-            disabled_at: Time.zone.now - (n + 1).weeks,
+            disabled_at: ((n * 2.5).to_i + 1).days.ago,
             disabled_reason: 'For testing',
             recaptcha: Incline::Recaptcha::DISABLED
         )

@@ -11,6 +11,10 @@ Incline::Engine.routes.draw do
       patch 'enable'
       put   'enable'
     end
+    collection do
+      get   'api'
+      post  'api'
+    end
   end
 
   # login/logout

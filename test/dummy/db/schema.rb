@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170515151058) do
+ActiveRecord::Schema.define(version: 20170517193432) do
 
   create_table "incline_access_group_group_members", force: :cascade do |t|
     t.integer  "group_id",   null: false
@@ -73,6 +73,7 @@ ActiveRecord::Schema.define(version: 20170515151058) do
     t.string   "last_login_ip",     limit: 64
     t.datetime "created_at",                                    null: false
     t.datetime "updated_at",                                    null: false
+    t.text     "comments"
   end
 
   add_index "incline_users", ["email"], name: "ux_incline_users_email", unique: true

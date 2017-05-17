@@ -393,9 +393,14 @@ module Incline::Extensions
           map_api_action(
               if request.post?
                 # A post request can create, update, or destroy.
+                # In addition we allow index to post since DataTables can send quite a bit of data with server-side
+                # processing.
                 # The post action can be provided as a query parameter or a form parameter with the form parameter
                 # taking priority.
                 {
+                    nil => 'index',
+                    'list' => 'index',
+                    'index' => 'index',
                     'new' => 'create',
                     'create' => 'create',
                     'edit' => 'update',
@@ -447,7 +452,7 @@ module Incline::Extensions
         process api_action
       else
         # raise an error.
-        raise InvalidApiCall, 'Invalid API Action' if raise_on_invalid_action
+        raise Incline::InvalidApiCall, 'Invalid API Action' if raise_on_invalid_action
         nil
       end
     end
