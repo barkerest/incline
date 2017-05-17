@@ -3,7 +3,10 @@ module Incline
   # A simple controller providing the login and logout methods for the application.
   class SessionsController < ApplicationController
 
+    # must be anon to login.
     require_anon :new, :create
+
+    # don't raise an error if anon tries to logout.
     allow_anon true
 
     ##

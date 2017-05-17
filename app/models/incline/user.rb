@@ -49,16 +49,16 @@ module Incline
               'incline/ip_address' => { no_mask: true }
 
     validates :password_digest,
-              presence: true,
-              length: { maximum: 100 }
-
-    validates :activation_digest,
+              :activation_digest,
               :remember_digest,
               :reset_digest,
               length: { maximum: 100 }
 
+    # recaptcha is only required when creating a new record.
     validates :recaptcha,
-              'incline/recaptcha' => true
+              presence: true,
+              'incline/recaptcha' => true,
+              if: :new_record?
 
 
     ##
@@ -94,12 +94,6 @@ module Incline
     # Gets the email formatted with the name.
     def formatted_email
       "#{name} <#{email}>"
-    end
-
-    ##
-    # Is this user a system administrator?
-    def system_admin?
-      enabled && system_admin
     end
 
     ##
@@ -256,7 +250,7 @@ module Incline
                   ''
                 end +
                     if last_successful_login
-                      "Most Recent Login: #{last_successful_login}"
+                      "Most Recent Login: #{last_successful_login.date_and_ip}"
                     else
                       'Most Recent Login: Never'
                     end
@@ -352,10 +346,11 @@ module Incline
                        enabled: true,
                        system_admin: true,
                        activated: true,
-                       activated_at: Time.zone.now
+                       activated_at: Time.zone.now,
+                       recaptcha: Incline::Recaptcha::DISABLED
                    )
 
-        unless user.enabled? && user.system_admin?
+        unless user.activated? && user.enabled? && user.system_admin?
           user.password = def_adm_pass
           user.password_confirmation = def_adm_pass
           user.enabled = true

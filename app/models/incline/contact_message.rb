@@ -12,7 +12,7 @@ module Incline
     validates :related_to, presence: true
     validates :subject, presence: true, if: :need_subject?
     validates :body, presence: true
-    validates :recaptcha, 'incline/recaptcha' => true
+    validates :recaptcha, presence: true, 'incline/recaptcha' => true
 
     ##
     # Gets the full subject for the message.

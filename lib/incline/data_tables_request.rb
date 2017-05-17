@@ -59,7 +59,7 @@ module Incline
         tmp = params[:search]
         if tmp && !tmp[:value].blank?
           if tmp[:regex].to_bool
-            @config[:search] = tmp[:value].is_a?(::Regexp) ? tmp[:value] : Regexp.new(tmp[:value])
+            @config[:search] = tmp[:value].is_a?(::Regexp) ? tmp[:value] : Regexp.new(tmp[:value], Regexp::IGNORECASE)
           elsif tmp
             @config[:search] = tmp[:value].to_s
           end
@@ -79,7 +79,7 @@ module Incline
 
             if col[:search] && !col[:search][:value].blank?
               if col[:search][:regex].to_bool
-                col[:search] = col[:search][:value].is_a?(::Regexp) ? col[:search][:value] : Regexp.new(col[:search][:value])
+                col[:search] = col[:search][:value].is_a?(::Regexp) ? col[:search][:value] : Regexp.new(col[:search][:value], Regexp::IGNORECASE)
               else
                 col[:search] = col[:search][:value].to_s
               end
@@ -227,13 +227,13 @@ module Incline
           columns.reject{|c| c[:search].blank? || c[:name].blank?}.each do |col|
             name = col[:name].to_s
             srch = col[:search]
-            srch = Regexp.new(srch) unless srch.is_a?(::Regexp)
+            srch = Regexp.new(srch, Regexp::IGNORECASE) unless srch.is_a?(::Regexp)
             relation = relation.select { |item| item.respond_to?(name) && item.send(name) =~ srch }
           end
 
           ###  Local Multiple Filtering  ###
           unless search.blank?
-            srch = search.is_a?(::Regexp) ? search : Regexp.new(search)
+            srch = search.is_a?(::Regexp) ? search : Regexp.new(search, Regexp::IGNORECASE)
             cols = columns.select{|c| c[:searchable]}.map{|c| c[:name].to_s }.reject{|c| c.blank?}
             relation = relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col) =~ srch} }
           end

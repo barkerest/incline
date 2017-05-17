@@ -8,7 +8,7 @@ module Incline
     attr_accessor :recaptcha
 
     validates :email, presence: true, 'incline/email' => true
-    validates :recaptcha, 'incline/recaptcha' => true
+    validates :recaptcha, presence: true, 'incline/recaptcha' => true
   end
 
 end

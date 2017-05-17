@@ -21,6 +21,95 @@ module Incline
   class Recaptcha
 
     ##
+    # Defines a reCAPTCHA tag that can be used to supply a field in a model with a hash of values.
+    #
+    # Basically we define two fields for the model attribute, one for :remote_ip and one for :response.
+    # The :remote_ip field is set automatically and shouldn't be changed.
+    # The :response field is set when the user completes the challenge.
+    #
+    #   Incline::Recaptcha::Tag.new(my_model, :is_robot).render
+    #
+    #   <input type="hidden" name="my_model[is_robot][remote_ip]" id="my_model_is_robot_remote_ip" value="10.11.12.13">
+    #   <input type="hidden" name="my_model[is_robot][response]" id="my_model_is_robot_response" value="">
+    #
+    #   Incline::Recaptcha::verify model: my_model, attribute: :is_robot
+    class Tag < ActionView::Helpers::Tags::Base
+
+      ##
+      # Generates the reCAPTCHA data.
+      def render
+        remote_ip =
+            if @template_object&.respond_to?(:request) && @template_object.send(:request)&.respond_to?(:remote_ip)
+              @template_object.request.remote_ip
+            else
+              ENV['REMOTE_ADDR']
+            end
+
+        if Incline::Recaptcha::disabled?
+          # very simple, if recaptcha is disabled, send the IP and 'disabled' to the form.
+          # for validation, recaptcha must still be disabled or it will fail.
+          return tag('input', type: 'hidden', id: tag_id, name: tag_name, value: "#{remote_ip}|disabled")
+        end
+
+        # reCAPTCHA is not disabled, so put everything we need into the form.
+        ret =   tag('input', type: 'hidden', id: tag_id, name: tag_name, value: remote_ip)
+        ret +=  "\n"
+
+        div_id = tag_id + '_div'
+
+        ret +=  tag('div', { class: 'form-group' }, true)
+        ret +=  tag('div', { id: div_id }, true)
+        ret +=  "</div></div>\n".html_safe
+
+        sitekey = CGI::escape_html(Incline::Recaptcha::public_key)
+        onload = 'onload_' + tag_id
+        callback = 'update_' + tag_id
+        tabindex = @options[:tab_index].to_s.to_i
+        theme = make_valid(@options[:theme], VALID_THEMES, :light).to_s
+        type = make_valid(@options[:type], VALID_TYPES, :image).to_s
+        size = make_valid(@options[:size], VALID_SIZES, :normal).to_s
+
+
+        ret += <<-EOS.html_safe
+<script type="text/javascript">
+// <![CDATA[
+function #{onload}() {
+  grecaptcha.render(#{div_id.inspect}, {
+    "sitekey"     : #{sitekey.inspect},
+    "callback"    : #{callback.inspect},
+    "tabindex"    : #{tabindex},
+    "theme"       : #{theme.inspect},
+    "type"        : #{type.inspect},
+    "size"        : #{size.inspect}
+  });
+}
+function #{callback}(response) {
+  var fld = $('##{tag_id}');
+  var val = fld.val();
+  if (val) { val = val.split('|'); val = val[0]; } else { val = ''; }
+  fld.val(val + '|' + response);
+}
+// ]]>
+</script>
+        EOS
+
+        Incline::Recaptcha::onload_callbacks << onload
+
+        ret.html_safe
+      end
+
+      private
+
+      def make_valid(value, valid, default)
+        return default if value.blank?
+        value = value.to_sym
+        return default unless valid.include?(value)
+        value
+      end
+
+    end
+
+    ##
     # Gets the valid themes for the reCAPTCHA field.
     VALID_THEMES = [ :dark, :light ]
 
@@ -33,9 +122,13 @@ module Incline
     VALID_SIZES = [ :compact, :normal ]
 
     ##
+    # A string that will validated when reCAPTCHA is disabled.
+    DISABLED = '0.0.0.0|disabled'
+
+    ##
     # Determines if recaptcha is disabled either due to a test environment or because :recaptcha_public or :recaptcha_private is not defined in +secrets.yml+.
     def self.disabled?
-      Rails.env.test? || public_key.blank? || private_key.blank?
+      temp_lock || Rails.env.test? || public_key.blank? || private_key.blank?
     end
 
     ##
@@ -168,6 +261,8 @@ module Incline
       false
     end
 
+
+
     ##
     # Contains a collection of onload callbacks for explicit reCAPTCHA fields.
     #
@@ -193,92 +288,24 @@ module Incline
     end
 
     ##
-    # Defines a reCAPTCHA tag that can be used to supply a field in a model with a hash of values.
-    #
-    # Basically we define two fields for the model attribute, one for :remote_ip and one for :response.
-    # The :remote_ip field is set automatically and shouldn't be changed.
-    # The :response field is set when the user completes the challenge.
-    #
-    #   Incline::Recaptcha::Tag.new(my_model, :is_robot).render
-    #
-    #   <input type="hidden" name="my_model[is_robot][remote_ip]" id="my_model_is_robot_remote_ip" value="10.11.12.13">
-    #   <input type="hidden" name="my_model[is_robot][response]" id="my_model_is_robot_response" value="">
-    #
-    #   Incline::Recaptcha::verify model: my_model, attribute: :is_robot
-    class Tag < ActionView::Helpers::Tags::Base
-
-      ##
-      # Generates the reCAPTCHA data.
-      def render
-        remote_ip =
-            if @template_object&.respond_to?(:request) && @template_object.send(:request)&.respond_to?(:remote_ip)
-              @template_object.request.remote_ip
-            else
-              ENV['REMOTE_ADDR']
-            end
-
-        if Incline::Recaptcha::disabled?
-          # very simple, if recaptcha is disabled, send the IP and 'disabled' to the form.
-          # for validation, recaptcha must still be disabled or it will fail.
-          return tag('input', type: 'hidden', id: tag_id, name: tag_name, value: "#{remote_ip}|disabled")
-        end
-
-        # reCAPTCHA is not disabled, so put everything we need into the form.
-        ret =   tag('input', type: 'hidden', id: tag_id, name: tag_name, value: remote_ip)
-        ret +=  "\n"
-
-        div_id = tag_id + '_div'
-
-        ret +=  tag('div', { class: 'form-group' }, true)
-        ret +=  tag('div', { id: div_id }, true)
-        ret +=  "</div></div>\n".html_safe
-
-        sitekey = CGI::escape_html(Incline::Recaptcha::public_key)
-        onload = 'onload_' + tag_id
-        callback = 'update_' + tag_id
-        tabindex = @options[:tab_index].to_s.to_i
-        theme = make_valid(@options[:theme], VALID_THEMES, :light).to_s
-        type = make_valid(@options[:type], VALID_TYPES, :image).to_s
-        size = make_valid(@options[:size], VALID_SIZES, :normal).to_s
-
-
-        ret += <<-EOS.html_safe
-<script type="text/javascript">
-// <![CDATA[
-function #{onload}() {
-  grecaptcha.render(#{div_id.inspect}, {
-    "sitekey"     : #{sitekey.inspect},
-    "callback"    : #{callback.inspect},
-    "tabindex"    : #{tabindex},
-    "theme"       : #{theme.inspect},
-    "type"        : #{type.inspect},
-    "size"        : #{size.inspect}
-  });
-}
-function #{callback}(response) {
-  var fld = $('##{tag_id}');
-  var val = fld.val();
-  if (val) { val = val.split('|'); val = val[0]; } else { val = ''; }
-  fld.val(val + '|' + response);
-}
-// ]]>
-</script>
-        EOS
-
-        Incline::Recaptcha::onload_callbacks << onload
-
-        ret.html_safe
+    # Pauses reCAPTCHA validation for the specified block of code.
+    def self.pause_for(&block)
+      self.temp_lock = true
+      begin
+        block.call
+      ensure
+        self.temp_lock = false
       end
+    end
 
-      private
+    private
 
-      def make_valid(value, valid, default)
-        return default if value.blank?
-        value = value.to_sym
-        return default unless valid.include?(value)
-        value
-      end
+    def self.temp_lock
+      @temp_lock ||= false
+    end
 
+    def self.temp_lock=(bool)
+      @temp_lock = bool
     end
 
   end

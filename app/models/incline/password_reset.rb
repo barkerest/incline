@@ -8,7 +8,7 @@ module Incline
 
     validates :password, presence: true, length: { minimum: 8 }, confirmation: true
     validates :password_confirmation, presence: true
-    validates :recaptcha, 'incline/recaptcha' => true
+    validates :recaptcha, presence: true, 'incline/recaptcha' => true
 
   end
 end

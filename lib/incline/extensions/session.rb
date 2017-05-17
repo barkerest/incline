@@ -54,7 +54,7 @@ module Incline::Extensions
       ##
       # Is the current user a system administrator?
       def system_admin?
-        current_user&.system_admin?
+        current_user&.system_admin? && current_user&.enabled? && current_user&.activated?
       end
 
     end

@@ -35,3 +35,4 @@ class MsSqlTestConn < ActiveRecord::Base
   end
 
 end
+

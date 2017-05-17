@@ -18,7 +18,7 @@ module Incline
     # GET /incline/users
     def index
       @dt_request = Incline::DataTablesRequest.new(params) do
-        (current_user.system_admin? ? Incline::User.known.sorted : Incline::User.known.enabled.sorted)
+        (current_user.system_admin? ? Incline::User.known : Incline::User.known.enabled)
       end
     end
 

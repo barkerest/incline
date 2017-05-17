@@ -7,7 +7,8 @@ module Incline
           name: 'John Wayne',
           email: 'j.wayne@example.com',
           password: 'password',
-          password_confirmation: 'password'
+          password_confirmation: 'password',
+          recaptcha: Incline::Recaptcha::DISABLED
       )
     end
 

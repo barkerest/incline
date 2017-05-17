@@ -2,6 +2,206 @@ module Incline::Extensions
   ##
   # Adds some extra assertions and methods for use in tests.
   module TestCase
+    ##
+    # Adds the #access_tests_for method.
+    module ClassMethods
+      ##
+      # This method will generate multiple generic access tests for your controller.
+      #
+      # The +action+ argument can be one or more actions to test.  These can be specified as arguments or an array.
+      #   access_tests_for :new, :edit, :show
+      #   access_tests_for [ :new, :edit, :show ]
+      #
+      # Options are provided after the last action to test.  All options will be applied to all actions.
+      # The {action}_params option being the only one that is explicitly for a specific action.
+      #
+      # Valid options:
+      # controller::
+      #     The name of the controller.  If not supplied, the controller is inferred from the class name.
+      # url_helper::
+      #     The code used to generate the URL.  If not supplied, the helper is inferred from the controller and action name.
+      # fixture_helper::
+      #     A string defining the fixture helper to use.  If not supplied the pluralized controller name will be used.
+      # fixture_key::
+      #     The key to use to load a fixture.  The default is :one.
+      # allow_anon::
+      #     Determines if anonymous users should be able to access the action.  The default is false.
+      # allow_any_user::
+      #     Determines if any authenticated user should be able to access the action.  The default is false.
+      # allow_groups::
+      #     Specifies a list of groups that should be able to access the action.  The default is nil.
+      # deny_groups::
+      #     Specifies a list of groups that should not be able to access the action.  The default is nil.
+      # allow_admin::
+      #     Specifies if a system admin should be able to access the action.  The default is true.
+      # method::
+      #     Specifies the method to process the action with.  The default is 'get'.
+      # success::
+      #     Determines the result on success.  Defauls to :success for 'get' requests, otherwise the pluralized controller helper path.
+      # failure::
+      #     Determines the result on failure for non-anon tests.  Defaults to 'main_app.root_path'.
+      # anon_failure::
+      #     Determines the result on failure for anon tests.  Defaults to 'incline.login_path'.
+      # {action}_params::
+      #     You can pass params to the action by specifying a hash containing them in this fashion.
+      #     e.g. - :new_params => { }  # params for :new action
+      #
+      #   access_tests_for :new, controller: 'users', allow_anon: true, allow_any_user: false, allow_admin: false
+      #
+      def access_tests_for(*actions)
+
+        options = actions.delete(actions.last) if actions.last.is_a?(Hash)
+        options ||= { }
+
+        if actions.count == 1 && actions.first.is_a?(Array)
+          actions = actions.first
+        end
+
+        if actions.count > 1
+          actions.each do |act|
+            access_tests_for(act, options.dup)
+          end
+          return
+        end
+
+        action = actions.first
+
+        options = {
+            allow_anon:         false,
+            allow_any_user:     false,
+            allow_groups:       nil,
+            deny_groups:        nil,
+            allow_admin:        true,
+            fixture_key:        :one,
+            failure:            'main_app.root_path',
+            anon_failure:       'incline.login_path'
+        }.merge((options || {}).symbolize_keys)
+
+        action = action.to_sym
+        params = options[:"#{action}_params"]
+        params = nil unless params.is_a?(Hash)
+
+        # guess at the method to use.
+        if options[:method].blank?
+          options[:method] =
+              if action == :destroy
+                'delete'
+              elsif action == :update
+                'patch'
+              elsif action == :create
+                'post'
+              else
+                'get'
+              end
+        end
+        options[:method] = options[:method].to_sym
+
+        if options[:controller].blank?
+          # only works with controller tests (eg - UsersControllerTest => users_controller_test => users_controller)
+          options[:controller] = self.name.underscore.rpartition('_')[0]
+        else
+          options[:controller] = options[:controller].to_s.underscore
+        end
+
+        if options[:controller][-11..-1] == '_controller'
+          options[:controller] = options[:controller].rpartition('_')[0]
+        end
+
+        if options[:fixture_helper].blank?
+          options[:fixture_helper] = options[:controller].pluralize
+        end
+
+        if options[:url_helper].blank?
+          fix_val = "#{options[:fixture_helper]}(#{options[:fixture_key].inspect})"
+          options[:url_helper] =
+              case action
+                when :show, :update, :destroy   then  "#{options[:controller].singularize}_path(#{fix_val})"
+                when :edit                      then  "edit_#{options[:controller].singularize}_path(#{fix_val})"
+                when :new                       then  "new_#{options[:controller].singularize}_path"
+                else                                  "#{options[:controller].pluralize}_path"
+              end
+        end
+
+        if options[:success].blank?
+          if options[:method] == :get
+            options[:success] = :success
+          else
+            options[:success] = "#{options[:controller].pluralize}_path"
+          end
+        end
+
+
+        method = options[:method]
+        url_helper = options[:url_helper]
+
+        tests = [
+            #   label         result                    user    group   success_override    failure_override
+            [ 'anonymous',  options[:allow_anon],       nil,    nil,    nil,                options[:anon_failure] ],
+            [ 'any user',   options[:allow_any_user],   :basic ],
+            [ 'admin user', options[:allow_admin],      :admin ]
+        ]
+
+        unless options[:allow_groups].blank?
+          if options[:allow_groups].is_a?(String)
+            options[:allow_groups] = options[:allow_groups].gsub(',', ';').split(';').map{|v| v.strip}
+          end
+          options[:allow_groups].each do |group|
+            tests << [ "#{group} member", true, :basic, group ]
+          end
+        end
+
+        unless options[:deny_groups].blank?
+          if options[:deny_groups].is_a?(String)
+            options[:deny_groups] = options[:deny_groups].gsub(',', ';').split(';').map{|v| v.strip}
+          end
+          options[:deny_groups].each do |group|
+            tests << [ "#{group} member", false, :basic, group ]
+          end
+        end
+
+        tests.each do |(label, result, user, group, success_override, failure_override)|
+          expected_result = result ? (success_override || options[:success]) : (failure_override || options[:failure])
+
+          # build the code block
+          test_code = "test \"should #{result ? '' : 'not '}allow access to #{action} for #{label}\" do\n"
+
+          if user
+            test_code += "user = incline_users(#{user.inspect})\n"
+            if group
+              test_code += "group = Incline::AccessGroup.find_or_create_by(name: #{group.inspect})\n"
+              test_code += "user.groups << group\n"
+            end
+            test_code += "log_in_as user\n"
+          end
+
+          test_code += "path = #{url_helper}\n"
+
+          if params.blank?
+            test_code += "#{method}(path)\n"
+          else
+            test_code += "#{method}(path, #{params.inspect})\n"
+          end
+
+          if expected_result.is_a?(Symbol)
+            test_code += "assert_response #{expected_result.inspect}\n"
+          else
+            test_code += "assert_redirected_to #{expected_result}\n"
+          end
+
+          test_code += "end\n"
+
+          Incline::Log::debug test_code
+
+          eval test_code
+        end
+      end
+    end
+
+    ##
+    # Make sure main_app is available and working correctly.
+    def main_app
+      Rails.application.class.routes.url_helpers
+    end
 
     ##
     # Determines if a user is logged into the test session
@@ -12,7 +212,7 @@ module Incline::Extensions
     ##
     # Logs in a test user
     def log_in_as(user, options = {})
-      password =      options[:password]    || 'password123'
+      password =      options[:password]    || 'Password123'
       remember_me =   options[:remember_me] || '1'
       if integration_test?
         post incline.login_path, session: { email: user.email, password: password, remember_me: remember_me }
@@ -213,6 +413,11 @@ module Incline::Extensions
       end
     end
 
+    ##
+    # Includes the class methods into the including object.
+    def self.included(base)
+      base.extend ClassMethods
+    end
 
     private
 
