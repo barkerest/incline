@@ -1,7 +1,7 @@
 module Incline
   ##
   # This model is used to disable a user with a reason for the disabling.
-  class DisableUser
+  class DisableInfo
     include ActiveModel::Model
     include ActiveModel::Validations
 

@@ -9,8 +9,8 @@ require 'incline/user_manager'
 
 # Preloaded gems
 require 'jbuilder'
-require 'bootstrap-sass'
 require 'jquery-rails'
+require 'bootstrap-sass'
 require 'exception_notification'
 
 # Class extensions

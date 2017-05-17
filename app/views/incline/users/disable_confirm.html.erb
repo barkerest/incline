@@ -7,7 +7,7 @@
     <h4 class="panel-title">Disable <%= @user.name %></h4>
    </div>
    <div class="panel-body">
-    <%= form_for @disable, url: disable_user_path(@user), method: :patch do |f| %>
+    <%= form_for @disable_info, url: disable_user_path(@user), method: :patch do |f| %>
       <%= f.textarea_form_group :reason %>
 
       <%= f.submit 'Disable', class: 'btn btn-danger' %>

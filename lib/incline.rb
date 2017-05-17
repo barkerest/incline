@@ -113,7 +113,7 @@ module Incline
       gems
           .select { |g| (pat.is_a?(::String) && g.name == pat) || (pat.is_a?(::Regexp) && g.name =~ pat) }
           .each do |g|
-        ret << [ g.name, g.version.to_s ] unless ret.find { |(name,ver)| name == g.name }
+        ret << [ g.name, g.version.to_s ] unless ret.find { |(name,_)| name == g.name }
       end
       ret
     end

@@ -247,18 +247,22 @@ module Incline
       @comments ||=
           begin
             if enabled?
-              if failed_login_streak.count > 1
-                "Failed Login Streak: #{failed_login_streak.count}\nMost Recent Attempt: #{last_failed_login.date_and_ip}\n"
-              elsif failed_login_streak.count == 1
-                "Failed Login Attempt: #{last_failed_login.date_and_ip}\n"
+              if activated?
+                if failed_login_streak.count > 1
+                  "Failed Login Streak: #{failed_login_streak.count}\nMost Recent Attempt: #{last_failed_login.date_and_ip}\n"
+                elsif failed_login_streak.count == 1
+                  "Failed Login Attempt: #{last_failed_login.date_and_ip}\n"
+                else
+                  ''
+                end +
+                    if last_successful_login
+                      "Most Recent Login: #{last_successful_login}"
+                    else
+                      'Most Recent Login: Never'
+                    end
               else
-                ''
-              end +
-                  if last_successful_login
-                    "Most Recent Login: #{last_successful_login}"
-                  else
-                    'Most Recent Login: Never'
-                  end
+                'Not Activated'
+              end
             else
               "Disabled #{disabled_at ? disabled_at.in_time_zone.strftime('%m/%d/%Y') : 'some time in the past'} by #{disabled_by.blank? ? 'somebody' : disabled_by}.\n#{disabled_reason}"
             end

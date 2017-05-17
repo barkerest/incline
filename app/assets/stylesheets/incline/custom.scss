@@ -63,6 +63,26 @@ textarea {
   margin-right: 10px;
 }
 
+tr.danger > td, td.danger {
+  background-color: $alert-danger-bg;
+  color: $alert-danger-text;
+}
+
+tr.warning > td, td.warning {
+  background-color: $alert-warning-bg;
+  color: $alert-warning-text;
+}
+
+tr.info > td, td.info {
+  background-color: $alert-info-bg;
+  color: $alert-info-text;
+}
+
+tr.success > td, td.success {
+  background-color: $alert-success-bg;
+  color: $alert-success-text;
+}
+
 
 /* typography */
 

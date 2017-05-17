@@ -127,13 +127,13 @@ module Incline
     def valid_user?
       # The current user can show or edit their own details without any further validation,
       # any other action requires authorization.
-      unless [ :show, :edit, :update ].include?(params[:action].to_sym) && current_user?(@user)
+      unless [ :show, :edit, :update ].include?(params[:action].to_sym) && current_user?(set_user)
         super
       end
     end
 
     def set_user
-      @user =
+      @user ||=
           if system_admin?
             Incline::User.find(params[:id])
           else
@@ -143,7 +143,7 @@ module Incline
     end
 
     def set_disable_info
-      @disable_info = DisableInfo.new(disable_info_params)
+      @disable_info = Incline::DisableInfo.new(disable_info_params)
       @disable_info.user = @user
     end
 

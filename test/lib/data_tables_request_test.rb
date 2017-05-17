@@ -72,7 +72,7 @@ end
       @model_class.all
     end
     assert request.provided?
-    assert_not request.error?
+    assert_not request.error?, "Did not expect #{request.error.inspect}"
     assert_equal 1, request.draw
     assert_equal 7, request.records_total
     assert_equal 7, request.records_filtered
@@ -87,7 +87,7 @@ end
     ) do
       @model_class.all
     end
-    assert_not request.error?
+    assert_not request.error?, "Did not expect #{request.error.inspect}"
     assert_equal 10, request.draw
     assert_equal 7, request.records_total
     assert_equal 7, request.records_filtered
@@ -105,7 +105,7 @@ end
     ) do
       @model_class.all
     end
-    assert_not request.error?
+    assert_not request.error?, "Did not expect #{request.error.inspect}"
     assert_equal 2, request.draw
     assert_equal 'Albert Einstein', request.records.first.name
 
@@ -132,7 +132,7 @@ end
     ) do
       @model_class.all
     end
-    assert_not request.error?
+    assert_not request.error?, "Did not expect #{request.error.inspect}"
     assert_equal 3, request.draw
     assert_equal 7, request.records_total
     assert_equal 3, request.records_filtered
@@ -150,7 +150,7 @@ end
     ) do
       @model_class.all
     end
-    assert_not request.error?
+    assert_not request.error?, "Did not expect #{request.error.inspect}"
     assert_equal 7, request.records_total
     assert_equal 2, request.records_filtered
     assert_equal 2, request.records.count
@@ -168,7 +168,7 @@ end
     ) do
       @model_class.all
     end
-    assert_not request.error?
+    assert_not request.error?, "Did not expect #{request.error.inspect}"
     assert_equal 4, request.draw
     assert_equal 7, request.records_total
     assert_equal 2, request.records_filtered
@@ -186,7 +186,7 @@ end
     ) do
       @model_class.all
     end
-    assert_not request.error?
+    assert_not request.error?, "Did not expect #{request.error.inspect}"
     assert_equal 7, request.records_total
     assert_equal 4, request.records_filtered
     assert_equal 4, request.records.count
@@ -223,7 +223,7 @@ end
     ) do
       @model_class.all
     end
-    assert_not request.error?
+    assert_not request.error?, "Did not expect #{request.error.inspect}"
     assert_equal 6, request.draw
     assert_equal 7, request.records_total
     assert_equal 3, request.records_filtered

@@ -39,19 +39,30 @@
           searchable: true
         },
         {
-          data: 'DT_path',
           orderable: false,
           searchable: false,
-          render: function(data,type) {
-            var ret = data;
-            if (type === 'display') {
-              ret = '<div class="text-right">' +
-                '<a href="' + data + '" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>' +
-                '<a href="' + data + '/edit" title="Edit" class="btn btn-default btn-xs"><i class="glyphiocn glyphicon-pencil"></i></a>' +
-                '<a href="' + data + '" title="Remove" class="btn btn-danger btn-xs" data-method="delete" data-confirm="Are you sure you want to remove this user?"><i class="glyphicon glyphicon-trash"></i></a>' +
-                '</div>';
+          data: function (row, type, set, meta) {
+            if (type === 'display')
+            {
+              var ret = '<div class="text-right">';
+              ret += '<a href="' + row.DT_Path + '" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>';
+              if (row.show_edit) {
+                ret += '<a href="' + row.DT_Path + '/edit" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
+              }
+              if (row.show_disable) {
+                ret += '<a href="' + row.DT_Path + '/disable" title="Disable" class="btn btn-warning btn-xs"><i class="glyphicon glyphicon-remove-sign"></i></a>';
+              } else if (row.show_enable) {
+                ret += '<a href="' + row.DT_Path + '/enable" title="Enable" class="btn btn-success btn-xs" data-method="patch"><i class="glyphicon glyphicon-ok-sign"></i></a>';
+              }
+              if (row.show_delete) {
+                ret += '<a href="' + row.DT_Path + '" title="Remove" class="btn btn-danger btn-xs" data-method="delete" data-confirm="Are you sure you want to remove this user?"><i class="glyphicon glyphicon-trash"></i></a>';
+              }
+              ret += '</div>';
+
+              return ret;
+            } else {
+              return row.DT_Path;
             }
-            return ret;
           }
         }
       ],
