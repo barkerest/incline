@@ -364,6 +364,11 @@ module Incline
           end
     end
 
+    ##
+    # Gets the formatted email for this user.
+    def to_s
+      formatted_email
+    end
 
     private
 

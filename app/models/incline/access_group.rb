@@ -49,7 +49,7 @@ module Incline
           end
         end
       end
-      ret
+      ret.sort{|a,b| a.name <=> b.name}
     end
 
     protected

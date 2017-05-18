@@ -45,6 +45,10 @@ module Incline::Extensions
       # {action}_params::
       #     You can pass params to the action by specifying a hash containing them in this fashion.
       #     e.g. - :new_params => { }  # params for :new action
+      # return_code::
+      #     If this is set to a true value, the test code is generated, but not executed.  The test code will then
+      #     be returned as a string.
+      #     If this is not to a true value, the test code will be executed as generated and nil will be returned.
       #
       #   access_tests_for :new, controller: 'users', allow_anon: true, allow_any_user: false, allow_admin: false
       #
@@ -159,6 +163,8 @@ module Incline::Extensions
           end
         end
 
+        all_code = ''
+
         tests.each do |(label, result, user, group, success_override, failure_override)|
           expected_result = result ? (success_override || options[:success]) : (failure_override || options[:failure])
 
@@ -190,11 +196,18 @@ module Incline::Extensions
 
           test_code += "end\n"
 
-          Incline::Log::debug test_code
+          all_code += test_code
 
-          eval test_code
+          unless options[:return_code]
+            Incline::Log::debug test_code
+            eval test_code
+          end
         end
+
+        options[:return_code] ? all_code : nil
+
       end
+
     end
 
     ##
@@ -226,7 +239,7 @@ module Incline::Extensions
     # Tests a specific field for presence validation.
     #
     # model::
-    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_.
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_ and _errors_.
     #
     # attribute::
     #     This must provide the name of a valid attribute in the model.
@@ -234,18 +247,24 @@ module Incline::Extensions
     # message::
     #     This is optional, but if provided it will be postfixed with the failure reason.
     #
-    def assert_required(model, attribute, message = nil)
+    # regex::
+    #     This is the regex to match against the error message to ensure that the failure is for the correct reason.
+    #
+    def assert_required(model, attribute, message = nil, regex = /can't be blank/)
       original_value = model.send(attribute)
       assert model.valid?, 'Model should be valid to start.'
       is_string = original_value.is_a?(String)
       setter = :"#{attribute}="
       model.send setter, nil
       assert_not model.valid?, message ? (message + ': (nil)') : "Should not allow #{attribute} to be set to nil."
+      assert model.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
       if is_string
         model.send setter, ''
         assert_not model.valid?, message ? (message + ": ('')") : "Should not allow #{attribute} to be set to empty string."
+        assert model.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
         model.send setter, '   '
         assert_not model.valid?, message ? (message + ": ('   ')") : "Should not allow #{attribute} to be set to blank string."
+        assert model.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
       end
       model.send setter, original_value
       assert model.valid?, message ? (message + ": !(#{original_value.inspect})") : "Should allow #{attribute} to be set back to '#{original_value.inspect}'."
@@ -255,7 +274,7 @@ module Incline::Extensions
     # Tests a specific field for maximum length restriction.
     #
     # model::
-    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_.
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_ and _errors_.
     #
     # attribute::
     #     This must provide the name of a valid attribute in the model.
@@ -266,6 +285,9 @@ module Incline::Extensions
     # message::
     #     This is optional, but if provided it will be postfixed with the failure reason.
     #
+    # regex::
+    #     This is the regex to match against the error message to ensure that the failure is for the correct reason.
+    #
     # options::
     #     This is a list of options for the validation.
     #     Currently :start_with and :end_with are recognized.
@@ -273,7 +295,7 @@ module Incline::Extensions
     #     Use :end_with to specify a postfix for the tested string.
     #     This would be most useful when you value has to follow a format (eg - email address :end_with => '@example.com')
     #
-    def assert_max_length(model, attribute, max_length, message = nil, options = {})
+    def assert_max_length(model, attribute, max_length, message = nil, regex = /is too long/, options = {})
       original_value = model.send(attribute)
       assert model.valid?, 'Model should be valid to start.'
       setter = :"#{attribute}="
@@ -281,6 +303,11 @@ module Incline::Extensions
       if message.is_a?(Hash)
         options = message.merge(options || {})
         message = nil
+      end
+
+      if regex.is_a?(Hash)
+        options = regex.merge(options || {})
+        regex = /is too long/
       end
 
       pre = options[:start_with].to_s
@@ -296,6 +323,7 @@ module Incline::Extensions
       value = pre + ('a' * (len + 1)) + post
       model.send setter, value
       assert_not model.valid?, message ? (message + ": (#{value.length})") : "Should not allow a string of #{value.length} characters."
+      assert model.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
 
       model.send setter, original_value
       assert model.valid?, message ? (message + ": !(#{original_value.inspect})") : "Should allow #{attribute} to be set back to '#{original_value.inspect}'."
@@ -305,7 +333,7 @@ module Incline::Extensions
     # Tests a specific field for maximum length restriction.
     #
     # model::
-    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_.
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_ and _errors_.
     #
     # attribute::
     #     This must provide the name of a valid attribute in the model.
@@ -316,6 +344,9 @@ module Incline::Extensions
     # message::
     #     This is optional, but if provided it will be postfixed with the failure reason.
     #
+    # regex::
+    #     This is the regex to match against the error message to ensure that the failure is for the correct reason.
+    #
     # options::
     #     This is a list of options for the validation.
     #     Currently :start_with and :end_with are recognized.
@@ -323,7 +354,7 @@ module Incline::Extensions
     #     Use :end_with to specify a postfix for the tested string.
     #     This would be most useful when you value has to follow a format (eg - email address :end_with => '@example.com')
     #
-    def assert_min_length(model, attribute, min_length, message = nil, options = {})
+    def assert_min_length(model, attribute, min_length, message = nil, regex = /is too short/, options = {})
       original_value = model.send(attribute)
       assert model.valid?, 'Model should be valid to start.'
       setter = :"#{attribute}="
@@ -331,6 +362,11 @@ module Incline::Extensions
       if message.is_a?(Hash)
         options = message.merge(options || {})
         message = nil
+      end
+
+      if regex.is_a?(Hash)
+        options = regex.merge(options || {})
+        regex = /is too short/
       end
 
       pre = options[:start_with].to_s
@@ -346,6 +382,7 @@ module Incline::Extensions
       value = pre + ('a' * (len - 1)) + post
       model.send setter, value
       assert_not model.valid?, message ? (message + ": (#{value.length})") : "Should not allow a string of #{value.length} characters."
+      assert model.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
 
       model.send setter, original_value
       assert model.valid?, message ? (message + ": !(#{original_value.inspect})") : "Should allow #{attribute} to be set back to '#{original_value.inspect}'."
@@ -355,7 +392,7 @@ module Incline::Extensions
     # Tests a specific field for uniqueness.
     #
     # model::
-    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_.
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_, _errors_, and _save!_.
     #     The model will be saved to perform uniqueness testing.
     #
     # attribute::
@@ -367,6 +404,10 @@ module Incline::Extensions
     # message::
     #     This is optional, but if provided it will be postfixed with the failure reason.
     #
+    # regex::
+    #     This is the regex to match against the error message to ensure that the failure is for the correct reason.
+    #
+    #
     # alternate_scopes::
     #     This is also optional.  If provided the keys of the hash will be used to
     #     set additional attributes on the model.  When these attributes are changed to the alternate
@@ -374,7 +415,7 @@ module Incline::Extensions
     #     The alternative scopes are processed one at a time and the original values are restored
     #     before moving onto the next scope.
     #
-    def assert_uniqueness(model, attribute, case_sensitive = false, message = nil, alternate_scopes = {})
+    def assert_uniqueness(model, attribute, case_sensitive = false, message = nil, regex = /has already been taken/, alternate_scopes = {})
       setter = :"#{attribute}="
       original_value = model.send(attribute)
 
@@ -388,30 +429,79 @@ module Incline::Extensions
         alternate_scopes = message.merge(alternate_scopes || {})
         message = nil
       end
+      if regex.is_a?(Hash)
+        alternate_scopes = regex.merge(alternate_scopes || {})
+        regex = /has already been taken/
+      end
 
-      copy = model.dup
       model.save!
+      copy = model.dup
 
       assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
+      assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
       unless case_sensitive
         copy.send(setter, original_value.to_s.upcase)
         assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
+        assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
         copy.send(setter, original_value.to_s.downcase)
         assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
+        assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
       end
 
       unless alternate_scopes.blank?
         copy.send(setter, original_value)
         assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
+        assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
         alternate_scopes.each do |k,v|
           kset = :"#{k}="
           vorig = copy.send(k)
           copy.send(kset, v)
           assert copy.valid?, message ? (message + ": !#{k}(#{v})") : "Duplicate model with #{k}=#{v.inspect} should be valid with #{attribute}=#{copy.send(attribute).inspect}."
           copy.send(kset, vorig)
-          assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."      end
+          assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
+          assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
+        end
       end
     end
+
+    ##
+    # Tests a specific field for reCAPTCHA validation.
+    #
+    # During testing reCAPTCHA is disabled, but there is a special response that is expected.
+    #
+    # model::
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_ and _errors_.
+    #
+    # attribute::
+    #     This must provide the name of a valid attribute in the model.
+    #
+    # message::
+    #     This is optional, but if provided it will be postfixed with the failure reason.
+    #
+    # regex::
+    #     This is the regex to match against the error message to ensure that the failure is for the correct reason.
+    #     The default value of nil uses two regular expressions to match the two failure cases.
+    #
+    def assert_recaptcha(model, attribute, message = nil, regex = nil)
+      assert model.valid?, 'Model should be valid to start.'
+      setter = :"#{attribute}="
+
+      # no response, just an ip address.
+      model.send setter, '127.0.0.1'
+      assert_not model.valid?
+      r = regex || /requires recaptcha challenge to be completed/i
+      assert model.errors[:base].to_s =~ r, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
+
+      @item.recaptcha = '127.0.0.1|invalid'
+      assert_not @item.valid?
+      r = regex || /invalid response from recaptcha challenge/i
+      assert model.errors[:base].to_s =~ r, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
+
+      # since recaptcha is disabled for testing, the following string should validate.
+      @item.recaptcha = '127.0.0.1|disabled'
+      assert @item.valid?
+    end
+
 
     ##
     # Includes the class methods into the including object.

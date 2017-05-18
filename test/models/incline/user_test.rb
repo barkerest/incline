@@ -24,6 +24,16 @@ module Incline
       assert_required @item, :email
     end
 
+    test 'should require recaptcha' do
+      assert_required @item, :recaptcha
+    end
+
+    test 'recaptcha not required for updates' do
+      @item.save!
+      @item.recaptcha = nil
+      assert @item.valid?
+    end
+
     test 'name should not be too long' do
       assert_max_length @item, :name, 100
     end
@@ -59,6 +69,14 @@ module Incline
       assert_not @item.valid?
     end
 
+    test 'password_confirmation must match' do
+      @item.password_confirmation = 'a' * 8
+      assert_not @item.valid?
+    end
+
+    test 'authenticated should return false for nil digest' do
+      assert_not @item.authenticated?(:remember, '')
+    end
 
 
   end

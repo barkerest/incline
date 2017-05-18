@@ -21,6 +21,8 @@ class TestCaseExtensionsTest < ActiveSupport::TestCase
 class #{TEST_TABLE_CLASS} < ActiveRecord::Base
   self.table_name = #{TEST_TABLE_NAME.inspect}
 
+  attr_accessor :recaptcha
+
   validates :group,
       presence: true
 
@@ -32,11 +34,14 @@ class #{TEST_TABLE_CLASS} < ActiveRecord::Base
   validates :description,
       length: { maximum: 100 }
 
+  validates :recaptcha, 'incline/recaptcha' => true
+
 end
     EOM
 
     # Store the model class for use.
     @model_class = self.class.const_get TEST_TABLE_CLASS
+    @item = @model_class.new(group: 1, name: 'Hello', description: 'World', session: 99, recaptcha: Incline::Recaptcha::DISABLED)
   end
 
   def teardown
@@ -56,30 +61,57 @@ end
     assert respond_to?(:assert_max_length)
     assert respond_to?(:assert_min_length)
     assert respond_to?(:assert_uniqueness)
+    assert respond_to?(:assert_recaptcha)
   end
 
-  test 'validators work correctly' do
-    @item = @model_class.new(group: 1, name: 'Hello', description: 'World', session: 99)
-
+  test 'item should be valid' do
     assert @item.valid?
+  end
 
-    # should pass.
+  test 'item should require group' do
     assert_required @item, :group
-    assert_required @item, :name
-    assert_min_length @item, :name, 5
-    assert_max_length @item, :name, 30
-    assert_uniqueness @item, :name, group: 2
-    assert_max_length @item, :description, 100
+  end
 
-    # should fail.
+  test 'item should require name' do
+    assert_required @item, :name
+  end
+
+  test 'item name should have min length' do
+    assert_min_length @item, :name, 5
+  end
+
+  test 'item name should have max length' do
+    assert_max_length @item, :name, 30
+  end
+
+  test 'item name should be unique within group' do
+    assert_uniqueness @item, :name, group: 2
+  end
+
+  test 'item description should have max length' do
+    assert_max_length @item, :description, 100
+  end
+
+  test 'item recaptcha should pass validation' do
+    assert_recaptcha @item, :recaptcha
+  end
+
+  test 'item description should not be required' do
     assert_raises(Minitest::Assertion) { assert_required @item, :description }
+  end
+
+  test 'item session should not be required' do
     assert_raises(Minitest::Assertion) { assert_required @item, :session }
+  end
+
+  test 'item description length is not limited to 50, 101, or 10' do
     assert_raises(Minitest::Assertion) { assert_max_length @item, :description, 50 }
     assert_raises(Minitest::Assertion) { assert_max_length @item, :description, 101 }
     assert_raises(Minitest::Assertion) { assert_min_length @item, :description, 10 }
-    assert_raises(Minitest::Assertion) { assert_uniqueness @item, :name, session: 100 }
   end
 
-  # TODO: Test is_logged_in? and log_in_as.
+  test 'item name is unique across sessions' do
+    assert_raises(Minitest::Assertion) { assert_uniqueness @item, :name, session: 100 }
+  end
 
 end
