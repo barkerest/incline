@@ -181,6 +181,8 @@ function #{callback}(response) {
     # Returns true on success, or false on failure.
     #
     def self.verify(options = {})
+      return true if temp_lock
+
       model = options[:model]
 
       response =
@@ -229,7 +231,6 @@ function #{callback}(response) {
               remoteip: remote_ip,
               response: response
           }
-
           recaptcha = nil
           Timeout::timeout(5) do
             uri = URI.parse('https://www.google.com/recaptcha/api/siteverify')
@@ -292,10 +293,16 @@ function #{callback}(response) {
     def self.pause_for(&block)
       self.temp_lock = true
       begin
-        block.call
+        return block.call
       ensure
         self.temp_lock = false
       end
+    end
+
+    ##
+    # Determines if reCAPTCHA validation is currently paused.
+    def self.paused?
+      temp_lock
     end
 
     private

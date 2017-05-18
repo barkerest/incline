@@ -1,19 +1,5 @@
 <% provide(:title, 'Sign up') %>
 <h1>Sign up</h1>
 
-<%= error_summary(@user) %>
-
-<div class="row">
-  <div class="col-md-4 col-md-offset-4">
-    <%= form_for(@user, url: signup_path) do |f| %>
-        <%= f.text_form_group :name, field_maxlength: 100 %>
-        <%= f.text_form_group :email, field_type: 'email', field_maxlength: 250 %>
-        <%= f.text_form_group :password, field_type: 'password' %>
-        <%= f.text_form_group :password_confirmation, field_type: 'password' %>
-        <%= f.recaptcha :recaptcha %>
-
-        <%= f.submit 'Create account', class: 'btn btn-primary' %>
-    <% end %>
-  </div>
-</div>
+<%= render partial: 'form', locals: { user: @user } %>
 

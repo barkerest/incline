@@ -24,8 +24,8 @@ Incline::Recaptcha::pause_for do
             password_confirmation: password,
             activated: !!activated,
             activated_at: activated,
-            recaptcha: Incline::Recaptcha::DISABLED,
-            created_at: created
+            created_at: created,
+            recaptcha: 'na'
         )
         if activated
           hist =
@@ -72,7 +72,7 @@ Incline::Recaptcha::pause_for do
             disabled_by: admin_user.email,
             disabled_at: ((n * 2.5).to_i + 1).days.ago,
             disabled_reason: 'For testing',
-            recaptcha: Incline::Recaptcha::DISABLED
+            recaptcha: 'na'
         )
       end
     end

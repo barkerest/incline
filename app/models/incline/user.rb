@@ -59,7 +59,7 @@ module Incline
     validates :recaptcha,
               presence: true,
               'incline/recaptcha' => true,
-              if: :new_record?
+              on: :create
 
 
     ##
@@ -316,21 +316,24 @@ module Incline
         def_adm_email = def_adm[:email] || 'admin@barkerest.com'
         def_adm_pass = def_adm[:password] || 'Password1'
 
-        user = User
-                   .where(
-                       email: def_adm_email
-                   )
-                   .first_or_create!(
-                       name: 'Default Administrator',
-                       email: def_adm_email,
-                       password: def_adm_pass,
-                       password_confirmation: def_adm_pass,
-                       enabled: true,
-                       system_admin: true,
-                       activated: true,
-                       activated_at: Time.zone.now,
-                       recaptcha: Incline::Recaptcha::DISABLED
-                   )
+        user = Incline::Recaptcha::pause_for do
+          User
+              .where(
+                  email: def_adm_email
+              )
+              .first_or_create!(
+                  name: 'Default Administrator',
+                  email: def_adm_email,
+                  password: def_adm_pass,
+                  password_confirmation: def_adm_pass,
+                  enabled: true,
+                  system_admin: true,
+                  activated: true,
+                  activated_at: Time.zone.now,
+                  recaptcha: 'na'
+              )
+        end
+
 
         unless user.activated? && user.enabled? && user.system_admin?
           user.password = def_adm_pass

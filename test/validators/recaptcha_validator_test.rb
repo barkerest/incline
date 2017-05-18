@@ -42,5 +42,16 @@ class RecaptchaValidatorTest < ActiveSupport::TestCase
     assert @item.valid?
   end
 
+  test 'recaptcha validator changes value' do
+    assert_not_equal :verified, @item.recaptcha
+
+    # the validator changes the value to :verified when it passes.
+    assert @item.valid?
+    assert_equal :verified, @item.recaptcha
+
+    # that way future calls to valid? will continue to pass.
+    assert @item.valid?
+  end
+
 
 end

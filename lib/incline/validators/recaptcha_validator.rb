@@ -12,13 +12,21 @@ module Incline
       # Do NOT raise an error if nil.
       return if value.blank?
 
+      # Make sure the response only gets processed once.
+      return if value == :verified
+
+      # Automatically skip validation if paused.
+      return if Incline::Recaptcha::paused?
+
       # If the user form includes the recaptcha field, then something will come in
       # and then we want to check it.
       remote_ip, _, response = value.partition('|')
       if remote_ip.blank? || response.blank?
         record.errors[:base] << (options[:message] || 'Requires reCAPTCHA challenge to be completed')
       else
-        unless Incline::Recaptcha::verify(response: response, remote_ip: remote_ip)
+        if Incline::Recaptcha::verify(response: response, remote_ip: remote_ip)
+          record.send "#{attribute}=", :verified
+        else
           record.errors[:base] << (options[:message] || 'Invalid response from reCAPTCHA challenge')
         end
       end
