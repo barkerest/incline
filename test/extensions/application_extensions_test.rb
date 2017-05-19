@@ -12,10 +12,12 @@ class ApplicationExtensionsTest < ActiveSupport::TestCase
     assert app.respond_to?(:app_company)
     assert app.respond_to?(:app_info)
     assert app.respond_to?(:app_copyright_year)
-    assert app.respond_to?(:app_company)
+    assert app.respond_to?(:app_copyright)
     assert app.respond_to?(:restart_pending?)
     assert app.respond_to?(:request_restart!)
     assert app.respond_to?(:cookie_name)
   end
+
+  # TODO: Test output of various methods.
 
 end

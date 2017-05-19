@@ -308,6 +308,32 @@ module Incline::Extensions
     end
 
     ##
+    # Creates a standard form group with a label and password field.
+    #
+    # The +options+ is a hash containing label, field, and group options.
+    # Prefix label options with +label_+ and field options with +field_+.
+    # All other options will apply to the group itself.
+    #
+    # Group options:
+    #
+    # class::
+    #     The CSS class for the form group.  Defaults to 'form-group'.
+    #
+    # style::
+    #     Any styles to apply to the form group.
+    #
+    # For label options, see #label_w_small.
+    # For field options, see {FormHelper#password_field}[http://apidock.com/rails/ActionView/Helpers/FormHelper/password_field].
+    #
+    def password_form_group(method, options = {})
+      gopt, lopt, fopt = split_form_group_options(options)
+      lbl = label_w_small(method, lopt)
+      fld = gopt[:wrap].call(password_field(method, fopt))
+      form_group lbl, fld, gopt
+    end
+
+    
+    ##
     # Creates a form group including a label and a text area.
     #
     # The +options+ is a hash containing label, field, and group options.

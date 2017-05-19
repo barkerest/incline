@@ -11,13 +11,16 @@ module Incline::Extensions
         alias :incline_mainapp_original_method_missing :method_missing
 
         def method_missing(method, *args, &block) # :nodoc:
-          if respond_to?(:main_app)
-            main_app = send(:main_app)
-            if main_app && main_app.respond_to?(method)
-              return main_app.send(method, *args, &block)
-            end
+          o_main_app = if respond_to?(:main_app)
+                         send(:main_app)
+                       else
+                         Rails.application.class.routes.url_helpers
+                       end
+          
+          if o_main_app && o_main_app.respond_to?(method)
+            return o_main_app.send(method, *args, &block)
           end
-
+          
           incline_mainapp_original_method_missing(method, *args, &block)
         end
 
