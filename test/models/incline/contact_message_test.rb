@@ -55,19 +55,12 @@ module Incline
     end
 
     test 'should validate recaptcha' do
-      assert_recaptcha @item, :recaptcha
+      assert_recaptcha_validation @item, :recaptcha
     end
 
-    test 'should reject invalid email addresses' do
-      [ # just a few sanity checks, the email validator checks are more thorough but we want to ensure the validator is running.
-          'admin',
-          'user@localhost'
-      ].each do |addr|
-        @item.your_email = addr
-        assert_not @item.valid?, "Should not have accepted #{addr.inspect}."
-      end
+    test 'should validate email' do
+      assert_email_validation @item, :your_email
     end
-
 
   end
 end

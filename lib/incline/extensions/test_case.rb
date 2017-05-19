@@ -250,7 +250,7 @@ module Incline::Extensions
     # regex::
     #     This is the regex to match against the error message to ensure that the failure is for the correct reason.
     #
-    def assert_required(model, attribute, message = nil, regex = /can't be blank/)
+    def assert_required(model, attribute, message = nil, regex = /can't be blank/i)
       original_value = model.send(attribute)
       assert model.valid?, 'Model should be valid to start.'
       is_string = original_value.is_a?(String)
@@ -295,7 +295,7 @@ module Incline::Extensions
     #     Use :end_with to specify a postfix for the tested string.
     #     This would be most useful when you value has to follow a format (eg - email address :end_with => '@example.com')
     #
-    def assert_max_length(model, attribute, max_length, message = nil, regex = /is too long/, options = {})
+    def assert_max_length(model, attribute, max_length, message = nil, regex = /is too long/i, options = {})
       original_value = model.send(attribute)
       assert model.valid?, 'Model should be valid to start.'
       setter = :"#{attribute}="
@@ -307,7 +307,7 @@ module Incline::Extensions
 
       if regex.is_a?(Hash)
         options = regex.merge(options || {})
-        regex = /is too long/
+        regex = /is too long/i
       end
 
       pre = options[:start_with].to_s
@@ -354,7 +354,7 @@ module Incline::Extensions
     #     Use :end_with to specify a postfix for the tested string.
     #     This would be most useful when you value has to follow a format (eg - email address :end_with => '@example.com')
     #
-    def assert_min_length(model, attribute, min_length, message = nil, regex = /is too short/, options = {})
+    def assert_min_length(model, attribute, min_length, message = nil, regex = /is too short/i, options = {})
       original_value = model.send(attribute)
       assert model.valid?, 'Model should be valid to start.'
       setter = :"#{attribute}="
@@ -366,7 +366,7 @@ module Incline::Extensions
 
       if regex.is_a?(Hash)
         options = regex.merge(options || {})
-        regex = /is too short/
+        regex = /is too short/i
       end
 
       pre = options[:start_with].to_s
@@ -415,7 +415,7 @@ module Incline::Extensions
     #     The alternative scopes are processed one at a time and the original values are restored
     #     before moving onto the next scope.
     #
-    def assert_uniqueness(model, attribute, case_sensitive = false, message = nil, regex = /has already been taken/, alternate_scopes = {})
+    def assert_uniqueness(model, attribute, case_sensitive = false, message = nil, regex = /has already been taken/i, alternate_scopes = {})
       setter = :"#{attribute}="
       original_value = model.send(attribute)
 
@@ -431,7 +431,7 @@ module Incline::Extensions
       end
       if regex.is_a?(Hash)
         alternate_scopes = regex.merge(alternate_scopes || {})
-        regex = /has already been taken/
+        regex = /has already been taken/i
       end
 
       model.save!
@@ -482,26 +482,260 @@ module Incline::Extensions
     #     This is the regex to match against the error message to ensure that the failure is for the correct reason.
     #     The default value of nil uses two regular expressions to match the two failure cases.
     #
-    def assert_recaptcha(model, attribute, message = nil, regex = nil)
+    def assert_recaptcha_validation(model, attribute, message = nil, regex = nil)
       assert model.valid?, 'Model should be valid to start.'
       setter = :"#{attribute}="
 
       # no response, just an ip address.
       model.send setter, '127.0.0.1'
-      assert_not model.valid?
+      assert_not model.valid?, message ? (message + ': (accepted without response)') : 'Should not have accepted without response.'
       r = regex || /requires recaptcha challenge to be completed/i
       assert model.errors[:base].to_s =~ r, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
 
       @item.recaptcha = '127.0.0.1|invalid'
-      assert_not @item.valid?
+      assert_not @item.valid?, message ? (message + ': (accepted invalid response)') : 'Should not have accepted invalid response.'
       r = regex || /invalid response from recaptcha challenge/i
       assert model.errors[:base].to_s =~ r, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
 
       # since recaptcha is disabled for testing, the following string should validate.
       @item.recaptcha = '127.0.0.1|disabled'
-      assert @item.valid?
+      assert @item.valid?, message ? (message + ': (rejected valid response)') : 'Should have accepted valid response.'
     end
 
+    ##
+    # Tests a specific field for email verification.
+    #
+    # model::
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_ and _errors_.
+    #
+    # attribute::
+    #     This must provide the name of a valid attribute in the model.
+    #
+    # message::
+    #     This is optional, but if provided it will be postfixed with the failure reason.
+    #
+    # regex::
+    #     This is the regex to match against the error message to ensure that the failure is for the correct reason.
+    #
+    def assert_email_validation(model, attribute, message = nil, regex = /is not a valid email address/i)
+      assert model.valid?, 'Model should be valid to start.'
+      setter = :"#{attribute}="
+      orig = model.send attribute
+
+      valid = %w(
+        user@example.com
+        USER@foo.COM
+        A_US-ER@foo.bar.org
+        first.last@foo.jp
+        alice+bob@bax.cn
+      )
+
+      invalid = %w(
+        user@example,com
+        user_at_foo.org
+        user@example.
+        user@example.com.
+        foo@bar_baz.com
+        foo@bar+baz.com
+        @example.com
+        user@
+        user
+        user@..com
+        user@example..com
+        user@.example.com
+        user@@example.com
+        user@www@example.com
+      )
+
+      valid.each do |addr|
+        model.send setter, addr
+        assert model.valid?, message ? (message + ': (rejected valid address)') : "Should have accepted #{addr.inspect}."
+      end
+
+      invalid.each do |addr|
+        model.send setter, addr
+        assert_not model.valid?, message ? (message + ': (accepted invalid address)') : "Should have rejected #{addr.inspect}."
+        assert model.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
+      end
+
+      model.send setter, orig
+      assert model.valid?, message ? (message + ': (rejected original value)') : "Should have accepted original value of #{orig.inspect}."
+
+    end
+
+
+    ##
+    # Tests a specific field for IP address verification.
+    #
+    # model::
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_ and _errors_.
+    #
+    # attribute::
+    #     This must provide the name of a valid attribute in the model.
+    #
+    # mask::
+    #     This can be one of :allow_mask, :require_mask, or :deny_mask.  The default is :allow_mask.
+    #
+    # message::
+    #     This is optional, but if provided it will be postfixed with the failure reason.
+    #
+    # regex::
+    #     This is the regex to match against the error message to ensure that the failure is for the correct reason.
+    #     The default value is nil to test for the various default messages.
+    #
+    def assert_ip_validation(model, attribute, mask = :allow_mask, message = nil, regex = nil)
+      assert model.valid?, 'Model should be valid to start.'
+      setter = :"#{attribute}="
+      orig = model.send attribute
+
+      valid = %w(
+          0.0.0.0
+          1.2.3.4
+          10.20.30.40
+          255.255.255.255
+          10:20::30:40
+          ::1
+          1:2:3:4:5:6:7:8
+          A:B:C:D:E:F::
+      )
+
+      invalid = %w(
+          localhost
+          100.200.300.400
+          12345::abcde
+          1.2.3.4.5
+          1.2.3
+          0
+          1:2:3:4:5:6:7:8:9:0
+          a:b:c:d:e:f:g:h
+      )
+
+      valid.each do |addr|
+        if mask == :require_mask
+          if addr.index(':')
+            addr += '/128'
+          else
+            addr += '/32'
+          end
+        end
+        model.send setter, addr
+        assert model.valid?, message ? (message + ': (rejected valid address)') : "Should have accepted #{addr.inspect}."
+      end
+
+      r = regex ? regex : /is not a valid ip address/i
+      invalid.each do |addr|
+        if mask == :require_mask
+          if addr.index(':')
+            addr += '/128'
+          else
+            addr += '/32'
+          end
+        end
+        model.send setter, addr
+        assert_not model.valid?, message ? (message + ': (accepted invalid address)') : "Should have rejected #{addr.inspect}."
+        assert model.errors[attribute].to_s =~ r, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
+      end
+
+      if mask == :allow_mask || mask == :require_mask
+        address = '127.0.0.0/8'
+        model.send setter, address
+        assert model.valid?, message ? (message + ': (rejected masked address)') : "Should have accepted #{address.inspect}."
+      end
+
+      if mask == :allow_mask || mask == :deny_mask
+        address = '127.0.0.1'
+        model.send setter, address
+        assert model.valid?, message ? (message + ': (rejected unmasked address)') : "Should have accepted #{address.inspect}."
+      end
+
+      if mask == :require_mask
+        r = regex ? regex : /must contain a mask/i
+        address = '127.0.0.1'
+        model.send setter, address
+        assert_not model.valid?, message ? (message + ': (accepted unmasked address)') : "Should have rejected #{address.inspect} for no mask."
+        assert model.errors[attribute].to_s =~ r, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
+      end
+
+      if mask == :deny_mask
+        r = regex ? regex : /must not contain a mask/i
+        address = '127.0.0.0/8'
+        model.send setter, address
+        assert_not model.valid? message ? (message + ': (accepted masked address)') : "Should have rejected #{address.inspect} for mask."
+        assert model.errors[attribute].to_s =~ r, message ? (message + ': (error message)') : 'Did not fail for expected reason.'
+      end
+
+      model.send setter, orig
+      assert model.valid?, message ? (message + ': (rejected original value)') : "Should have accepted original value of #{orig.inspect}."
+    end
+
+    ##
+    # Tests a specific field for safe name verification.
+    #
+    # model::
+    #     This must respond to _attribute_ and _attribute=_ as well as _valid?_ and _errors_.
+    #
+    # attribute::
+    #     This must provide the name of a valid attribute in the model.
+    #
+    # length::
+    #     The length of the string to test.  Must be greater than 2.  Default is 6.
+    #
+    # message::
+    #     This is optional, but if provided it will be postfixed with the failure reason.
+    #
+    # regex::
+    #     This is the regex to match against the error message to ensure that the failure is for the correct reason.
+    #     The default value is nil to test for the various default messages.
+    #
+    def assert_safe_name_validation(model, attribute, length = 6, message = nil, regex = nil)
+      assert model.valid?, 'Model should be valid to start.'
+      setter = :"#{attribute}="
+      orig = model.send attribute
+
+      assert length > 2, message ? (message + ': (field is too short to test)') : 'Requires a field length greater than 2 to perform tests.'
+
+      # valid tests.
+      mid_length = length - 2
+      mid = ''    # _z_z_z_z_z_
+      while mid.length < mid_length
+        if mid.length + 1 < mid_length
+          mid += '_z'
+        else
+          mid += '_'
+        end
+      end
+
+      [
+          'a' * length,
+          'a' + ('1' * (length - 1)),
+          'a' + mid + 'a',
+          'a' + mid + '1'
+      ].each do |val|
+        model.send setter, val
+        assert model.valid?, message ? (message + ': (rejected valid string)') : "Should have accepted #{val.inspect}."
+        val.upcase!
+        model.send setter, val
+        assert model.valid?, message ? (message + ': (rejected valid string)') : "Should have accepted #{val.inspect}."
+      end
+
+      # invalid tests.
+      {
+          '_' + ('a' * (length - 1)) => /must start with a letter/i,
+          '1' + ('a' * (length - 1)) => /must start with a letter/i,
+          ('a' * (length - 1)) + '_' => /must not end with an underscore/i,
+          ('a' * (length - 2)) + '-' + 'a' => /must contain only letters, numbers, and underscore/i,
+          ('a' * (length - 2)) + '#' + 'a' => /must contain only letters, numbers, and underscore/i,
+          ('a' * (length - 2)) + ' ' + 'a' => /must contain only letters, numbers, and underscore/i
+      }.each do |val, reg|
+        r = regex ? regex : reg
+        model.send setter, val
+        assert_not model.valid?, message ? (message + ': (accepted invalid string)') : "Should have rejected #{val.inspect}."
+        assert model.errors[attribute].to_s =~ r, message ? (message + ': (error message)') : "Did not fail for expected reason on #{val.inspect}."
+      end
+
+      model.send setter, orig
+      assert model.valid?, message ? (message + ': (rejected original value)') : "Should have accepted original value of #{orig.inspect}."
+    end
 
     ##
     # Includes the class methods into the including object.

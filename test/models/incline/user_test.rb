@@ -28,6 +28,10 @@ module Incline
       assert_required @item, :recaptcha
     end
 
+    test 'should validate recaptcha' do
+      assert_recaptcha_validation @item, :recaptcha
+    end
+
     test 'recaptcha not required for updates' do
       @item.save!
       @item.recaptcha = nil
@@ -44,6 +48,10 @@ module Incline
 
     test 'email should be unique' do
       assert_uniqueness @item, :email
+    end
+
+    test 'email should be validated' do
+      assert_email_validation @item, :email
     end
 
     test 'email should be saved lowercase' do

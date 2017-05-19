@@ -11,7 +11,6 @@ class TestCaseExtensionsTest < ActiveSupport::TestCase
       ActiveRecord::Migration::create_table TEST_TABLE_NAME do |t|
         t.integer :group,       null: false
         t.string  :name,        null: false,  limit: 30
-        t.integer :session
         t.string  :description,               limit: 100
       end
     end
@@ -21,7 +20,7 @@ class TestCaseExtensionsTest < ActiveSupport::TestCase
 class #{TEST_TABLE_CLASS} < ActiveRecord::Base
   self.table_name = #{TEST_TABLE_NAME.inspect}
 
-  attr_accessor :recaptcha
+  attr_accessor :recaptcha, :email, :ip_any, :ip_mask, :ip_nomask, :session, :safe_name
 
   validates :group,
       presence: true
@@ -35,13 +34,17 @@ class #{TEST_TABLE_CLASS} < ActiveRecord::Base
       length: { maximum: 100 }
 
   validates :recaptcha, 'incline/recaptcha' => true
-
+  validates :email, 'incline/email' => true
+  validates :ip_any, 'incline/ip_address' => true
+  validates :ip_mask, 'incline/ip_address' => { require_mask: true }
+  validates :ip_nomask, 'incline/ip_address' => { no_mask: true }
+  validates :safe_name, 'incline/safe_name' => true
 end
     EOM
 
     # Store the model class for use.
     @model_class = self.class.const_get TEST_TABLE_CLASS
-    @item = @model_class.new(group: 1, name: 'Hello', description: 'World', session: 99, recaptcha: Incline::Recaptcha::DISABLED)
+    @item = @model_class.new(group: 1, name: 'Hello', description: 'World', session: 99, email: 'user@example.com', recaptcha: Incline::Recaptcha::DISABLED)
   end
 
   def teardown
@@ -61,7 +64,10 @@ end
     assert respond_to?(:assert_max_length)
     assert respond_to?(:assert_min_length)
     assert respond_to?(:assert_uniqueness)
-    assert respond_to?(:assert_recaptcha)
+    assert respond_to?(:assert_recaptcha_validation)
+    assert respond_to?(:assert_email_validation)
+    assert respond_to?(:assert_ip_validation)
+    assert respond_to?(:assert_safe_name_validation)
   end
 
   test 'item should be valid' do
@@ -93,7 +99,21 @@ end
   end
 
   test 'item recaptcha should pass validation' do
-    assert_recaptcha @item, :recaptcha
+    assert_recaptcha_validation @item, :recaptcha
+  end
+
+  test 'item email should pass validation' do
+    assert_email_validation @item, :email
+  end
+
+  test 'item ips should pass validation' do
+    assert_ip_validation @item, :ip_any
+    assert_ip_validation @item, :ip_mask, :require_mask
+    assert_ip_validation @item, :ip_nomask, :deny_mask
+  end
+
+  test 'item safe_name should pass validation' do
+    assert_safe_name_validation @item, :safe_name, 10
   end
 
   test 'item description should not be required' do
@@ -112,6 +132,22 @@ end
 
   test 'item name is unique across sessions' do
     assert_raises(Minitest::Assertion) { assert_uniqueness @item, :name, session: 100 }
+  end
+
+  test 'item description is not a recaptcha field' do
+    assert_raises(Minitest::Assertion) { assert_recaptcha_validation @item, :description }
+  end
+
+  test 'item description is not an ip address field' do
+    assert_raises(Minitest::Assertion) { assert_ip_validation @item, :description }
+  end
+
+  test 'item description is not an email address field' do
+    assert_raises(Minitest::Assertion) { assert_email_validation @item, :description }
+  end
+
+  test 'item description is not a safe name field' do
+    assert_raises(Minitest::Assertion) { assert_safe_name_validation @item, :description }
   end
 
 end

@@ -19,33 +19,8 @@ module Incline
       assert_required @item, :ip_address
     end
 
-    test 'ip_address should be valid IP addresses' do
-      [
-          '0.0.0.0',
-          '1.2.3.4',
-          '10.20.30.40',
-          '255.255.255.255',
-          '10:20::30:40',
-          '::1',
-          '1:2:3:4:5:6:7:8',
-          'A:B:C:D:E:F::'
-      ].each do |addr|
-        @item.ip_address = addr
-        assert @item.valid?, "Should have accepted #{addr.inspect}."
-      end
-    end
-
-    test 'ip_address should reject invalid IP addresses' do
-      [
-          'hello',
-          '100.200.300.400',
-          '10.20.30.40/24',   # should not accept a mask.
-          '12345::abcde',
-          '1.2.3.4.5'
-      ].each do |addr|
-        @item.ip_address = addr
-        assert_not @item.valid?, "Should have rejected #{addr.inspect}."
-      end
+    test 'should validate ip_address' do
+      assert_ip_validation @item, :ip_address, :deny_mask
     end
 
     test 'message should not be too long' do

@@ -43,7 +43,7 @@ module Incline
     end
 
     test 'should validate recaptcha' do
-      assert_recaptcha @item, :recaptcha
+      assert_recaptcha_validation @item, :recaptcha
     end
 
 
