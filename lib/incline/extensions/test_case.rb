@@ -83,7 +83,8 @@ module Incline::Extensions
 
         action = action.to_sym
         params = options[:"#{action}_params"]
-        params = nil unless params.is_a?(::Hash)
+        params = params.inspect if params.is_a?(::Hash)
+        params = nil unless params.is_a?(::String)
 
         # guess at the method to use.
         if options[:method].blank?
@@ -185,7 +186,7 @@ module Incline::Extensions
           if params.blank?
             test_code += "#{method}(path)\n"
           else
-            test_code += "#{method}(path, #{params.inspect})\n"
+            test_code += "#{method}(path, #{params})\n"
           end
 
           if expected_result.is_a?(::Symbol)
