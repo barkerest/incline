@@ -70,7 +70,7 @@ module Incline
         tmp               = params[:columns]
         @config[:columns] = [ ]
         if tmp
-          tmp = tmp.each_with_index.to_a.map{|(a,b)| [b.to_s,a]}.to_h.deep_symbolize_keys if tmp.is_a?(Array)
+          tmp = tmp.each_with_index.to_a.map{|(a,b)| [b.to_s,a]}.to_h.deep_symbolize_keys if tmp.is_a?(::Array)
           tmp.each do |id, col|
             col[:id] = id.to_s.to_i
             col[:name] = col[:data] if col[:name].blank?
@@ -95,7 +95,7 @@ module Incline
         tmp             = params[:order]
         @config[:order] = { }
         if tmp
-          tmp = tmp.each_with_index.to_a.map{|(a,b)| [b.to_s,a]}.to_h.deep_symbolize_keys if tmp.is_a?(Array)
+          tmp = tmp.each_with_index.to_a.map{|(a,b)| [b.to_s,a]}.to_h.deep_symbolize_keys if tmp.is_a?(::Array)
           tmp.each do |_, order|
             col_id = order[:column].to_i
             col = columns.find{|c| c[:id] == col_id}

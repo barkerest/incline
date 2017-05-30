@@ -24,7 +24,7 @@ module Incline::Extensions
         set! 'fieldErrors' do
           array! field_errors do |k,v|
             set! 'name',   "#{model_name}.#{k}"
-            set! 'status', v.is_a?(Array) ?
+            set! 'status', v.is_a?(::Array) ?
                 "#{k.to_s.humanize} #{v.map{|e| h(e.to_s)}.join("<br>\n#{k.to_s.humanize} ")}" :
                 "#{k.to_s.humanize} #{h v.to_s}"
           end

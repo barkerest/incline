@@ -28,33 +28,35 @@ module Incline::Extensions
       ##
       # Gets the currently logged in user.
       def current_user
-        if (user_id = session[:user_id])
-          @current_user ||= Incline::User.find_by(id: user_id)
-        elsif (user_id = cookies.signed[user_id_cookie])
-          user = Incline::User.find_by(id: user_id)
-          if user&.authenticated?(:remember, cookies[user_token_cookie])
-            log_in user if respond_to?(:log_in)
-            @current_user = user
-          end
-        end
+        @current_user ||=
+            if (user_id = session[:user_id])
+              Incline::User.find_by(id: user_id)
+            elsif (user_id = cookies.signed[user_id_cookie]) &&
+                (user = Incline::User.find_by(id: user_id)) &&
+                (user.authenticated?(:remember, cookies[user_token_cookie]))
+              log_in user if respond_to?(:log_in)
+              user
+            else
+              nil
+            end ||Incline::User::anonymous
       end
 
       ##
       # Is the specified user the current user?
       def current_user?(user)
-        user == current_user
+        current_user == user
       end
 
       ##
       # Is a user logged in?
       def logged_in?
-        !current_user.nil?
+        !current_user.anonymous?
       end
 
       ##
       # Is the current user a system administrator?
       def system_admin?
-        current_user&.system_admin? && current_user&.enabled? && current_user&.activated?
+        logged_in? && current_user.system_admin? && current_user.enabled? && current_user.activated?
       end
 
     end

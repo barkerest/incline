@@ -29,12 +29,12 @@ class JbuilderTemplateExtensionsTest < ActiveSupport::TestCase
     @json.api_errors! 'test_class', @item.errors
     val = JSON.parse(@json.target!)
 
-    assert val.is_a?(Hash)
+    assert val.is_a?(::Hash)
 
-    assert val['error'].is_a?(String)
+    assert val['error'].is_a?(::String)
     assert_equal 'Test class ' + @item.errors[:base].first, val['error']
 
-    assert val['fieldErrors'].is_a?(Array)
+    assert val['fieldErrors'].is_a?(::Array)
     assert_equal 2, val['fieldErrors'].count
     e = val['fieldErrors'].find{|v| v['name'] == 'test_class.name'}
     assert e

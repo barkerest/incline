@@ -22,7 +22,7 @@ module Incline::Extensions
     # This is not meant to replace that behavior, it was actually meant to enable simple usage of
     # other values commonly used to the represent true and false (eg - 0 and 1).
     def to_bool
-      is_a?(TrueClass) || self == :true || self == :yes || self == :on
+      is_a?(::TrueClass) || self == :true || self == :yes || self == :on
     end
 
   end

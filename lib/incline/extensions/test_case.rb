@@ -54,10 +54,10 @@ module Incline::Extensions
       #
       def access_tests_for(*actions)
 
-        options = actions.delete(actions.last) if actions.last.is_a?(Hash)
+        options = actions.delete(actions.last) if actions.last.is_a?(::Hash)
         options ||= { }
 
-        if actions.count == 1 && actions.first.is_a?(Array)
+        if actions.count == 1 && actions.first.is_a?(::Array)
           actions = actions.first
         end
 
@@ -83,7 +83,7 @@ module Incline::Extensions
 
         action = action.to_sym
         params = options[:"#{action}_params"]
-        params = nil unless params.is_a?(Hash)
+        params = nil unless params.is_a?(::Hash)
 
         # guess at the method to use.
         if options[:method].blank?
@@ -146,7 +146,7 @@ module Incline::Extensions
         ]
 
         unless options[:allow_groups].blank?
-          if options[:allow_groups].is_a?(String)
+          if options[:allow_groups].is_a?(::String)
             options[:allow_groups] = options[:allow_groups].gsub(',', ';').split(';').map{|v| v.strip}
           end
           options[:allow_groups].each do |group|
@@ -155,7 +155,7 @@ module Incline::Extensions
         end
 
         unless options[:deny_groups].blank?
-          if options[:deny_groups].is_a?(String)
+          if options[:deny_groups].is_a?(::String)
             options[:deny_groups] = options[:deny_groups].gsub(',', ';').split(';').map{|v| v.strip}
           end
           options[:deny_groups].each do |group|
@@ -188,7 +188,7 @@ module Incline::Extensions
             test_code += "#{method}(path, #{params.inspect})\n"
           end
 
-          if expected_result.is_a?(Symbol)
+          if expected_result.is_a?(::Symbol)
             test_code += "assert_response #{expected_result.inspect}\n"
           else
             test_code += "assert_redirected_to #{expected_result}\n"
@@ -253,7 +253,7 @@ module Incline::Extensions
     def assert_required(model, attribute, message = nil, regex = /can't be blank/i)
       original_value = model.send(attribute)
       assert model.valid?, 'Model should be valid to start.'
-      is_string = original_value.is_a?(String)
+      is_string = original_value.is_a?(::String)
       setter = :"#{attribute}="
       model.send setter, nil
       assert_not model.valid?, message ? (message + ': (nil)') : "Should not allow #{attribute} to be set to nil."
@@ -300,12 +300,12 @@ module Incline::Extensions
       assert model.valid?, 'Model should be valid to start.'
       setter = :"#{attribute}="
 
-      if message.is_a?(Hash)
+      if message.is_a?(::Hash)
         options = message.merge(options || {})
         message = nil
       end
 
-      if regex.is_a?(Hash)
+      if regex.is_a?(::Hash)
         options = regex.merge(options || {})
         regex = /is too long/i
       end
@@ -359,12 +359,12 @@ module Incline::Extensions
       assert model.valid?, 'Model should be valid to start.'
       setter = :"#{attribute}="
 
-      if message.is_a?(Hash)
+      if message.is_a?(::Hash)
         options = message.merge(options || {})
         message = nil
       end
 
-      if regex.is_a?(Hash)
+      if regex.is_a?(::Hash)
         options = regex.merge(options || {})
         regex = /is too short/i
       end
@@ -421,15 +421,15 @@ module Incline::Extensions
 
       assert model.valid?, 'Model should be valid to start.'
 
-      if case_sensitive.is_a?(Hash)
+      if case_sensitive.is_a?(::Hash)
         alternate_scopes = case_sensitive.merge(alternate_scopes || {})
         case_sensitive = false
       end
-      if message.is_a?(Hash)
+      if message.is_a?(::Hash)
         alternate_scopes = message.merge(alternate_scopes || {})
         message = nil
       end
-      if regex.is_a?(Hash)
+      if regex.is_a?(::Hash)
         alternate_scopes = regex.merge(alternate_scopes || {})
         regex = /has already been taken/i
       end

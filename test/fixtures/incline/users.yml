@@ -48,6 +48,17 @@ disabled:
   system_admin: false
   password_digest: <%= Incline::User::digest 'Password123' %>
   disabled_by: admin@example.com
-  disabled_at: <%= 11.days.ago %>
-  activated_at: <%= 13.days.ago %>
+  disabled_at: <%= 30.days.ago %>
+  activated_at: <%= 31.days.ago %>
+
+recently_disabled:
+  name: Recent User
+  email: recent@example.com
+  activated: true
+  enabled: false
+  system_admin: false
+  password_digest: <%= Incline::User::digest 'Password123' %>
+  disabled_by: admin@example.com
+  disabled_at: <%= 1.days.ago %>
+  activated_at: <%= 3.days.ago %>
 

@@ -22,7 +22,7 @@ module Incline::Extensions
           return nil if string.blank?
           return string if string.is_a?(::Time)
 
-          if string.is_a?(String)
+          if string.is_a?(::String)
 
             begin
               # if it matches either of our formats, we can try using it.

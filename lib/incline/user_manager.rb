@@ -106,7 +106,7 @@ module Incline
     def add_failure_to(user, message, client_ip)
       Incline::Log::info "LOGIN(#{user}) FAILURE FROM #{client_ip}: #{message}"
       history_length = 2
-      unless user.is_a?(User)
+      unless user.is_a?(::Incline::User)
         message = "[email: #{user}] #{message}"
         user = User.anonymous
         history_length = 6

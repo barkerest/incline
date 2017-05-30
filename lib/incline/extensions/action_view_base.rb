@@ -164,7 +164,7 @@ module Incline::Extensions
 
       type = :info unless [:info, :success, :danger, :warning].include?(type)
 
-      array_auto_hide = nil unless array_auto_hide.is_a?(Integer) && array_auto_hide > 0
+      array_auto_hide = nil unless array_auto_hide.is_a?(::Integer) && array_auto_hide > 0
 
       contents = render_alert_message(message, array_auto_hide)
 
@@ -284,7 +284,7 @@ module Incline::Extensions
       return nil unless user
 
       options = { size: 80, default: :identicon }.merge(options || {})
-      options[:default] = options[:default].to_s.to_sym unless options[:default].nil? || options[:default].is_a?(Symbol)
+      options[:default] = options[:default].to_s.to_sym unless options[:default].nil? || options[:default].is_a?(::Symbol)
       gravatar_id = Digest::MD5::hexdigest(user.email.downcase)
       size = options[:size]
       default = [:mm, :identicon, :monsterid, :wavatar, :retro].include?(options[:default]) ? "&d=#{options[:default]}" : ''
@@ -360,7 +360,7 @@ module Incline::Extensions
     def render_alert_message(message, array_auto_hide, bottom = true, state = nil)
       state ||= { text: '', script: '' }
 
-      if message.is_a?(Array)
+      if message.is_a?(::Array)
 
         # flatten the array, then map to the text values.
         message = message.flatten
@@ -398,13 +398,13 @@ module Incline::Extensions
           state[:text] += message.join(bottom ? '<br>' : '')
         end
 
-      elsif message.is_a?(Hash)
+      elsif message.is_a?(::Hash)
         # Process each item as <li>::KEY::<ul>::VALUES::</ul></li>
         message.each do |k,v|
           state[:text] += bottom ? '<div>' : '<li>'
-          if k.is_a?(Symbol)
+          if k.is_a?(::Symbol)
             state[:text] += CGI::escape_html(k.to_s.humanize.capitalize)
-          elsif k.is_a?(String)
+          elsif k.is_a?(::String)
             state[:text] += render_md(CGI::escape_html(k))
           else
             state[:text] += CGI::escape_html(k.inspect)

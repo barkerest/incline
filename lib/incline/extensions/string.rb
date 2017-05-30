@@ -25,7 +25,7 @@ module Incline::Extensions
     def to_hex_string(grouping = false)
       ret = self.unpack('H*').first
       if grouping
-        if grouping.is_a?(Integer) && grouping > 0
+        if grouping.is_a?(::Integer) && grouping > 0
           ret.gsub(/(#{'.' * grouping})/,'\1 ').rstrip
         else
           ret.gsub(/(..)/,'\1 ').rstrip

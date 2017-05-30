@@ -11,7 +11,7 @@ module Incline::Extensions
         undef type_cast_from_user
 
         def type_cast_from_user(value)
-          if value.is_a?(Array)
+          if value.is_a?(::Array)
             value.map { |v| type_cast_from_user(v) }
           else
             # Convert to time first.

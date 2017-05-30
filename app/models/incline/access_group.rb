@@ -32,7 +32,7 @@ module Incline
     ##
     # Determines if this group belongs to the specified group.
     def belongs_to?(group)
-      group = AccessGroup.get(group) unless group.is_a?(AccessGroup)
+      group = AccessGroup.get(group) unless group.is_a?(::Incline::AccessGroup)
       return false unless group
       safe_belongs_to?(group)
     end

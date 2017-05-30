@@ -9,7 +9,7 @@ module Incline
 
     validates :reason, presence: true
     validate do
-      if user && user.is_a?(User)
+      if user && user.is_a?(::Incline::User)
         errors.add(:user, 'must be enabled') unless user.enabled?
       else
         errors.add(:user, 'must be provided')

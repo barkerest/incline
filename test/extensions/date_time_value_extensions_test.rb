@@ -49,11 +49,11 @@ end
   test 'uses correct types' do
     col = @model_class.columns.find{|c| c.name == 'tz_value'}
     assert col
-    assert col.cast_type.is_a?(ActiveRecord::AttributeMethods::TimeZoneConversion::TimeZoneConverter)
+    assert col.cast_type.is_a?(::ActiveRecord::AttributeMethods::TimeZoneConversion::TimeZoneConverter)
     col = @model_class.columns.find{|c| c.name == 'utc_value'}
     assert col
-    assert_not col.cast_type.is_a?(ActiveRecord::AttributeMethods::TimeZoneConversion::TimeZoneConverter)
-    assert col.cast_type.is_a?(ActiveRecord::Type::DateTime)
+    assert_not col.cast_type.is_a?(::ActiveRecord::AttributeMethods::TimeZoneConversion::TimeZoneConverter)
+    assert col.cast_type.is_a?(::ActiveRecord::Type::DateTime)
   end
 
   test 'accepts valid values' do

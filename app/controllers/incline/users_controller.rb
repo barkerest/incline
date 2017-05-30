@@ -12,7 +12,7 @@ module Incline
     # Only anonymous users can signup.
     require_anon :new, :create
 
-    # Only admins can delete/disable/enable users.
+    # Only admins can delete/disable/enable users, or list all users, or show/edit/update other users.
     require_admin :index, :show, :edit, :update, :destroy, :disable, :disable_confirm, :enable
 
     ##

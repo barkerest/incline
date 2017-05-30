@@ -53,7 +53,7 @@ class GlobalStatusTest < ActiveSupport::TestCase
       # We haven't set a status, so the default messages should be in place.
       # There should be no percentage yet either.
       data = stat.get_status
-      assert data.is_a?(Hash)
+      assert data.is_a?(::Hash)
       assert data[:locked]
       assert_equal 'The current process is busy.', data[:message]
       assert data[:percent].blank?
@@ -64,7 +64,7 @@ class GlobalStatusTest < ActiveSupport::TestCase
 
       # The message should be slightly different, but otherwise the data is the same.
       data = Incline::GlobalStatus::current
-      assert data.is_a?(Hash)
+      assert data.is_a?(::Hash)
       assert data[:locked]
       assert_equal 'The system is busy.', data[:message]
       assert data[:percent].blank?

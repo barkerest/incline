@@ -37,7 +37,7 @@ class ApplicationConfigurationExtensionsTest < ActiveSupport::TestCase
 
     db_cfg = cfg.database_configuration
 
-    assert db_cfg.is_a?(Hash)
+    assert db_cfg.is_a?(::Hash)
     assert db_cfg['test']
     assert db_cfg['development']
     assert_nil db_cfg['production']

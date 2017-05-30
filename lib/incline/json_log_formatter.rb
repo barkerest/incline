@@ -29,9 +29,9 @@ module Incline
       if msg.present?
         # And we'll expand exceptions so we get as much info as possible.
         # If you just want the message, make sure you just pass the message.
-        if msg.is_a?(Exception)
+        if msg.is_a?(::Exception)
           msg = "#{msg.message} (#{msg.class})\n#{(msg.backtrace || []).join("\n")}"
-        elsif !msg.is_a?(String)
+        elsif !msg.is_a?(::String)
           msg = msg.inspect
         end
 

@@ -101,7 +101,7 @@ end
 
     # There should only be one item named 'Item 3'.
     ids = @model_class.get_id('Item 3')
-    assert ids.is_a?(Integer)
+    assert ids.is_a?(::Integer)
 
     items = @model_class.get('Item 3')
     assert items
@@ -147,7 +147,7 @@ end
 
     # There should only be one item named 'Item 3'.
     id = @model_class.get_id('Item 3')
-    assert id.is_a?(Integer)
+    assert id.is_a?(::Integer)
 
     item = @model_class['Item 3']
     assert item

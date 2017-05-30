@@ -36,12 +36,12 @@ module Incline::Extensions
         end
       end
 
-      if self.is_a?(Rational)
+      if self.is_a?(::Rational)
         if self.denominator == 1
           return self.numerator.to_s
         end
         return self.to_s
-      elsif self.is_a?(Integer)
+      elsif self.is_a?(::Integer)
         return self.to_s
       end
 

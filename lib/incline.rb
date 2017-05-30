@@ -99,7 +99,7 @@ module Incline
     patterns =
         if patterns.blank?
           default_gem_patterns
-        elsif patterns.first.is_a?(TrueClass)
+        elsif patterns.first.is_a?(::TrueClass)
           default_gem_patterns + patterns[1..-1]
         else
           patterns

@@ -172,7 +172,8 @@ module Incline::Extensions
 
         rescue_from ::Incline::NotLoggedIn do |exception|
           flash[:info] = exception.message
-          store_location && redirect_to(incline.login_url)
+          store_location
+          redirect_to(incline.login_url)
         end
 
       end

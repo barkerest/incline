@@ -17,7 +17,7 @@ class JsonLogFormatterTest < ActiveSupport::TestCase
     assert s =~ /\r\n\Z/
 
     h = JSON.parse(s.strip) rescue nil
-    assert h.is_a?(Hash)
+    assert h.is_a?(::Hash)
     assert_equal 'WARN',                          h['level']
     assert_equal t.strftime('%Y-%m-%d %H:%M:%S'), h['time']
     assert_equal 'Something happened!',           h['message']

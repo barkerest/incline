@@ -124,7 +124,7 @@ module Incline::Extensions
     #       :field_3 => { :maxlength => 10, :style => { :width => '25%' } }
     #
     def multi_input(methods, options = {})
-      raise ArgumentError.new('methods must be either a Hash or an Array') unless methods.is_a?(Hash) || methods.is_a?(Array)
+      raise ArgumentError.new('methods must be either a Hash or an Array') unless methods.is_a?(::Hash) || methods.is_a?(::Array)
       options = options.dup
 
       # add some defaults.
@@ -147,10 +147,10 @@ module Incline::Extensions
       end
 
       # Standardize the "methods" list to be an array of arrays.
-      if methods.is_a?(Hash)
+      if methods.is_a?(::Hash)
         methods = methods.to_a
-      elsif methods.is_a?(Array)
-        methods = methods.map{|v| v.is_a?(Array) ? v : [ v, v.to_s.humanize ] }
+      elsif methods.is_a?(::Array)
+        methods = methods.map{|v| v.is_a?(::Array) ? v : [ v, v.to_s.humanize ] }
       end
 
       # Extract field attributes.
@@ -160,7 +160,7 @@ module Incline::Extensions
         fields[meth] = options[:attrib].merge(options.delete(:"field_#{index}") || {})
         fields[meth][:readonly] = 'readonly' if options[:read_only]
         fields[meth][:class] ||= options[:class]
-        if fields[meth][:style].is_a?(Hash)
+        if fields[meth][:style].is_a?(::Hash)
           fields[meth][:style] = fields[meth][:style].to_a.map{|v| v.map(&:to_s).join(':') + ';'}.join(' ')
         end
         fields[meth][:placeholder] ||= label
@@ -592,7 +592,7 @@ module Incline::Extensions
         fld
       end
       if group[:h_align]
-        if group[:h_align].is_a?(TrueClass)
+        if group[:h_align].is_a?(::TrueClass)
           l = 3
         else
           l = group[:h_align].to_i

@@ -52,7 +52,7 @@ module Incline
         if file.respond_to?(:puts)
           @output = file
           @rails = nil
-        elsif file.is_a?(String)
+        elsif file.is_a?(::String)
           @output = File.open(file, 'wt')
           @rails = nil
         else
@@ -140,9 +140,9 @@ module Incline
     end
 
     def self.msg_to_str(msg)
-      if msg.is_a?(Exception)
+      if msg.is_a?(::Exception)
         "#{msg.message} (#{msg.class})\n#{(msg.backtrace || []).join("\n")}"
-      elsif msg.is_a?(String)
+      elsif msg.is_a?(::String)
         msg
       else
         msg.inspect
