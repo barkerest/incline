@@ -150,4 +150,119 @@ end
     assert_raises(Minitest::Assertion) { assert_safe_name_validation @item, :description }
   end
 
+  test 'access_tests_for default tests are good' do
+
+    valid = <<-EOC
+test "should not allow access to something for anonymous" do
+path = foo_path
+get(path)
+assert_redirected_to incline.login_path
+end
+test "should not allow access to something for any user" do
+user = incline_users(:basic)
+log_in_as user
+path = foo_path
+get(path)
+assert_redirected_to main_app.root_path
+end
+test "should allow access to something for admin user" do
+user = incline_users(:admin)
+log_in_as user
+path = foo_path
+get(path)
+assert_response :success
+end
+    EOC
+
+    code = self.class.access_tests_for :something, return_code: true, controller: 'foobar', url_helper: 'foo_path'
+
+    assert_equal valid, code
+  end
+
+  test 'access_tests_for respects allow_anon' do
+    valid = <<-EOC
+test "should allow access to something for anonymous" do
+path = foo_path
+get(path)
+assert_response :success
+end
+test "should not allow access to something for any user" do
+user = incline_users(:basic)
+log_in_as user
+path = foo_path
+get(path)
+assert_redirected_to main_app.root_path
+end
+test "should allow access to something for admin user" do
+user = incline_users(:admin)
+log_in_as user
+path = foo_path
+get(path)
+assert_response :success
+end
+    EOC
+
+    code = self.class.access_tests_for :something, return_code: true, controller: 'foobar', url_helper: 'foo_path', allow_anon: true
+
+    assert_equal valid, code
+  end
+
+  test 'access_tests_for respects allow_any_user' do
+    valid = <<-EOC
+test "should not allow access to something for anonymous" do
+path = foo_path
+get(path)
+assert_redirected_to incline.login_path
+end
+test "should allow access to something for any user" do
+user = incline_users(:basic)
+log_in_as user
+path = foo_path
+get(path)
+assert_response :success
+end
+test "should allow access to something for admin user" do
+user = incline_users(:admin)
+log_in_as user
+path = foo_path
+get(path)
+assert_response :success
+end
+    EOC
+
+    code = self.class.access_tests_for :something, return_code: true, controller: 'foobar', url_helper: 'foo_path', allow_any_user: true
+
+    assert_equal valid, code
+  end
+
+  test 'access_tests_for respects allow_admin' do
+    valid = <<-EOC
+test "should not allow access to something for anonymous" do
+path = foo_path
+get(path)
+assert_redirected_to incline.login_path
+end
+test "should not allow access to something for any user" do
+user = incline_users(:basic)
+log_in_as user
+path = foo_path
+get(path)
+assert_redirected_to main_app.root_path
+end
+test "should not allow access to something for admin user" do
+user = incline_users(:admin)
+log_in_as user
+path = foo_path
+get(path)
+assert_redirected_to main_app.root_path
+end
+    EOC
+
+    code = self.class.access_tests_for :something, return_code: true, controller: 'foobar', url_helper: 'foo_path', allow_admin: false
+
+    assert_equal valid, code
+  end
+
+
+
 end
