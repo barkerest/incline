@@ -196,29 +196,29 @@ end
 
   DEFAULT_ACCESS_TEST_ANON = <<-EOC
 test "should not allow access to something for anonymous" do
-path = foo_path
-get(path)
-assert_redirected_to incline.login_path
+  path = foo_path
+  get(path)
+  assert_redirected_to incline.login_path
 end
   EOC
 
   DEFAULT_ACCESS_TEST_ANY = <<-EOC
 test "should not allow access to something for any user" do
-user = incline_users(:basic)
-log_in_as user
-path = foo_path
-get(path)
-assert_redirected_to main_app.root_path
+  user = incline_users(:basic)
+  log_in_as user
+  path = foo_path
+  get(path)
+  assert_redirected_to main_app.root_path
 end
   EOC
 
   DEFAULT_ACCESS_TEST_ADMIN = <<-EOC
 test "should allow access to something for admin user" do
-user = incline_users(:admin)
-log_in_as user
-path = foo_path
-get(path)
-assert_response :success
+  user = incline_users(:admin)
+  log_in_as user
+  path = foo_path
+  get(path)
+  assert_response :success
 end
   EOC
 
@@ -231,9 +231,9 @@ end
   test 'access_tests_for respects allow_anon' do
     valid = [ <<-EOC, DEFAULT_ACCESS_TEST_ANY, DEFAULT_ACCESS_TEST_ADMIN ].join
 test "should allow access to something for anonymous" do
-path = foo_path
-get(path)
-assert_response :success
+  path = foo_path
+  get(path)
+  assert_response :success
 end
     EOC
 
@@ -245,11 +245,11 @@ end
   test 'access_tests_for respects allow_any_user' do
     valid = [ DEFAULT_ACCESS_TEST_ANON, <<-EOC, DEFAULT_ACCESS_TEST_ADMIN ].join
 test "should allow access to something for any user" do
-user = incline_users(:basic)
-log_in_as user
-path = foo_path
-get(path)
-assert_response :success
+  user = incline_users(:basic)
+  log_in_as user
+  path = foo_path
+  get(path)
+  assert_response :success
 end
     EOC
 
@@ -261,11 +261,11 @@ end
   test 'access_tests_for respects allow_admin' do
     valid = [ DEFAULT_ACCESS_TEST_ANON, DEFAULT_ACCESS_TEST_ANY, <<-EOC ].join
 test "should not allow access to something for admin user" do
-user = incline_users(:admin)
-log_in_as user
-path = foo_path
-get(path)
-assert_redirected_to main_app.root_path
+  user = incline_users(:admin)
+  log_in_as user
+  path = foo_path
+  get(path)
+  assert_redirected_to main_app.root_path
 end
     EOC
 
@@ -277,22 +277,22 @@ end
   test 'access_tests_for respects allow_groups' do
     valid = [ DEFAULT_ACCESS_TEST_ANON, DEFAULT_ACCESS_TEST_ANY, DEFAULT_ACCESS_TEST_ADMIN, <<-EOC ].join
 test "should allow access to something for Group 1 member" do
-user = incline_users(:basic)
-group = Incline::AccessGroup.find_or_create_by(name: "Group 1")
-user.groups << group
-log_in_as user
-path = foo_path
-get(path)
-assert_response :success
+  user = incline_users(:basic)
+  group = Incline::AccessGroup.find_or_create_by(name: "Group 1")
+  user.groups << group
+  log_in_as user
+  path = foo_path
+  get(path)
+  assert_response :success
 end
 test "should allow access to something for Group 2 member" do
-user = incline_users(:basic)
-group = Incline::AccessGroup.find_or_create_by(name: "Group 2")
-user.groups << group
-log_in_as user
-path = foo_path
-get(path)
-assert_response :success
+  user = incline_users(:basic)
+  group = Incline::AccessGroup.find_or_create_by(name: "Group 2")
+  user.groups << group
+  log_in_as user
+  path = foo_path
+  get(path)
+  assert_response :success
 end
     EOC
 
@@ -303,22 +303,22 @@ end
   test 'access_tests_for respects deny_groups' do
     valid = [ DEFAULT_ACCESS_TEST_ANON, DEFAULT_ACCESS_TEST_ANY, DEFAULT_ACCESS_TEST_ADMIN, <<-EOC ].join
 test "should not allow access to something for Group 1 member" do
-user = incline_users(:basic)
-group = Incline::AccessGroup.find_or_create_by(name: "Group 1")
-user.groups << group
-log_in_as user
-path = foo_path
-get(path)
-assert_redirected_to main_app.root_path
+  user = incline_users(:basic)
+  group = Incline::AccessGroup.find_or_create_by(name: "Group 1")
+  user.groups << group
+  log_in_as user
+  path = foo_path
+  get(path)
+  assert_redirected_to main_app.root_path
 end
 test "should not allow access to something for Group 2 member" do
-user = incline_users(:basic)
-group = Incline::AccessGroup.find_or_create_by(name: "Group 2")
-user.groups << group
-log_in_as user
-path = foo_path
-get(path)
-assert_redirected_to main_app.root_path
+  user = incline_users(:basic)
+  group = Incline::AccessGroup.find_or_create_by(name: "Group 2")
+  user.groups << group
+  log_in_as user
+  path = foo_path
+  get(path)
+  assert_redirected_to main_app.root_path
 end
     EOC
 
@@ -329,11 +329,11 @@ end
   test 'access_tests_for respects success value' do
     valid = [ DEFAULT_ACCESS_TEST_ANON, DEFAULT_ACCESS_TEST_ANY, <<-EOC ].join
 test "should allow access to something for admin user" do
-user = incline_users(:admin)
-log_in_as user
-path = foo_path
-get(path)
-assert_redirected_to bar_path
+  user = incline_users(:admin)
+  log_in_as user
+  path = foo_path
+  get(path)
+  assert_redirected_to bar_path
 end
     EOC
 
@@ -344,11 +344,11 @@ end
   test 'access_tests_for respects failure value' do
     valid = [ DEFAULT_ACCESS_TEST_ANON, <<-EOC, DEFAULT_ACCESS_TEST_ADMIN ].join
 test "should not allow access to something for any user" do
-user = incline_users(:basic)
-log_in_as user
-path = foo_path
-get(path)
-assert_redirected_to bar_path
+  user = incline_users(:basic)
+  log_in_as user
+  path = foo_path
+  get(path)
+  assert_redirected_to bar_path
 end
     EOC
 
@@ -359,9 +359,9 @@ end
   test 'access_tests_for respects anon_failure value' do
     valid = [ <<-EOC, DEFAULT_ACCESS_TEST_ANY, DEFAULT_ACCESS_TEST_ADMIN ].join
 test "should not allow access to something for anonymous" do
-path = foo_path
-get(path)
-assert_redirected_to bar_path
+  path = foo_path
+  get(path)
+  assert_redirected_to bar_path
 end
     EOC
 
@@ -372,23 +372,23 @@ end
   test 'access_tests_for respects method value' do
     valid = <<-EOC
 test "should not allow access to something for anonymous" do
-path = foo_path
-delete(path)
-assert_redirected_to incline.login_path
+  path = foo_path
+  delete(path)
+  assert_redirected_to incline.login_path
 end
 test "should not allow access to something for any user" do
-user = incline_users(:basic)
-log_in_as user
-path = foo_path
-delete(path)
-assert_redirected_to main_app.root_path
+  user = incline_users(:basic)
+  log_in_as user
+  path = foo_path
+  delete(path)
+  assert_redirected_to main_app.root_path
 end
 test "should allow access to something for admin user" do
-user = incline_users(:admin)
-log_in_as user
-path = foo_path
-delete(path)
-assert_redirected_to foobars_path
+  user = incline_users(:admin)
+  log_in_as user
+  path = foo_path
+  delete(path)
+  assert_redirected_to foobars_path
 end
     EOC
 
@@ -399,23 +399,23 @@ end
   test 'access_tests_for guesses at url_helper correctly' do
     original = <<-EOC
 test "should not allow access to index for anonymous" do
-path = foobars_path
-get(path)
-assert_redirected_to incline.login_path
+  path = foobars_path
+  get(path)
+  assert_redirected_to incline.login_path
 end
 test "should not allow access to index for any user" do
-user = incline_users(:basic)
-log_in_as user
-path = foobars_path
-get(path)
-assert_redirected_to main_app.root_path
+  user = incline_users(:basic)
+  log_in_as user
+  path = foobars_path
+  get(path)
+  assert_redirected_to main_app.root_path
 end
 test "should allow access to index for admin user" do
-user = incline_users(:admin)
-log_in_as user
-path = foobars_path
-get(path)
-assert_response :success
+  user = incline_users(:admin)
+  log_in_as user
+  path = foobars_path
+  get(path)
+  assert_response :success
 end
     EOC
 
@@ -488,23 +488,23 @@ end
     code = self.class.access_tests_for :show, return_code: true, controller: 'foobar', fixture_helper: 'foobazzes'
     assert_equal <<-EOC, code
 test "should not allow access to show for anonymous" do
-path = foobar_path(foobazzes(:one))
-get(path)
-assert_redirected_to incline.login_path
+  path = foobar_path(foobazzes(:one))
+  get(path)
+  assert_redirected_to incline.login_path
 end
 test "should not allow access to show for any user" do
-user = incline_users(:basic)
-log_in_as user
-path = foobar_path(foobazzes(:one))
-get(path)
-assert_redirected_to main_app.root_path
+  user = incline_users(:basic)
+  log_in_as user
+  path = foobar_path(foobazzes(:one))
+  get(path)
+  assert_redirected_to main_app.root_path
 end
 test "should allow access to show for admin user" do
-user = incline_users(:admin)
-log_in_as user
-path = foobar_path(foobazzes(:one))
-get(path)
-assert_response :success
+  user = incline_users(:admin)
+  log_in_as user
+  path = foobar_path(foobazzes(:one))
+  get(path)
+  assert_response :success
 end
     EOC
   end
@@ -513,27 +513,26 @@ end
     code = self.class.access_tests_for :show, return_code: true, controller: 'foobar', fixture_key: :forty_two
     assert_equal <<-EOC, code
 test "should not allow access to show for anonymous" do
-path = foobar_path(foobars(:forty_two))
-get(path)
-assert_redirected_to incline.login_path
+  path = foobar_path(foobars(:forty_two))
+  get(path)
+  assert_redirected_to incline.login_path
 end
 test "should not allow access to show for any user" do
-user = incline_users(:basic)
-log_in_as user
-path = foobar_path(foobars(:forty_two))
-get(path)
-assert_redirected_to main_app.root_path
+  user = incline_users(:basic)
+  log_in_as user
+  path = foobar_path(foobars(:forty_two))
+  get(path)
+  assert_redirected_to main_app.root_path
 end
 test "should allow access to show for admin user" do
-user = incline_users(:admin)
-log_in_as user
-path = foobar_path(foobars(:forty_two))
-get(path)
-assert_response :success
+  user = incline_users(:admin)
+  log_in_as user
+  path = foobar_path(foobars(:forty_two))
+  get(path)
+  assert_response :success
 end
     EOC
   end
-
 
 
 end

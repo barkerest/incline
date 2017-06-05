@@ -172,26 +172,26 @@ module Incline::Extensions
           test_code = "test \"should #{result ? '' : 'not '}allow access to #{action} for #{label}\" do\n"
 
           if user
-            test_code += "user = incline_users(#{user.inspect})\n"
+            test_code += "  user = incline_users(#{user.inspect})\n"
             if group
-              test_code += "group = Incline::AccessGroup.find_or_create_by(name: #{group.inspect})\n"
-              test_code += "user.groups << group\n"
+              test_code += "  group = Incline::AccessGroup.find_or_create_by(name: #{group.inspect})\n"
+              test_code += "  user.groups << group\n"
             end
-            test_code += "log_in_as user\n"
+            test_code += "  log_in_as user\n"
           end
 
-          test_code += "path = #{url_helper}\n"
+          test_code += "  path = #{url_helper}\n"
 
           if params.blank?
-            test_code += "#{method}(path)\n"
+            test_code += "  #{method}(path)\n"
           else
-            test_code += "#{method}(path, #{params})\n"
+            test_code += "  #{method}(path, #{params})\n"
           end
 
           if expected_result.is_a?(::Symbol)
-            test_code += "assert_response #{expected_result.inspect}\n"
+            test_code += "  assert_response #{expected_result.inspect}\n"
           else
-            test_code += "assert_redirected_to #{expected_result}\n"
+            test_code += "  assert_redirected_to #{expected_result}\n"
           end
 
           test_code += "end\n"
