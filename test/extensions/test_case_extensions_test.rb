@@ -477,6 +477,11 @@ end
             .gsub('path = foobars_path', 'path = foobar_path(foobars(:one))')
     code = self.class.access_tests_for [ :index, :show ], return_code: true, controller: 'foobar'
     assert_equal valid, code
+
+    # the actions can be specified as an explicit array or as additional parameters.
+    # as long as the options are specified last, it will work.
+    code = self.class.access_tests_for :index, :show, return_code: true, controller: 'foobar'
+    assert_equal valid, code
   end
 
   test 'access_tests_for respects the fixture_helper value for guessed url_helpers' do

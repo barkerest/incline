@@ -62,10 +62,9 @@ module Incline::Extensions
         end
 
         if actions.count > 1
-          actions.each do |act|
-            access_tests_for(act, options.dup)
-          end
-          return
+          data = actions.map{|act| access_tests_for(act, options.dup)}
+          data = data.join if options[:return_code]
+          return options[:return_code] ? data : nil
         end
 
         action = actions.first
