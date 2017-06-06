@@ -1,0 +1,19 @@
+<%= error_summary(@access_group) %>
+<div class="col-md-4 col-md-offset-4">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h4 class="panel-title"><%= @access_group.new_record? ? 'Create' : 'Update' %> Access Group</h4>
+    </div>
+    <div class="panel-body">
+      <%= form_for(@access_group) do |f| %>
+          <%= f.text_form_group :name %>
+          <%= f.select_form_group :user_ids, Incline::User.where.not(id: current_user.id).sorted, :id, :to_s, label_text: 'Users belonging to this group', field_class: 'form-control select2', field_multiple: true %>
+          <%= f.select_form_group :group_ids, Incline::AccessGroup.where.not(id: @access_group.id).sorted, :id, :to_s, label_text: 'Groups belonging to this group', field_class: 'form-control select2', field_multiple: true %>
+
+          <%= f.submit class: 'btn btn-primary' %>
+          <%= link_to 'Cancel', access_groups_url, class: 'btn btn-default' %>
+      <% end %>
+
+    </div>
+  </div>
+</div>

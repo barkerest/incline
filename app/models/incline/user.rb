@@ -22,6 +22,8 @@ module Incline
     attr_accessor :activation_token
     attr_accessor :reset_token
 
+    search_attribute :email
+
     has_secure_password
 
     validates :name,

@@ -5,15 +5,15 @@ module Incline
     has_many :access_group_user_members, class_name: 'Incline::AccessGroupUserMember', foreign_key: 'group_id', dependent: :delete_all
     private :access_group_user_members, :access_group_user_members=
 
-    # and expose the Users relationship instead.
+    # and expose the users instead.
     has_many :users, class_name: 'Incline::User', through: :access_group_user_members, source: :member
 
     # hide the Groups<=>Groups relationship association
     has_many :access_group_group_members, class_name: 'Incline::AccessGroupGroupMember', foreign_key: 'group_id', dependent: :delete_all
     private :access_group_group_members, :access_group_group_members=
 
-    # and expose the group members.
-    has_many :members, class_name: 'AccessGroup', through: :access_group_group_members, source: :member
+    # and expose the groups instead.
+    has_many :groups, class_name: 'AccessGroup', through: :access_group_group_members, source: :member
 
     ##
     # Gets a list of memberships for this group.  (Read-only)
@@ -50,6 +50,30 @@ module Incline
         end
       end
       ret.sort{|a,b| a.name <=> b.name}
+    end
+
+    ##
+    # Gets the user IDs for the members of this group.
+    def user_ids
+      users.map{|u| u.id}
+    end
+
+    ##
+    # Gets the group IDs for the members of this group.
+    def group_ids
+      groups.map{|g| g.id}
+    end
+
+    ##
+    # Sets the user IDs for the members of this group.
+    def user_ids=(values)
+      self.users = Incline::User.get(values) || []
+    end
+
+    ##
+    # Sets the group IDs for the members of this group.
+    def group_ids=(values)
+      self.groups = Incline::AccessGroup.get(values) || []
     end
 
     protected

@@ -1,0 +1,32 @@
+<div class="col-md-6 col-md-offset-3">
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <h4 class="panel-title">Access Group Listing</h4>
+    </div>
+    <table class="table table-condensed">
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th></th>
+      </tr>
+      </thead>
+
+      <tbody>
+      <% @access_groups.each do |access_group| %>
+          <tr>
+            <td><%= access_group.name %></td>
+            <td style="text-align: right;">
+              <%= link_to glyph(:pencil), edit_access_group_path(access_group), class: 'btn btn-xs btn-primary' %>&nbsp;
+              <%= link_to glyph(:remove), access_group, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-xs btn-danger' %>
+            </td>
+          </tr>
+      <% end %>
+      </tbody>
+    </table>
+    <div class="panel-body" style="text-align: center;">
+      <%= link_to 'New Access group', new_access_group_path, class: 'btn btn-success' %>
+    </div>
+  </div>
+</div>
+
+

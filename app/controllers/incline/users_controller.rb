@@ -1,4 +1,4 @@
-require_dependency "incline/application_controller"
+# require_dependency "incline/application_controller"
 
 module Incline
   class UsersController < ApplicationController

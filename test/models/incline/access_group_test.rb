@@ -29,18 +29,18 @@ module Incline
       @group.save!
       @group.reload
 
-      @group.members << @group1
+      @group.groups << @group1
 
       assert @group.valid?
 
       @group.save!
 
       # group-x should have one member and group-1 should belong to one group.
-      assert_equal 1, @group.members(true).count
+      assert_equal 1, @group.groups(true).count
       assert_equal 1, @group1.memberships(true).count
 
       # group-x has group-1 as a member and group-1 is a member of group-x.
-      assert @group.members.include?(@group1)
+      assert @group.groups.include?(@group1)
       assert @group1.memberships.include?(@group)
 
       # group-1 equates to both group-1 and group-x for effective groups.

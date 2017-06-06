@@ -104,12 +104,18 @@ module Incline::Extensions
       #
       # Strings are lowercased and compared against :code or :name if either of those is a valid attribute.
       # You can use the search_attribute method to add another attribute to compare against.
+      # If a string begins with a # and contains only numbers after that, then :code and :name values containing
+      # only numbers can be searched.
+      #
+      #     get_id('1234') => 1234
+      #     get_id('#1234') => searches for :code or :name equal to '#1234' or '1234'
       #
       # Arrays are mapped as above.
       #
       # In all cases, if one result is found that value is returned, if more than one is found then an array is returned,
       # and if no results are found, nil is returned.
       def get_id(value)
+        return nil if value.blank?
         return nil unless attribute_names.include?('id')
 
         return value.id if value.class == self
@@ -129,7 +135,10 @@ module Incline::Extensions
       # Gets one or more items based on the value.
       #
       # Always returns an array of items or nil if no results were found.
+      #
+      # See #get_id for how the value is processed.
       def get(value)
+        return nil if value.blank?
         return value if value.class == self
         result = search_for(value)
         first_sort = search_attributes.find{|a| attribute_names.include?(a)}
@@ -147,6 +156,8 @@ module Incline::Extensions
       # Gets one item based on the value.
       #
       # Always returns the first item found or nil if there were no matches.
+      #
+      # See #get_id for how the value is processed.
       def [](value)
         get(value)&.first
       end
@@ -158,18 +169,22 @@ module Incline::Extensions
       end
 
       def search_for(values)
-
         # make sure we have an array that we can safely modify.
         values = values.is_a?(::Array) ? values.dup : [ values ]
+        values.reject!{|v| v.blank?}
+
+        # return a query that will return no records.
+        return self.where('1 = 0') if values.blank?
 
         # extract potential IDs.
         ids =       values
-                        .select{|v| v.is_a?(::Integer) || (v.is_a?(::String) && v =~ /\A\d+\z/)}
+                        .select{|v| v.to_s =~ /\A\d+\z/}
                         .map{|v| v.to_i}
 
-        # and then extract string/symbol values for further searching.
+        # and then extract string/symbol values for further searching (purely numeric values are discarded)
         values =    values
-                        .select{|v| v.is_a?(::String) || v.is_a?(::Symbol)}
+                        .select{|v| (v.is_a?(::String) && !v.blank? && !(v =~ /\A\d+\z/)) || v.is_a?(::Symbol)}
+                        .map{|v| (v.is_a?(::String) && v =~ /\A#\d+\z/) ? [ v, v[1..-1] ] : v}
                         .map{|v| v.is_a?(::Symbol) ? [ v.to_s.downcase, v.to_s.humanize.downcase ] : v.to_s.humanize.downcase}
                         .flatten
 

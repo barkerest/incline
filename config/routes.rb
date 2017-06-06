@@ -32,7 +32,9 @@ Incline::Engine.routes.draw do
   get   'contact' => 'contact#new'
   post  'contact' => 'contact#create'
 
-  # welcome route.
-  get '/' => 'welcome#home', as: :welcome
+  # access groups
+  resources :access_groups
+
+
 
 end
