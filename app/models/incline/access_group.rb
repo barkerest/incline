@@ -67,13 +67,15 @@ module Incline
     ##
     # Sets the user IDs for the members of this group.
     def user_ids=(values)
-      self.users = Incline::User.get(values) || []
+      values ||= []
+      self.users = Incline::User.where(id: values.map{|v| v.to_i}).to_a
     end
 
     ##
     # Sets the group IDs for the members of this group.
     def group_ids=(values)
-      self.groups = Incline::AccessGroup.get(values) || []
+      values ||= []
+      self.groups = Incline::AccessGroup.where(id: values.map{|v| v.to_i}).to_a
     end
 
     protected
