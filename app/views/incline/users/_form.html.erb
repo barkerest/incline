@@ -7,6 +7,9 @@
         <%= f.text_form_group :email, field_type: 'email', field_maxlength: 250 %>
         <%= f.text_form_group :password, field_type: 'password' %>
         <%= f.text_form_group :password_confirmation, field_type: 'password' %>
+        <% if system_admin? && !current_user?(user) %>
+        <%= f.select_form_group :group_ids, Incline::AccessGroup.all.sorted, :id, :to_s, label_text: 'Group memberships', field_class: 'form-control select2', field_multiple: true %>
+        <% end %>
         <%= f.recaptcha :recaptcha if user.new_record? %>
 
         <%= f.submit user.new_record? ? 'Create account' : 'Update account', class: 'btn btn-primary' %>

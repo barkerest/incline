@@ -31,7 +31,8 @@ module Incline::Extensions
         @current_user ||=
             if (user_id = session[:user_id])
               Incline::User.find_by(id: user_id)
-            elsif (user_id = cookies.signed[user_id_cookie]) &&
+            elsif (cookies&.respond_to?(:signed)) &&
+                (user_id = cookies.signed[user_id_cookie]) &&
                 (user = Incline::User.find_by(id: user_id)) &&
                 (user.authenticated?(:remember, cookies[user_token_cookie]))
               log_in user if respond_to?(:log_in)

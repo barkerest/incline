@@ -6,14 +6,13 @@ Incline::Engine.routes.draw do
   resources :users, except: [ :new, :create ] do
     member do
       get   'disable',      action: :disable_confirm
-      patch 'disable'
-      put   'disable'
-      patch 'enable'
-      put   'enable'
+      match 'disable',      via: [ :put, :patch ]
+      match 'enable',       via: [ :put, :patch ]
+      match 'promote',      via: [ :put, :patch ]
+      match 'demote',       via: [ :put, :patch ]
     end
     collection do
-      get   'api'
-      post  'api'
+      match 'api', via: [ :get, :post ]
     end
   end
 

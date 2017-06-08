@@ -10,7 +10,9 @@ module Incline
 
     has_many :access_group_user_members, class_name: 'Incline::AccessGroupUserMember', foreign_key: 'member_id'
     private :access_group_user_members, :access_group_user_members=
+
     has_many :groups, class_name: 'Incline::AccessGroup', through: :access_group_user_members
+
 
     before_save :downcase_email
     before_create :create_activation_digest
@@ -100,6 +102,21 @@ module Incline
     end
 
     ##
+    # Gets the IDs for the groups that the user explicitly belongs to.
+    def group_ids
+      groups.map{|g| g.id}
+    end
+
+    ##
+    # Sets the IDs for the groups that the user explicitly belongs to.
+    def group_ids=(values)
+      values ||= []
+      values = [ values ] unless values.is_a?(::Array)
+      values = values.reject{|v| v.blank?}.map{|v| v.to_i}
+      self.groups = Incline::AccessGroup.where(id: values).to_a
+    end
+
+    ##
     # Gets the effective group membership of this user.
     def effective_groups(refresh = false)
       @effective_groups = nil if refresh
@@ -109,9 +126,9 @@ module Incline
                               groups
                                   .collect{ |g| g.effective_groups }
                                   .flatten
-                                  .inject([]){ |memo,item| memo << item unless memo.include?(item); memo }
                             end
                                 .map{ |g| g.to_s.upcase }
+                                .uniq
                                 .sort
     end
 
@@ -378,26 +395,27 @@ module Incline
     private
 
     def generate_comments
-      if enabled?
-        if activated?
-          if failed_login_streak.count > 1
-            "Failed Login Streak: #{failed_login_streak.count}\nMost Recent Attempt: #{last_failed_login.date_and_ip}\n"
-          elsif failed_login_streak.count == 1
-            "Failed Login Attempt: #{last_failed_login.date_and_ip}\n"
-          else
-            ''
-          end +
-              if last_successful_login
-                "Most Recent Login: #{last_successful_login.date_and_ip}"
+      (system_admin? ? "{ADMIN}\n" : '') +
+          if enabled?
+            if activated?
+              if failed_login_streak.count > 1
+                "Failed Login Streak: #{failed_login_streak.count}\nMost Recent Attempt: #{last_failed_login.date_and_ip}\n"
+              elsif failed_login_streak.count == 1
+                "Failed Login Attempt: #{last_failed_login.date_and_ip}\n"
               else
-                'Most Recent Login: Never'
-              end
-        else
-          'Not Activated'
-        end
-      else
-        "Disabled #{disabled_at ? disabled_at.in_time_zone.strftime('%m/%d/%Y') : 'some time in the past'} by #{disabled_by.blank? ? 'somebody' : disabled_by}.\n#{disabled_reason}"
-      end
+                ''
+              end +
+                  if last_successful_login
+                    "Most Recent Login: #{last_successful_login.date_and_ip}"
+                  else
+                    'Most Recent Login: Never'
+                  end
+            else
+              'Not Activated'
+            end
+          else
+            "Disabled #{disabled_at ? disabled_at.in_time_zone.strftime('%m/%d/%Y') : 'some time in the past'} by #{disabled_by.blank? ? 'somebody' : disabled_by}.\n#{disabled_reason}"
+          end
     end
 
     def downcase_email

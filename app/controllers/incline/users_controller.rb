@@ -5,15 +5,15 @@ module Incline
 
     before_action :set_user,          except: [ :index, :new, :create, :api ]
     before_action :set_disable_info,  only: [ :disable_confirm, :disable ]
-    before_action :not_current,       only: [ :destroy, :disable, :disable_confirm, :enable ]
+    before_action :not_current,       only: [ :destroy, :disable, :disable_confirm, :enable, :promote, :demote ]
 
-    layout :use_layout, except: [ :index, :new, :create ]
+    layout :use_layout, except: [ :index ]
 
     # Only anonymous users can signup.
     require_anon :new, :create
 
     # Only admins can delete/disable/enable users, or list all users, or show/edit/update other users.
-    require_admin :index, :show, :edit, :update, :destroy, :disable, :disable_confirm, :enable
+    require_admin :index, :show, :edit, :update, :destroy, :disable, :disable_confirm, :enable, :promote, :demote
 
     ##
     # GET /incline/users
@@ -30,14 +30,25 @@ module Incline
     end
 
     ##
-    # POST /incline/users
+    # POST /incline/signup
     def create
-      @user = Incline::User.new(user_params)
+      @user = Incline::User.new(user_params :before_create)
       if @user.valid?
         if @user.save
           @user.send_activation_email request.remote_ip
-          flash[:safe_info] = 'Your account has been created, but needs to be activated before you can use it.<br>Please check your email to activate your account.'
-          redirect_to root_url and return
+          if system_admin?
+            flash[:info] = "The user #{@user} has been created, but the user will need to activate their account before use."
+            additional_params = user_params :after_create
+            if additional_params.any?
+              unless @user.update_attributes(additional_params)
+                flash[:warning] = 'Failed to apply additional attributes to new user account.'
+              end
+            end
+            redirect_to users_url and return
+          else
+            flash[:safe_info] = 'Your account has been created, but needs to be activated before you can use it.<br>Please check your email to activate your account.'
+            redirect_to root_url and return
+          end
         else
           @user.errors[:base] << 'Failed to create user account.'
         end
@@ -61,8 +72,13 @@ module Incline
     # PUT /incline/users/1
     def update
       if @user.update_attributes(user_params)
-        flash[:success] = 'Your profile has been updated.'
-        redirect_to @user
+        if current_user?(@user)
+          flash[:success] = 'Your profile has been updated.'
+          redirect_to @user
+        else
+          flash[:success] = "The user #{@user} has been updated."
+          redirect_to users_path
+        end
       else
         render 'edit'
       end
@@ -123,6 +139,43 @@ module Incline
       redirect_to users_path
     end
 
+    ##
+    # PUT /incline/users/1/promote
+    def promote
+      # add the administrator flag to the selected user.
+      if @user.system_admin?
+        flash[:warning] = "User #{@user} is already an administrator."
+        redirect_to users_path and return
+      end
+
+      if @user.update(system_admin: true)
+        flash[:success] = "User #{@user} has been promoted to administrator."
+      else
+        flash[:danger] = "Failed to promote user #{@user}."
+      end
+
+      redirect_to users_path
+    end
+
+    ##
+    # PUT /incline/users/1/demote
+    def demote
+      # remove the administrator flag from the selected user.
+      unless @user.system_admin?
+        flash[:warning] = "User #{@user} is not an administrator."
+        redirect_to users_path and return
+      end
+
+      if @user.update(system_admin: false)
+        flash[:success] = "User #{@user} has been demoted from administrator."
+      else
+        flash[:danger] = "Failed to demote user #{@user}."
+      end
+
+      redirect_to users_path
+    end
+
+
     # GET/POST /incline/users/api?action=...
     def api
       process_api_action
@@ -136,13 +189,17 @@ module Incline
     end
 
     def valid_user?
-      # The current user can show or edit their own details without any further validation,
-      # any other action requires authorization.
-      # This allows us to override the "require_admin" setting for these actions which means that these
-      # actions are only available to the current user and to system admins.
-      unless [ :show, :edit, :update ].include?(params[:action].to_sym) && current_user?(set_user)
-        super
-      end
+      # This method allows us to override the "require_admin" and "require_anon" settings for these actions.
+
+      action = params[:action].to_sym
+
+      # The current user can show or edit their own details without any further validation.
+      return true if [ :show, :edit, :update ].include?(action) && logged_in? && current_user?(set_user)
+
+      # A system administrator can create new users.
+      return true if [ :new, :create ].include?(action) && logged_in? && system_admin?
+
+      super
     end
 
     def set_user
@@ -151,8 +208,8 @@ module Incline
             Incline::User.find(params[:id])
           else
             Incline::User.enabled.find(params[:id])
-          end
-      @user ||= Incline::User.new(name: 'Invalid User', email: 'invalid-user')
+          end ||
+              Incline::User.new(name: 'Invalid User', email: 'invalid-user')
     end
 
     def set_disable_info
@@ -160,8 +217,13 @@ module Incline
       @disable_info.user = @user
     end
 
-    def user_params
-      params.require(:user).permit(:name, :email, :password, :password_confirmation, :recaptcha)
+    def user_params(mode = :all)
+      ok = (mode == :all || mode == :before_create) ? [ :name, :email, :password, :password_confirmation, :recaptcha ] : [ ]
+
+      # admins can add groups to other users.
+      ok += [ { group_ids: [] } ] if (mode == :all || mode == :after_create) && logged_in? && system_admin? && !current_user?(set_user)
+
+      params.require(:user).permit(ok)
     end
 
     def disable_info_params

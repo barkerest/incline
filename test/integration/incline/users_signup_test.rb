@@ -19,13 +19,13 @@ module Incline
       }
     end
 
-    # should not allow when logged in.
+    # should not allow when logged in (except admins can create other users)
     access_tests_for :new,
                      controller: 'users',
                      url_helper: 'incline.signup_path',
                      allow_anon: true,
                      allow_any_user: false,
-                     allow_admin: false,
+                     allow_admin: true,
                      failure: 'incline.user_path(user)'
 
     access_tests_for :create,
@@ -33,8 +33,8 @@ module Incline
                      url_helper: 'incline.signup_path',
                      allow_anon: true,
                      allow_any_user: false,
-                     allow_admin: false,
-                     success: 'main_app.root_path',
+                     allow_admin: true,
+                     success: '(system_admin? ? incline.users_path : main_app.root_path)',
                      failure: 'incline.user_path(user)',
                      create_params: { user: valid_params }
 

@@ -25,3 +25,5 @@ json.set! 'show_edit', current_user?(user) || system_admin?
 json.set! 'show_disable', !current_user?(user) && system_admin? && user.enabled?
 json.set! 'show_enable', !current_user?(user) && system_admin? && !user.enabled?
 json.set! 'show_delete', !current_user?(user) && system_admin? && !user.enabled? && user.disabled_at < 7.days.ago
+json.set! 'show_promote', !current_user?(user) && system_admin? && !user.system_admin?
+json.set! 'show_demote', !current_user?(user) && system_admin? && user.system_admin?
