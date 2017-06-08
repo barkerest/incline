@@ -20,6 +20,7 @@
 //= require incline/escapeHtml
 //= require incline/regexMask
 //= require incline/select2/select2.full
+//= require incline/inline_actions
 
 
 // Apply things when document is ready.
@@ -29,4 +30,5 @@ $(function() {
   $('input.integer').regexMask('integer');
   $('.double-scroll').doubleScroll({ onlyIfScroll: true, resetOnWindowResize: true });
   $('select.select2').select2();
+  $('a[data-inlineaction="true"]').inlineAction();
 });

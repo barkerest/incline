@@ -37,23 +37,32 @@ module Incline
         if @user.save
           @user.send_activation_email request.remote_ip
           if system_admin?
-            flash[:info] = "The user #{@user} has been created, but the user will need to activate their account before use."
+            flash[:info] = "The user #{@user} has been created, but will need to activate their account before use."
             additional_params = user_params :after_create
             if additional_params.any?
               unless @user.update_attributes(additional_params)
                 flash[:warning] = 'Failed to apply additional attributes to new user account.'
               end
             end
-            redirect_to users_url and return
+            unless inline_request?
+              redirect_to users_url and return
+            end
+            return
           else
             flash[:safe_info] = 'Your account has been created, but needs to be activated before you can use it.<br>Please check your email to activate your account.'
-            redirect_to root_url and return
+            unless inline_request?
+              redirect_to root_url and return
+            end
           end
         else
           @user.errors[:base] << 'Failed to create user account.'
         end
       end
-      render 'new'
+      if inline_request?
+        render 'show', formats: [ :json ]
+      else
+        render 'new'
+      end
     end
 
     ##
@@ -74,11 +83,18 @@ module Incline
       if @user.update_attributes(user_params)
         if current_user?(@user)
           flash[:success] = 'Your profile has been updated.'
-          redirect_to @user
+          unless inline_request?
+            redirect_to @user and return
+          end
         else
           flash[:success] = "The user #{@user} has been updated."
-          redirect_to users_path
+          unless inline_request?
+            redirect_to users_path and return
+          end
         end
+      end
+      if inline_request?
+        render 'show', formats: [ :json ]
       else
         render 'edit'
       end
@@ -95,7 +111,11 @@ module Incline
         @user.destroy
         flash[:success] = "User #{@user} has been deleted."
       end
-      redirect_to users_path
+      if inline_request?
+        render 'show', formats: [ :json ]
+      else
+        redirect_to users_path
+      end
     end
 
     ##
@@ -103,7 +123,9 @@ module Incline
     def disable_confirm
       unless @disable_info.user.enabled?
         flash[:warning] = "User #{@disable_info.user} is already disabled."
-        redirect_to users_path
+        unless inline_request?
+          redirect_to users_path
+        end
       end
     end
 
@@ -113,13 +135,18 @@ module Incline
       if @disable_info.valid?
         if @disable_info.user.disable(current_user, @disable_info.reason)
           flash[:success] = "User #{@disable_info.user} has been disabled."
-          redirect_to users_path and return
+          unless inline_request?
+            redirect_to users_path and return
+          end
         else
           @disable_info.errors.add(:user, 'was unable to be updated')
         end
       end
-
-      render 'disable_confirm'
+      if inline_request?
+        render 'show', formats: [ :json ]
+      else
+        render 'disable_confirm'
+      end
     end
 
     ##
@@ -127,16 +154,22 @@ module Incline
     def enable
       if @user.enabled?
         flash[:warning] = "User #{@user} is already enabled."
-        redirect_to users_path and return
-      end
-
-      if @user.enable
-        flash[:success] = "User #{@user} has been enabled."
+        unless inline_request?
+          redirect_to users_path and return
+        end
       else
-        flash[:danger] = "Failed to enable user #{@user}."
+        if @user.enable
+          flash[:success] = "User #{@user} has been enabled."
+        else
+          flash[:danger] = "Failed to enable user #{@user}."
+        end
       end
 
-      redirect_to users_path
+      if inline_request?
+        render 'show', formats: [ :json ]
+      else
+        redirect_to users_path
+      end
     end
 
     ##
@@ -145,34 +178,47 @@ module Incline
       # add the administrator flag to the selected user.
       if @user.system_admin?
         flash[:warning] = "User #{@user} is already an administrator."
-        redirect_to users_path and return
-      end
-
-      if @user.update(system_admin: true)
-        flash[:success] = "User #{@user} has been promoted to administrator."
+        unless inline_request?
+          redirect_to users_path and return
+        end
       else
-        flash[:danger] = "Failed to promote user #{@user}."
+        if @user.update(system_admin: true)
+          flash[:success] = "User #{@user} has been promoted to administrator."
+        else
+          flash[:danger] = "Failed to promote user #{@user}."
+        end
       end
 
-      redirect_to users_path
+      if inline_request?
+        render 'show', formats: [ :json ]
+      else
+        redirect_to users_path
+      end
     end
 
     ##
     # PUT /incline/users/1/demote
     def demote
       # remove the administrator flag from the selected user.
-      unless @user.system_admin?
-        flash[:warning] = "User #{@user} is not an administrator."
-        redirect_to users_path and return
-      end
-
-      if @user.update(system_admin: false)
-        flash[:success] = "User #{@user} has been demoted from administrator."
+      if @user.system_admin?
+        if @user.update(system_admin: false)
+          flash[:success] = "User #{@user} has been demoted from administrator."
+        else
+          flash[:danger] = "Failed to demote user #{@user}."
+        end
       else
-        flash[:danger] = "Failed to demote user #{@user}."
+        flash[:warning] = "User #{@user} is not an administrator."
+        unless inline_request?
+          redirect_to users_path and return
+        end
       end
 
-      redirect_to users_path
+      if inline_request?
+        render 'show', formats: [ :json ]
+      else
+        redirect_to users_path
+      end
+
     end
 
 
@@ -183,9 +229,10 @@ module Incline
 
     private
 
-    # if the "inline" parameter evaluates to true then don't use a layout, otherwise use the inherited layout.
+
+
     def use_layout
-      params[:inline].to_bool ? false : nil
+      inline_request? ? false : nil
     end
 
     def valid_user?
@@ -238,6 +285,7 @@ module Incline
         redirect_to users_path
       end
     end
+
 
   end
 end

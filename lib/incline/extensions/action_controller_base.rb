@@ -293,6 +293,7 @@ module Incline::Extensions
         end
 
       rescue ::Incline::NotAuthorized => err
+
         flash[:danger] = err.message
         redirect_to root_url and return false
       end
@@ -307,6 +308,16 @@ module Incline::Extensions
     # For instance a `create` request in JSON format should return data, not redirect to `show`.
     def json_request? #:doc:
       request.format.to_s.downcase == 'json'
+    end
+
+    ##
+    # Is the current request an inline request?
+    #
+    # JSON requests are always considered inline, otherwise we check to see if the "inline" parameter is set to a true value.
+    #
+    # Primarily this would be used to strip the layour from rendered content.
+    def inline_request?
+      json_request? || params[:inline].to_bool
     end
 
     ##

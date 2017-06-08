@@ -52,7 +52,7 @@ module Incline
                      allow_any_user: false,
                      allow_admin: true,
                      update_params: '{ user: { name: @user.name, email: @user.email } }',
-                     success: 'incline.user_path(@user)'
+                     success: '(system_admin? ? incline.users_path : incline.user_path(@user))'
 
     # and users can update themselves.
     test 'user can update self' do

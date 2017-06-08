@@ -1,3 +1,5 @@
+json.partial! 'messages'
+
 if @user.errors.any?
   json.api_errors! 'user', @user.errors
 else

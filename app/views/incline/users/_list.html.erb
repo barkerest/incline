@@ -5,7 +5,7 @@
       <th>Email</th>
       <th>Created</th>
       <th>Comments</th>
-      <th></th>
+      <th><%= link_to 'New', signup_path, class: 'btn btn-default btn-xs' %></th>
     </tr>
   </thead>
 </table>
@@ -62,9 +62,9 @@
                   ret += '<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu">'
 
                   if (row.show_promote) {
-                      ret += '<li><a href="' + row.DT_Path + '/promote" title="Promote to administrator" data-method="patch">Promote</a></li>';
+                      ret += '<li><a href="' + row.DT_Path + '/promote" title="Promote to administrator" data-method="patch" data-inlineaction="true">Promote</a></li>';
                   } else if (row.show_demote) {
-                      ret += '<li><a href="' + row.DT_Path + '/demote" title="Demote from administrator" data-method="patch">Demote</a></li>';
+                      ret += '<li><a href="' + row.DT_Path + '/demote" title="Demote from administrator" data-method="patch" data-inlineaction="true">Demote</a></li>';
                   }
 
                   if (row.show_disable) {
