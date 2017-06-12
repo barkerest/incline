@@ -24,6 +24,15 @@ body {
   padding-top: 60px;
 }
 
+#incline_dynamic_alerts {
+  position: fixed;
+  left: 10px;
+  top: 65px;
+  width: 25%;
+  display: block;
+  z-index: 9999;
+}
+
 section {
   overflow: auto;
 }

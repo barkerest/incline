@@ -1,6 +1,9 @@
 unless user.new_record?
   json.set! 'DT_RowId', "user_#{user.id}"
   json.set! 'DT_Path', user_path(user)
+  if user.destroyed?
+    json.set! 'DT_RowAction', 'remove'
+  end
   if user.enabled?
     if user.failed_login_streak.count > 5
       json.set! 'DT_RowClass', 'danger'
