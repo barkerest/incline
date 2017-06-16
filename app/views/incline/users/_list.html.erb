@@ -62,19 +62,19 @@
                   ret += '<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu">'
 
                   if (row.show_promote) {
-                      ret += '<li><a href="javascript:inline_action(\'' + row.DT_Path + '/promote\',\'patch\')" title="Promote to administrator">Promote</a></li>';
+                      ret += '<li><a href="javascript:inlineAction(\'' + row.DT_Path + '/promote\',\'patch\')" title="Promote to administrator">Promote</a></li>';
                   } else if (row.show_demote) {
-                      ret += '<li><a href="javascript:inline_action(\'' + row.DT_Path + '/demote\',\'patch\')" title="Demote from administrator">Demote</a></li>';
+                      ret += '<li><a href="javascript:inlineAction(\'' + row.DT_Path + '/demote\',\'patch\')" title="Demote from administrator">Demote</a></li>';
                   }
 
                   if (row.show_disable) {
-                      ret += '<li><a href="' + row.DT_Path + '/disable" title="Disable">Disable</a></li>';
+                      ret += '<li><a href="javascript:inlineForm(\'' + row.DT_Path + '/disable\')" title="Disable">Disable</a></li>';
                   } else if (row.show_enable) {
-                      ret += '<li><a href="javascript:inline_action(\'' + row.DT_Path + '/enable\',\'patch\')" title="Enable">Enable</a></li>';
+                      ret += '<li><a href="javascript:inlineAction(\'' + row.DT_Path + '/enable\',\'patch\')" title="Enable">Enable</a></li>';
                   }
 
                   if (row.show_delete) {
-                      ret += '<li role="separator" class="divider"></li><li><a href="javascript:inline_action(\'' + row.DT_Path + '\',\'delete\')" title="Remove" data-confirm="Are you sure you want to remove this user?">Remove</a></li>';
+                      ret += '<li role="separator" class="divider"></li><li><a href="javascript:inlineAction(\'' + row.DT_Path + '\',\'delete\')" title="Remove" data-confirm="Are you sure you want to remove this user?">Remove</a></li>';
                   }
 
                   ret += '</ul></div>';

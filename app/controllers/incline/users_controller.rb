@@ -44,25 +44,26 @@ module Incline
                 flash[:warning] = 'Failed to apply additional attributes to new user account.'
               end
             end
-            unless inline_request?
-              redirect_to users_url and return
+            if inline_request?
+              render 'show', formats: [ :json ]
+            else
+              redirect_to users_url
             end
             return
           else
             flash[:safe_info] = 'Your account has been created, but needs to be activated before you can use it.<br>Please check your email to activate your account.'
-            unless inline_request?
-              redirect_to root_url and return
+            if inline_request?
+              render 'show', formats: [ :json ]
+            else
+              redirect_to root_url
             end
+            return
           end
         else
           @user.errors[:base] << 'Failed to create user account.'
         end
       end
-      if inline_request?
-        render 'show', formats: [ :json ]
-      else
-        render 'new'
-      end
+      render 'new'
     end
 
     ##
@@ -83,21 +84,23 @@ module Incline
       if @user.update_attributes(user_params)
         if current_user?(@user)
           flash[:success] = 'Your profile has been updated.'
-          unless inline_request?
-            redirect_to @user and return
+          if inline_request?
+            render 'show', formats: [ :json ]
+          else
+            redirect_to @user
           end
+          return
         else
           flash[:success] = "The user #{@user} has been updated."
-          unless inline_request?
-            redirect_to users_path and return
+          if inline_request?
+            render 'show', formats: [ :json ]
+          else
+            redirect_to users_path
           end
+          return
         end
       end
-      if inline_request?
-        render 'show', formats: [ :json ]
-      else
-        render 'edit'
-      end
+      render 'edit'
     end
 
     ##
@@ -135,18 +138,17 @@ module Incline
       if @disable_info.valid?
         if @disable_info.user.disable(current_user, @disable_info.reason)
           flash[:success] = "User #{@disable_info.user} has been disabled."
-          unless inline_request?
-            redirect_to users_path and return
+          if inline_request?
+            render 'show', formats: [ :json ]
+          else
+            redirect_to users_path
           end
+          return
         else
           @disable_info.errors.add(:user, 'was unable to be updated')
         end
       end
-      if inline_request?
-        render 'show', formats: [ :json ]
-      else
-        render 'disable_confirm'
-      end
+      render 'disable_confirm'
     end
 
     ##
@@ -164,7 +166,6 @@ module Incline
           flash[:danger] = "Failed to enable user #{@user}."
         end
       end
-
       if inline_request?
         render 'show', formats: [ :json ]
       else
