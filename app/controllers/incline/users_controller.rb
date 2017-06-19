@@ -4,6 +4,7 @@ module Incline
   class UsersController < ApplicationController
 
     before_action :set_user,          except: [ :index, :new, :create, :api ]
+    before_action :set_dt_request, only: [:index, :locate ]
     before_action :set_disable_info,  only: [ :disable_confirm, :disable ]
     before_action :not_current,       only: [ :destroy, :disable, :disable_confirm, :enable, :promote, :demote ]
 
@@ -18,9 +19,7 @@ module Incline
     ##
     # GET /incline/users
     def index
-      @dt_request = Incline::DataTablesRequest.new(params) do
-        (current_user.system_admin? ? Incline::User.known : Incline::User.known.enabled)
-      end
+
     end
 
     ##
@@ -33,6 +32,11 @@ module Incline
     # POST /incline/signup
     def create
       @user = Incline::User.new(user_params :before_create)
+
+      if system_admin? # skip recaptcha check if an admin is currently logged in.
+        @user.recaptcha = :verified
+      end
+
       if @user.valid?
         if @user.save
           @user.send_activation_email request.remote_ip
@@ -222,6 +226,10 @@ module Incline
 
     end
 
+    # GET /incline/users/1/locate
+    def locate
+      render json: { record: @dt_request.record_location }
+    end
 
     # GET/POST /incline/users/api?action=...
     def api
@@ -230,7 +238,11 @@ module Incline
 
     private
 
-
+    def set_dt_request
+      @dt_request = Incline::DataTablesRequest.new(params) do
+        (current_user.system_admin? ? Incline::User.known : Incline::User.known.enabled)
+      end
+    end
 
     def use_layout
       inline_request? ? false : nil

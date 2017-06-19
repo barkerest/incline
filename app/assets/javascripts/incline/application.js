@@ -20,15 +20,11 @@
 //= require incline/escapeHtml
 //= require incline/regexMask
 //= require incline/select2/select2.full
+//= require incline/activate_classed_items
 //= require incline/inline_actions
 
 
 // Apply things when document is ready.
 $(function() {
-  $('div.date').datepicker({ format: "yyyy-mm-dd", todayBtn: "linked", todayHighlight: true, clearBtn: true });
-  $('input.float').regexMask('float');
-  $('input.integer').regexMask('integer');
-  $('.double-scroll').doubleScroll({ onlyIfScroll: true, resetOnWindowResize: true });
-  $('select.select2').select2();
-  $('a[data-inlineaction="true"]').inlineAction();
+    activateClassedItems();
 });

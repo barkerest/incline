@@ -10,9 +10,12 @@
         <% if system_admin? && !current_user?(user) %>
         <%= f.select_form_group :group_ids, Incline::AccessGroup.all.sorted, :id, :to_s, label_text: 'Group memberships', field_class: 'form-control select2', field_multiple: true %>
         <% end %>
-        <%= f.recaptcha :recaptcha if user.new_record? %>
+        <% unless system_admin? %>
+          <%= f.recaptcha :recaptcha if user.new_record? %>
+        <% end %>
 
         <%= f.submit user.new_record? ? 'Create account' : 'Update account', class: 'btn btn-primary' %>
+        <%= link_to 'Cancel', root_url, class: 'btn btn-default' %>
     <% end %>
   </div>
 </div>

@@ -5,7 +5,7 @@
       <th>Email</th>
       <th>Created</th>
       <th>Comments</th>
-      <th><%= link_to 'New', signup_path, class: 'btn btn-default btn-xs' %></th>
+      <th><%= link_to 'New', signup_path, class: 'btn btn-default btn-xs inline_form' %></th>
     </tr>
   </thead>
 </table>
@@ -50,12 +50,12 @@
               var ret = '<div class="text-right">';
               var drop = row.show_disable || row.show_enable || row.show_promote || row.show_demote || row.show_delete;
 
-              ret += '<a href="' + row.DT_Path + '" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>';
+              ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '\')" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>';
 
               if (drop) {
                   ret += '&nbsp;<div class="btn-group">';
                   if (row.show_edit) {
-                      ret += '<a href="' + row.DT_Path + '/edit" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
+                      ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '/edit\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
                   } else {
                       ret += '<a href="javascript:void(0)" title="Options" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-star"></i></a>';
                   }
@@ -80,7 +80,7 @@
                   ret += '</ul></div>';
               } else {
                   if (row.show_edit) {
-                      ret += '&nbsp;<a href="' + row.DT_Path + '/edit" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
+                      ret += '&nbsp;<a href="javascript:inlineForm(\'' + row.DT_Path + '/edit\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
                   }
               }
 

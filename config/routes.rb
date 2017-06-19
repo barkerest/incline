@@ -10,6 +10,7 @@ Incline::Engine.routes.draw do
       match 'enable',       via: [ :put, :patch ]
       match 'promote',      via: [ :put, :patch ]
       match 'demote',       via: [ :put, :patch ]
+      post  'locate'
     end
     collection do
       match 'api', via: [ :get, :post ]

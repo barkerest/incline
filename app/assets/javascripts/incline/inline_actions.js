@@ -121,8 +121,9 @@ var inclineInline = {
                                 table.row('#' + item.DT_RowId).data(item);
                             }
                         }
-                    } else {
-                        // no row, new record?
+                    } else if (dataCount == 1) {
+                        // no row found and there is only one record returned, focus on that record.
+                        inclineInline._go_to_record(item);
                     }
                 }
             }
@@ -191,11 +192,14 @@ var inclineInline = {
         var body;
         var footer;
         var tmp;
+        var i;
+        var klass;
 
         html = $(html);
 
         this._create_dialog();
 
+        // get the parts of the modal to update.
         title = $('#incline_inline_form_title');
         body = $('#incline_inline_form_body');
         footer = $('#incline_inline_form_footer');
@@ -206,7 +210,7 @@ var inclineInline = {
         footer.empty();
 
         tmp = html.find('form');
-        if (tmp.length > 0) {
+        if (tmp.length == 1) {  // support one and only one form in the resulting HTML.
             // we have a form in the html that needs to be modified accordingly.
             var form_method = tmp.attr('method');
             var form_url = tmp.attr('action');
@@ -215,6 +219,7 @@ var inclineInline = {
             // make sure the inline parameter is set.
             tmp.append('<input type="hidden" name="inline" value="1" />');
 
+            // override submit to make sure the submission occurs via ajax.
             tmp.submit(function (e) {
                 var form_data = $('#' + form_id).serialize();
                 e.preventDefault();
@@ -245,43 +250,100 @@ var inclineInline = {
             });
         }
 
-        tmp = html.find('.panel');
+        // global title recognition, first H1 or H2 element.
+        tmp = html.find('h1');
+        if (tmp.length < 1) tmp = html.find('h2');
         if (tmp.length > 0) {
-            // if the html contents contains a panel, rip it apart.
+            tmp = tmp.first();
+            title.text(tmp.text());
+            html = html.not(tmp);
+        }
 
-            // panel-heading turns into title.
-            title.text(tmp.find('.panel-heading').text());
-            // panel-footer is a direct copy.
-            footer.append(tmp.find('.panel-footer').find());
+        // get the error messages in place.
+        tmp = html.find('#error_explanation');
+        if (tmp.length > 0) {
+            body.prepend(tmp);
+            html = html.not(tmp);
+        }
 
-            // add alerts
-            body.append(html.find('.alert'));
+        // get the alert messages in place.
+        tmp = html.find('.alert');
+        if (tmp.length > 0) {
+            body.prepend(tmp);
+            html = html.not(tmp);
+        }
 
-            // add panel-body divs and tables.
-            tmp = tmp.find('table,div.panel-body');
-            tmp.removeClass('panel-body');
-            body.append(tmp);
-        } else {
-            // the html does not contain a panel, look for a title and fill in the body.
-
-            // add everything.
-            body.append(html);
-
-            tmp = body.find('h1');
-            if (tmp.length > 0) {
-                title.text(tmp.text());
-                tmp.parent.remove(tmp);
-            } else {
-                tmp = body.find('h2');
-                if (tmp.length > 0) {
-                    title.text(tmp.text());
-                    tmp.parent.remove(tmp);
+        // 'html' should now only contain 1 entry that should either be a <form> or a <div> tag.
+        // If it contains anything else, we pass it along unmodified.
+        if (html.length === 1) {
+            if (html.tagName === 'FORM') {
+                // If the FORM contains a single DIV we can continue.
+                tmp = html.children();
+                if (tmp.length == 1 && tmp.tagName === 'DIV') {
+                    // get the contents of the sole div and put it back into the form.
+                    html = html.not(tmp);
+                    html.append(this._process_div(tmp, title, null, footer));
+                    // then add the form to the body.
+                    body.append(html);
+                } else {
+                    // form has more than one child element, or child element is not a DIV.
+                    body.append(html);
                 }
+            } else if (html.tagName === 'DIV') {
+                // get the contents of the sole div.
+                this._process_div(html, title, body, footer);
+            } else {
+                // only one element, but it's not a DIV and it's not a FORM.
+                body.append(html);
             }
+        } else {
+            // more than one element.
+            body.append(html);
+        }
+
+        // make sure the classed items are activated.
+        activateClassedItems(body);
+        activateClassedItems(footer);
+
+        // footer should only be visible if it has contents.
+        if (footer.children().length > 0) {
+            footer.show();
+        } else {
+            footer.hide();
         }
 
         tmp = $('#incline_inline_form');
         if (tmp.is(':hidden')) tmp.modal('show');
+    },
+
+    _process_div: function (div, title, body, footer) {
+        var panelRegex = /^(.*\s)panel(\s.*)$/;
+
+        while (true)
+        {
+            if (div.length < 1) return div; // returning nothing.
+
+            if (div.length > 1 || div.tagName !== 'DIV')
+            {
+                if (body) body.append(div);
+                return div;
+            }
+
+            if (panelRegex.text(div.attr('class'))) {
+                // our sole div is a panel!
+                var part = div.find('panel-heading');
+                if (title && part.length > 0) {
+                    title.text(part.text());
+                }
+                part = div.find('panel-footer');
+                if (footer && part.length > 0) {
+                    footer.append(part);
+                }
+                div = div.find('table,div.panel-body').removeClass('panel-body');
+            } else {
+                div = div.children().first();
+            }
+        }
     },
 
     _destroy_dialog: function () {
@@ -296,6 +358,45 @@ var inclineInline = {
             }
             this._dialog = false;
         }
+    },
+
+    _go_to_record: function (data) {
+        var table = $('table.dataTable');
+        var params;
+        var i;
+
+        if (table.length < 1) return;
+
+        table = table.dataTable().api();
+
+        i = data.DT_RowId.lastIndexOf('_');
+
+        params = table.ajax.params();
+        params.draw = -1;
+        params.locate_id = data.DT_RowId.substring(i + 1);
+
+        $.ajax({
+            url: data.DT_Path + '/locate',
+            method: 'POST',
+            dataType: 'json',
+            data: params.serialize(),
+            success: function(data) {
+                var recNum = data.record;
+                if (recNum > -1) {
+                    var pageLen = table.page.len();
+                    var pageNum;
+
+                    if (pageLen < 1) return;
+
+                    // bump up the record number by 1, avoid div by zero and ensure we get the correct page back.
+                    pageNum = Math.floor((recNum + 1) / pageLen);
+
+                    // set the page number and refresh the datatable.
+                    table.page(pageNum).draw('page');
+                }
+            }
+        });
+
     },
 };
 

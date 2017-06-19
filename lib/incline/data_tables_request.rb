@@ -42,6 +42,14 @@ module Incline
     end
 
     ##
+    # If we are searching for a specific ID, this is the ID to locate.
+    #
+    #
+    def locate_id
+      @config[:locate_id]
+    end
+
+    ##
     # Initializes the data tables request parameters.
     def initialize(params = {}, &block)
       raise ArgumentError, 'A block is required to return the starting ActiveRecord scope.' unless block_given?
@@ -55,6 +63,8 @@ module Incline
         @config[:draw]   = params[:draw].to_s.to_i
         @config[:start]  = params[:start].to_s.to_i
         @config[:length] = params[:length].to_s.to_i
+        @config[:locate_id] = params[:locate_id].to_s.to_i
+
 
         tmp = params[:search]
         if tmp && !tmp[:value].blank?
@@ -126,6 +136,16 @@ module Incline
     end
 
     ##
+    # If #locate_id is non-zero, this is the record number for the specified ID using our filtering parameters.
+    #
+    # This will be an absolute zero-based record number for the ID.  It can be used to figure out the page that the
+    # record would appear on.
+    def record_location(refresh = false)
+      @config[:record_location] = nil if refresh
+      @config[:record_location] ||= find_record
+    end
+
+    ##
     # Gets the records returned by this request.
     def records(refresh = false)
       @config[:records] = nil if refresh
@@ -162,10 +182,23 @@ module Incline
     private
 
     ##
+    # Find the record represented by #locate_id.
+    def find_record(relation = nil)
+      return -1 if locate_id == 0
+
+      dataset = load_records(relation, false)
+      return -1 if dataset.blank?
+
+      return -1 unless dataset.first.respond_to?(:id)
+
+      dataset.index{|item| item.id == locate_id} || -1
+    end
+
+    ##
     # Applies the request against an ActiveRecord::Relation object.
     #
     # Returns the results of executing the necessary queries and filters as an array of models.
-    def load_records(relation = nil)
+    def load_records(relation = nil, paging = true)
       begin
         # reset values.
         # @config[:records] is set to the return of this method, we we won't change that here.
@@ -244,20 +277,24 @@ module Incline
           # store the filtered count.
           @config[:records_filtered] = relation.count
 
-          # apply limits and return.
-          relation                   = relation[start..-1]
-          if length > 0
-            relation = relation[0...length]
+          if paging
+            # apply limits and return.
+            relation                   = relation[start..-1]
+            if length > 0
+              relation = relation[0...length]
+            end
           end
           relation
         else
           # store the filtered count.
           @config[:records_filtered] = relation.count
 
-          # apply limits and return.
-          relation                   = relation.offset(start)
-          if length > 0
-            relation = relation.limit(length)
+          if paging
+            # apply limits and return.
+            relation                   = relation.offset(start)
+            if length > 0
+              relation = relation.limit(length)
+            end
           end
           relation.to_a
         end
