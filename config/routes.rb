@@ -33,8 +33,14 @@ Incline::Engine.routes.draw do
   post  'contact' => 'contact#create'
 
   # access groups
-  resources :access_groups
-
+  resources :access_groups do
+    member do
+      post 'locate'
+    end
+    collection do
+      match 'api', via: [ :get, :post ]
+    end
+  end
 
 
 end

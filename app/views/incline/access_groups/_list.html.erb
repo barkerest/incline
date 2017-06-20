@@ -1,0 +1,66 @@
+<table id="dt-access_groups" class="table" style="width: 100%;">
+  <thead>
+  <tr>
+    <th>Name</th>
+    <th><%= link_to 'New', new_access_group_path, class: 'btn btn-success btn-xs inline_form' %></th>
+  </tr>
+  </thead>
+</table>
+
+<% provide :scripts do %>
+<script type="text/javascript">
+    //<![CDATA[
+    $(function() {
+        $('#dt-access_groups').DataTable({
+            dom: '<"panel-body"<"col-sm-6 col-sm-offset-6"fr>>t<"panel-body"<"col-sm-6"i><"col-sm-6"p>>',
+            ajax: {
+                url: '<%= api_path %>',
+                type: 'POST'
+            },
+            columns: [
+                {
+                    // how DT references the data.
+                    data: 'name',
+                    // how the server references the data.
+                    name: 'name',
+                    // override the default behavior as needed, or remove the render option for this column.
+                    render: function(data, type) {
+                        return data;
+                    },
+                    // can this column be used for sorting?
+                    orderable: true,
+                    // can this column be used for searching?
+                    searchable: true
+                },
+
+                {
+                    orderable: false,
+                    searchable: false,
+                    data: function (row, type, set, meta) {
+                        if (type === 'display') {
+                            var ret = '<div class="text-right">';
+
+                            // the show icon.
+                            ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '\')" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>';
+
+                            // the edit icon.
+                            ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '/edit\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
+
+                            // the delete icon.
+                            ret += '<a href="javascript:inlineAction(\'' + row.DT_Path + '\',\'delete\')" title="Remove" class="btn btn-danger btn-xs" data-confirm="Are you sure you want to remove this access group?"><i class="glyphicon glyphicon-trash"></i></a>';
+
+                            ret += '</div>';
+                            return ret;
+                        } else {
+                            return row.DT_Path;
+                        }
+                    }
+                }
+            ],
+            responsive: true,
+            serverSide: true
+        });
+    });
+    //]]>
+</script>
+<% end %>
