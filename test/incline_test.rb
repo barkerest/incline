@@ -37,6 +37,7 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline::Extensions.const_defined? :Session
     assert Incline::Extensions::Session.const_defined? :Common
     assert Incline::Extensions::Session.const_defined? :Controller
+    assert Incline::Extensions.const_defined? :ResourceRouteGenerator
     assert Incline::Extensions.const_defined? :ErbScaffoldGenerator
     assert Incline::Extensions.const_defined? :JbuilderGenerator
     assert Incline::Extensions.const_defined? :JbuilderTemplate

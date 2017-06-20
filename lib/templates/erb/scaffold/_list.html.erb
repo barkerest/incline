@@ -2,9 +2,9 @@
   <thead>
   <tr>
     <%- attributes.reject(&:password_digest?).each do |attribute| -%>
-        <th><%= attribute.human_name %></th>
+    <th><%= attribute.human_name %></th>
     <%- end -%>
-    <th><%%= link_to 'New', new_<%= singular_table_name %>_path, class: 'btn btn-success btn-xs' %></th>
+    <th><%%= link_to 'New', new_<%= singular_table_name %>_path, class: 'btn btn-success btn-xs inline_form' %></th>
   </tr>
   </thead>
 </table>
@@ -15,7 +15,10 @@
     $(function() {
         $('#dt-<%= plural_table_name %>').DataTable({
             dom: '<"panel-body"<"col-sm-6 col-sm-offset-6"fr>>t<"panel-body"<"col-sm-6"i><"col-sm-6"p>>',
-            ajax: '<%%= api_path %>',
+            ajax: {
+                url: '<%%= api_path %>',
+                type: 'POST'
+            },
             columns: [
                 <%- attributes.reject(&:password_digest?).each do |attribute| -%>
                 {
@@ -47,19 +50,26 @@
                 },
                 <%- end %>
                 {
-                    data: 'DT_path',
                     orderable: false,
                     searchable: false,
-                    render: function(data,type) {
-                        var ret = data;
+                    data: function (row, type, set, meta) {
                         if (type === 'display') {
-                            ret = '<div class="text-right">' +
-                                    '<a href="' + data + '" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>' +
-                                    '<a href="' + data + '/edit" title="Edit" class="btn btn-default btn-xs"><i class="glyphiocn glyphicon-pencil"></i></a>' +
-                                    '<a href="' + data + '" title="Remove" class="btn btn-danger btn-xs" data-method="delete" data-confirm="Are you sure you want to remove this <%= singular_table_name.humanize %>?"><i class="glyphicon glyphicon-trash"></i></a>' +
-                                    '</div>';
+                            var ret = '<div class="text-right">';
+
+                            // the show icon.
+                            ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '\')" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>';
+
+                            // the edit icon.
+                            ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '/edit\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
+
+                            // the delete icon.
+                            ret += '<a href="javascript:inlineAction(\'' + row.DT_Path + '\',\'delete\')" title="Remove" class="btn btn-danger btn-xs" data-confirm="Are you sure you want to remove this <%= singular_table_name.humanize %>?"><i class="glyphicon glyphicon-trash"></i></a>';
+
+                            ret += '</div>';
+                            return ret;
+                        } else {
+                            return row.DT_Path;
                         }
-                        return ret;
                     }
                 }
             ],

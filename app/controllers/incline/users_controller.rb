@@ -4,7 +4,7 @@ module Incline
   class UsersController < ApplicationController
 
     before_action :set_user,          except: [ :index, :new, :create, :api ]
-    before_action :set_dt_request, only: [:index, :locate ]
+    before_action :set_dt_request,    only: [ :index, :locate ]
     before_action :set_disable_info,  only: [ :disable_confirm, :disable ]
     before_action :not_current,       only: [ :destroy, :disable, :disable_confirm, :enable, :promote, :demote ]
 
@@ -14,7 +14,7 @@ module Incline
     require_anon :new, :create
 
     # Only admins can delete/disable/enable users, or list all users, or show/edit/update other users.
-    require_admin :index, :show, :edit, :update, :destroy, :disable, :disable_confirm, :enable, :promote, :demote
+    require_admin :index, :show, :edit, :update, :destroy, :disable, :disable_confirm, :enable, :promote, :demote, :locate
 
     ##
     # GET /incline/users
@@ -226,7 +226,7 @@ module Incline
 
     end
 
-    # GET /incline/users/1/locate
+    # POST /incline/users/1/locate
     def locate
       render json: { record: @dt_request.record_location }
     end

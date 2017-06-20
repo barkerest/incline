@@ -5,14 +5,14 @@ require_dependency "<%= namespaced_path %>/application_controller"
 <% module_namespacing do -%>
 class <%= controller_class_name %>Controller < ApplicationController
   before_action :valid_user, except: [ :api ]
+  before_action :set_dt_request, only: [ :index, :locate ]
+  before_action :set_new_<%= singular_table_name %>, only: [ :new, :create ]
   before_action :set_<%= singular_table_name %>, only: [ :show, :edit, :update, :destroy ]
 
+  layout :layout_to_use
 
   # GET <%= route_url %>
   def index
-    @dt_request = Incline::DataTablesRequest.new(params) do
-      <%= orm_class.all(class_name) %>
-    end
   end
 
   # GET <%= route_url %>/1
@@ -21,7 +21,6 @@ class <%= controller_class_name %>Controller < ApplicationController
 
   # GET <%= route_url %>/new
   def new
-    @<%= singular_table_name %> = <%= orm_class.build(class_name) %>
   end
 
   # GET <%= route_url %>/1/edit
@@ -30,50 +29,26 @@ class <%= controller_class_name %>Controller < ApplicationController
 
   # POST <%= route_url %>
   def create
-    @<%= singular_table_name %> = <%= orm_class.build(class_name, "#{singular_table_name}_params") %>
-
     if @<%= orm_instance.save %>
-      if json_request?
-        render :show
-      else
-        redirect_after_edit @<%= singular_table_name %>, notice: <%= "'#{human_name} was successfully created.'" %>
-      end
+      handle_update_success notice: <%= "'#{human_name} was successfully created.'" %>
     else
-      if json_request?
-        @<%= singular_table_name %>.errors.add(:base, 'failed to save')
-        render :show
-      else
-        render :new
-      end
+      handle_update_failure :new
     end
   end
 
   # PATCH/PUT <%= route_url %>/1
   def update
     if @<%= orm_instance.update("#{singular_table_name}_params") %>
-      if json_request?
-        render :show
-      else
-        redirect_after_edit @<%= singular_table_name %>, notice: <%= "'#{human_name} was successfully updated.'" %>
-      end
+      handle_update_success notice: <%= "'#{human_name} was successfully updated.'" %>
     else
-      if json_request?
-        @<%= singular_table_name %>.errors.add(:base, 'failed to save')
-        render :show
-      else
-        render :edit
-      end
+      handle_update_failure :edit
     end
   end
 
   # DELETE <%= route_url %>/1
   def destroy
     @<%= orm_instance.destroy %>
-    if json_request?
-      render json: { data: <%= "'#{human_name} was successfully destroyed.'" %> }
-    else
-      redirect_to <%= index_helper %>_url, notice: <%= "'#{human_name} was successfully destroyed.'" %>
-    end
+    handle_update_success notice: <%= "'#{human_name} was successfully destroyed.'" %>
   end
 
   # GET/POST <%= route_url %>/api?action=...
@@ -81,32 +56,73 @@ class <%= controller_class_name %>Controller < ApplicationController
     process_api_action
   end
 
-  private
-
-  # Sends the client to the appropriate location after a successful update or create.
-  # The default behavior with Rails is to redirect to the object itself.
-  # The default behavior with Incline is to redirect to the list of objects.
-  def redirect_after_edit(<%= singular_table_name %>, *status_messages)
-    # Our behavior is to send the user back to the list on success.
-    redirect_to <%= index_helper %>_url, *status_messages
-
-    # Rails behavior is to send the user to the item itself.
-    # Comment out the redirect above and uncomment this redirect to restore default behavior.
-    # redirect_to <%= singular_table_name %>, *status_messages
+  # POST <%= route_url %>/1/locate
+  def locate
+    render json: { record: @dt_request.record_location }
   end
 
-  # Use callbacks to share common setup or constraints between actions.
-  def set_<%= singular_table_name %>
-    @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
+private
+
+  # Inline requests do not get a layout, otherwise use the default layout.
+  def layout_to_use
+    inline_request? ? false : nil
+  end
+
+  def handle_update_failure(action)
+    if json_request?
+      # add a model-level error and render the json response.
+      @<%= singular_table_name %>.errors.add(:base, 'failed to save')
+      render :show
+    else
+      # render the appropriate action.
+      render action
+    end
+  end
+
+  def handle_update_success(*messages)
+    if inline_request?
+      # inline and json requests expect json on success.
+      render 'show', formats: [ :json ]
+    else
+      # otherwise, we redirect.
+
+      # The default behavior in rails is to redirect to the item that was updated.
+      # The default behavior in incline is to redirect to the item collection.
+
+      # To reinstate the default rails behavior, uncomment the line below.
+      # redirect_to @<%= singular_table_name %>, *messages unless @<%= singular_table_name %>.destroyed?
+      redirect_to <%= index_helper %>_url, *messages
+    end
   end
 
   # Only allow a trusted parameter "white list" through.
   def <%= "#{singular_table_name}_params" %>
-    <%- if attributes_names.empty? -%>
-    params[:<%= singular_table_name %>]
-    <%- else -%>
-    params.require(:<%= singular_table_name %>).permit(<%= attributes_names.map { |name| ":#{name}" }.join(', ') %>)
-    <%- end -%>
+    if params.include?(:<%= singular_table_name %>)
+      <%- if attributes_names.empty? -%>
+      params[:<%= singular_table_name %>]
+      <%- else -%>
+      params.require(:<%= singular_table_name %>).permit(<%= attributes_names.map { |name| ":#{name}" }.join(', ') %>)
+      <%- end -%>
+    else
+      { }
+    end
+  end
+
+  # Assigns the variable used for index and locate actions.
+  def set_dt_request
+    @dt_request = Incline::DataTablesRequest.new(params) do
+      <%= orm_class.all(class_name) %>
+    end
+  end
+
+  # Assigns the variable used for new and create actions.
+  def set_new_<%= singular_table_name %>
+    @<%= singular_table_name %> = <%= orm_class.build(class_name, "#{singular_table_name}_params") %>
+  end
+
+  # Assigns the variable used for every other action.
+  def set_<%= singular_table_name %>
+    @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
   end
 
 end

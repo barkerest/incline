@@ -403,7 +403,7 @@ var inclineInline = {
                     // set the page number and refresh the datatable.
                     table.page(pageNum).draw('page');
 
-                    // hilite the row.
+                    // hilite the row (give DOM a quick chance to update).
                     window.setTimeout(function() { inclineInline._hilite_fade('#' + row_id); }, 250 );
                 }
             }
@@ -412,7 +412,7 @@ var inclineInline = {
     },
 
     _hilite_fade: function (selector) {
-        // 4s hilite pulse from any bg color to yellow and then back.
+        // 2s hilite pulse from any bg color to yellow and then back.
         $(selector).addClass('cell-fade').addClass('cell-hilite');
         window.setTimeout(function() {
             $(selector).removeClass('cell-hilite');
