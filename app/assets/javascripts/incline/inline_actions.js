@@ -192,10 +192,17 @@ var inclineInline = {
         var body;
         var footer;
         var tmp;
-        var i;
-        var klass;
+        var dup;
+        var panel;
+        var panel_parent;
+        var align_regex = /^(.*\s)?(row(\s.*)?|col-(xs|sm|md|lg)-.*)$/;
+        var panel_regex = /^(.*\s)?panel(\s.*)?$/;
 
-        html = $(html);
+        // add html to DOM under a hidden div for processing.
+        tmp = $('<div></div>').css('display','none');
+        $('body').append(tmp);
+        tmp.html(html);
+        html = tmp;
 
         this._create_dialog();
 
@@ -256,54 +263,74 @@ var inclineInline = {
         if (tmp.length > 0) {
             tmp = tmp.first();
             title.text(tmp.text());
-            html = html.not(tmp);
+            // only remove if there is no additional HTML markup.
+            if (tmp.html() === tmp.text())
+            {
+                tmp.remove();
+            }
         }
 
-        // get the error messages in place.
+        // put the error messages in place.
         tmp = html.find('#error_explanation');
         if (tmp.length > 0) {
+            tmp.detach();
             body.prepend(tmp);
-            html = html.not(tmp);
         }
 
-        // get the alert messages in place.
+        // put the alert messages in place.
         tmp = html.find('.alert');
         if (tmp.length > 0) {
+            tmp.detach();
             body.prepend(tmp);
-            html = html.not(tmp);
         }
 
-        // 'html' should now only contain 1 entry that should either be a <form> or a <div> tag.
-        // If it contains anything else, we pass it along unmodified.
-        if (html.length === 1) {
-            if (html.tagName === 'FORM') {
-                // If the FORM contains a single DIV we can continue.
-                tmp = html.children();
-                if (tmp.length == 1 && tmp.tagName === 'DIV') {
-                    // get the contents of the sole div and put it back into the form.
-                    html = html.not(tmp);
-                    html.append(this._process_div(tmp, title, null, footer));
-                    // then add the form to the body.
-                    body.append(html);
-                } else {
-                    // form has more than one child element, or child element is not a DIV.
-                    body.append(html);
-                }
-            } else if (html.tagName === 'DIV') {
-                // get the contents of the sole div.
-                this._process_div(html, title, body, footer);
-            } else {
-                // only one element, but it's not a DIV and it's not a FORM.
-                body.append(html);
+        // remove outside alignment DIVs.
+        while ((tmp = html.children()) && tmp.length == 1 && align_regex.test(tmp.attr('class'))) {
+            tmp.detach();
+            html.append(tmp.children());
+        }
+
+        // If the html has one child and that child is a form, then look inside the form.
+        panel_parent = html;
+        panel = panel_parent.children();
+        if (panel.length == 1 && panel[0].tagName.toUpperCase() === 'FORM') {
+            panel_parent = panel;
+            panel = panel_parent.children(':not(input[type=hidden])'); // ignore hidden inputs
+        }
+
+        // now if there is only one child and that child is a panel, we can rip it apart.
+        if (panel.length == 1 && panel[0].tagName.toUpperCase() === 'DIV' && panel_regex.test(panel.attr('class'))) {
+            panel.detach();
+
+            if ((tmp = panel.children('.panel-heading')) && tmp.length > 0) {
+                title.text(tmp.text());
             }
-        } else {
-            // more than one element.
-            body.append(html);
+
+            tmp = panel.children('table,.panel-body');
+            if (tmp.length > 0) {
+                tmp.removeClass('panel-body');
+                tmp.detach();
+                panel_parent.append(tmp);
+            }
+
+            tmp = panel.children('.panel-footer');
+            if (tmp.length > 0) {
+                tmp.removeClass('panel-footer');
+                tmp.detach();
+                // now we have a conundrum.
+                if (panel_parent[0].tagName.toUpperCase() === 'FORM') {
+                    // since the footer might contain controls for the form, we need it to be in the form.
+                    panel_parent.append(tmp);
+                } else {
+                    // or the form doesn't wrap the footer, so we can just use the footer.
+                    footer.append(tmp.children());
+                }
+            }
         }
 
-        // make sure the classed items are activated.
-        activateClassedItems(body);
-        activateClassedItems(footer);
+        // we are done modifying the HTML and we can add it.
+        html.detach();
+        body.append(html.children());
 
         // footer should only be visible if it has contents.
         if (footer.children().length > 0) {
@@ -312,37 +339,16 @@ var inclineInline = {
             footer.hide();
         }
 
+        // make sure the dialog is visible.
         tmp = $('#incline_inline_form');
-        if (tmp.is(':hidden')) tmp.modal('show');
-    },
-
-    _process_div: function (div, title, body, footer) {
-        var panelRegex = /^(.*\s)panel(\s.*)$/;
-
-        while (true)
-        {
-            if (div.length < 1) return div; // returning nothing.
-
-            if (div.length > 1 || div.tagName !== 'DIV')
-            {
-                if (body) body.append(div);
-                return div;
-            }
-
-            if (panelRegex.text(div.attr('class'))) {
-                // our sole div is a panel!
-                var part = div.find('panel-heading');
-                if (title && part.length > 0) {
-                    title.text(part.text());
-                }
-                part = div.find('panel-footer');
-                if (footer && part.length > 0) {
-                    footer.append(part);
-                }
-                div = div.find('table,div.panel-body').removeClass('panel-body');
-            } else {
-                div = div.children().first();
-            }
+        if (tmp.is(':hidden')) {
+            tmp.modal('show');
+            tmp.on('shown.bs.modal', function () {
+                activateClassedItems(tmp);
+            });
+        } else {
+            // make sure the classed items are activated.
+            activateClassedItems(tmp);
         }
     },
 
@@ -379,7 +385,7 @@ var inclineInline = {
             url: data.DT_Path + '/locate',
             method: 'POST',
             dataType: 'json',
-            data: params.serialize(),
+            data: params,
             success: function(data) {
                 var recNum = data.record;
                 if (recNum > -1) {
