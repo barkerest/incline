@@ -119,6 +119,7 @@ var inclineInline = {
                                 table.row('#' + item.DT_RowId).remove();
                             } else {
                                 table.row('#' + item.DT_RowId).data(item);
+                                inclineInline._hilite_fade('#' + item.DT_RowId);
                             }
                         }
                     } else if (dataCount == 1) {
@@ -370,6 +371,7 @@ var inclineInline = {
         var table = $('table.dataTable');
         var params;
         var i;
+        var row_id = data.DT_RowId;
 
         if (table.length < 1) return;
 
@@ -391,6 +393,7 @@ var inclineInline = {
                 if (recNum > -1) {
                     var pageLen = table.page.len();
                     var pageNum;
+                    var itemRow;
 
                     if (pageLen < 1) return;
 
@@ -399,10 +402,24 @@ var inclineInline = {
 
                     // set the page number and refresh the datatable.
                     table.page(pageNum).draw('page');
+
+                    // hilite the row.
+                    window.setTimeout(function() { inclineInline._hilite_fade('#' + row_id); }, 250 );
                 }
             }
         });
 
+    },
+
+    _hilite_fade: function (selector) {
+        // 4s hilite pulse from any bg color to yellow and then back.
+        $(selector).addClass('cell-fade').addClass('cell-hilite');
+        window.setTimeout(function() {
+            $(selector).removeClass('cell-hilite');
+            window.setTimeout(function() {
+                $(selector).removeClass('cell-fade');
+            }, 1000);
+        }, 1000);
     },
 };
 

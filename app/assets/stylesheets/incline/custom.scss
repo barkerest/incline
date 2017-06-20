@@ -72,26 +72,33 @@ textarea {
   margin-right: 10px;
 }
 
-tr.danger > td, td.danger {
+tr.cell-danger > td, td.cell-danger {
   background-color: $alert-danger-bg;
   color: $alert-danger-text;
 }
 
-tr.warning > td, td.warning {
+tr.cell-warning > td, td.cell-warning {
   background-color: $alert-warning-bg;
   color: $alert-warning-text;
 }
 
-tr.info > td, td.info {
+tr.cell-info > td, td.cell-info {
   background-color: $alert-info-bg;
   color: $alert-info-text;
 }
 
-tr.success > td, td.success {
+tr.cell-success > td, td.cell-success {
   background-color: $alert-success-bg;
   color: $alert-success-text;
 }
 
+tr.cell-hilite > td, td.cell-hilite {
+  background-color: #ffff00;
+}
+
+tr.cell-fade > td, td.cell-fade {
+  transition: background-color 1.0s ease;
+}
 
 /* typography */
 

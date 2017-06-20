@@ -6,14 +6,14 @@ unless user.new_record?
   end
   if user.enabled?
     if user.failed_login_streak.count > 5
-      json.set! 'DT_RowClass', 'danger'
+      json.set! 'DT_RowClass', 'cell-danger'
     else
       unless user.activated?
-        json.set! 'DT_RowClass', 'info'
+        json.set! 'DT_RowClass', 'cell-info'
       end
     end
   else
-    json.set! 'DT_RowClass', 'warning'
+    json.set! 'DT_RowClass', 'cell-warning'
   end
 end
 json.set! 'name', h(user.name)
