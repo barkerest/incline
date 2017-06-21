@@ -120,10 +120,68 @@ module Incline
 
   end
 
+  ##
+  # Gets a list of routes for the current application.
+  #
+  # The returned list contains hashes with :engine, :controller, :action, :name, :verb, and :path keys.
+  def self.route_list
+    @route_list ||=
+        begin
+          require 'action_dispatch/routing/inspector'
+          get_routes(Rails.application.routes.routes).sort do |a,b|
+            if a[:engine] == b[:engine]
+              if a[:controller] == b[:controller]
+                if a[:action] == b[:action]
+                  a[:path] <=> b[:path]
+                else
+                  a[:action] <=> b[:action]
+                end
+              else
+                a[:controller] <=> b[:controller]
+              end
+            else
+              a[:engine] <=> b[:engine]
+            end
+          end
+        end
+  end
+
   private
 
   def self.default_gem_patterns
     @default_gem_patterns ||= [ Rails.application.class.parent_name.underscore, 'rails', /\Aincline(?:-.*)\z/ ]
+  end
+
+  def self.get_routes(routes, engine_path = '', engines = [])
+    result = []
+
+    routes = routes
+                 .collect{|r| ActionDispatch::Routing::RouteWrapper.new(r)}
+                 .reject{|r| r.internal?}
+
+    routes.each do |r|
+      if r.engine?
+        eng_path = r.path
+        unless engines.include?(eng_path)
+          eng_routes = r.rack_app.routes
+          if eng_routes.is_a?(ActionDispatch::Routing::RouteSet)
+            engines << eng_path
+            result += get_routes(eng_routes.routes, eng_path, engines)
+          end
+        end
+      else
+        result << {
+            engine:     engine_path,
+            controller: r.controller,
+            action:     r.action,
+            name:       r.name,
+            verb:       r.verb,
+            path:       engine_path + r.path
+        }
+      end
+    end
+
+    result
   end
 
 end
