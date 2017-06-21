@@ -5,3 +5,13 @@ source 'https://rubygems.org'
 # development dependencies will be added by default to the :development group.
 gemspec
 
+group :development do
+  gem 'byebug'
+end
+
+group :test do
+  gem 'byebug'
+  gem 'tiny_tds',                        '~> 1.3.0'
+  gem 'activerecord-sqlserver-adapter',  '~> 4.2.18'
+end
+

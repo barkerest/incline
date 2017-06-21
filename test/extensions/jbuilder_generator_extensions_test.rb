@@ -11,7 +11,7 @@ class JbuilderGeneratorExtensionsTest < ActiveSupport::TestCase
   end
 
   test 'should have the correct available_views' do
-    req = %w(index show details)
+    req = %w(index show _details)
     actual = @gen.send :available_views
     req.each do |view|
       assert actual.include?(view), "Missing '#{view}' view."
