@@ -13,13 +13,20 @@ module Incline
     private :access_group_group_members, :access_group_group_members=
 
     # and expose the groups instead.
-    has_many :groups, class_name: 'AccessGroup', through: :access_group_group_members, source: :member
+    has_many :groups, class_name: 'Incline::AccessGroup', through: :access_group_group_members, source: :member
 
     ##
     # Gets a list of memberships for this group.  (Read-only)
     def memberships(refresh = false)
       @memberships = nil if refresh
       @memberships ||= AccessGroupGroupMember.where(member_id: id).includes(:group).map{|v| v.group}.to_a.freeze
+    end
+
+    ##
+    # Gets a list of all of the member users for this group.  (Read-only)
+    def members(refresh = false)
+      @members = nil if refresh
+      @members ||= safe_members.sort{|a,b| a.to_s <=> b.to_s}
     end
 
     validates :name,
@@ -95,6 +102,17 @@ module Incline
       false
     end
 
+    def safe_members(already_tried = [])
+      return [] if already_tried.include?(self)
+      already_tried << self
+      ret = users.to_a
+      groups.each do |g|
+        g.send(:safe_members, already_tried).each do |u|
+          ret << u unless ret.include?(u)
+        end
+      end
+      ret
+    end
 
   end
 end

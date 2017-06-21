@@ -72,7 +72,7 @@ private
     if json_request?
       # add a model-level error and render the json response.
       @<%= singular_table_name %>.errors.add(:base, 'failed to save')
-      render :show
+      render 'show', formats: [ :json ]
     else
       # render the appropriate action.
       render action

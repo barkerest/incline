@@ -81,7 +81,7 @@ module Incline
       if json_request?
         # add a model-level error and render the json response.
         @access_group.errors.add(:base, 'failed to save')
-        render :show
+        render 'show', formats: [ :json ]
       else
         # render the appropriate action.
         render action

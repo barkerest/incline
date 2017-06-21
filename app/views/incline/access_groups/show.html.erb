@@ -1,3 +1,9 @@
 <h1><%= @access_group.name %></h1>
 
-<%= link_to 'Cancel', access_groups_path %>
+<p>
+<h4>Direct and indirect members:</h4>
+<%= @access_group.members.any? ? @access_group.members.map{|u| h(u.to_s)}.join('<br>').html_safe : 'None' %>
+</p>
+<br>
+
+<%= link_to 'Cancel', access_groups_path, class: 'btn btn-default' %>

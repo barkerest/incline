@@ -4,7 +4,7 @@
     <%- attributes.reject(&:password_digest?).each do |attribute| -%>
     <th><%= attribute.human_name %></th>
     <%- end -%>
-    <th><%%= link_to 'New', new_<%= singular_table_name %>_path, class: 'btn btn-success btn-xs inline_form' %></th>
+    <th class="text-right"><%%= link_to 'New', new_<%= singular_table_name %>_path, class: 'btn btn-success btn-xs inline_form' %></th>
   </tr>
   </thead>
 </table>
@@ -22,27 +22,17 @@
             columns: [
                 <%- attributes.reject(&:password_digest?).each do |attribute| -%>
                 {
-                    // how DT references the data.
+                    // the data to display.
                     data: '<%= attribute.name %>',
-                    // how the server references the data.
-                    name: '<%= attribute.name %>',
-                    // override the default behavior as needed, or remove the render option for this column.
-                    render: function(data, type) {
-                        <%- if attribute.type == :integer -%>
-                        return type === 'display' ? $.number(data) : data;
-                        <%- elsif attribute.type == :float -%>
-                        return type === 'display' ? $.number(data, 2) : data;
-                        <%- elsif attribute.type == :datetime -%>
-                        return type === 'display' ? '<span title="' + moment(data).format() + '">' + moment(data).format('YYYY-MM-DD') + '</span>' : data
-                        <%- elsif attribute.type == :boolean -%>
+                    <%- if attribute.type == :boolean -%>
+                    // for booleans, show a checkmark instead of true/false.
+                    render: function (data, type) {
                         if (type === 'display')
                             return data ? '<i class="glyphicon glyphicon-ok glyphicon-small"></i>' : '';
                         else
                             return data;
-                        <%- else -%>
-                        return data;
-                        <%- end -%>
                     },
+                    <%- end -%>
                     // can this column be used for sorting?
                     orderable: true,
                     // can this column be used for searching?

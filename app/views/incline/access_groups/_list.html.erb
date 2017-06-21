@@ -2,7 +2,7 @@
   <thead>
   <tr>
     <th>Name</th>
-    <th><%= link_to 'New', new_access_group_path, class: 'btn btn-success btn-xs inline_form' %></th>
+    <th class="text-right"><%= link_to 'New', new_access_group_path, class: 'btn btn-success btn-xs inline_form' %></th>
   </tr>
   </thead>
 </table>
@@ -19,14 +19,8 @@
             },
             columns: [
                 {
-                    // how DT references the data.
+                    // the data to display.
                     data: 'name',
-                    // how the server references the data.
-                    name: 'name',
-                    // override the default behavior as needed, or remove the render option for this column.
-                    render: function(data, type) {
-                        return data;
-                    },
                     // can this column be used for sorting?
                     orderable: true,
                     // can this column be used for searching?

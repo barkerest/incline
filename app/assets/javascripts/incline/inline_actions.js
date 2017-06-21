@@ -106,7 +106,7 @@ var inclineInline = {
             }
             // update rows in the data table.
             if (data.data) {
-                var dataCount = data.messages.length;
+                var dataCount = data.data.length;
                 for (i = 0; i < dataCount; i++) {
                     var item = data.data[i];
                     var row = $('#' + item.DT_RowId);
@@ -114,12 +114,14 @@ var inclineInline = {
                         var table = row.parents('table');
                         if ($.fn.dataTable.isDataTable(table))
                         {
-                            table = $(table).dataTable().api();
+                            var table_id = table.attr('id');
+                            table = table.dataTable().api();
                             if (item.DT_RowAction === 'remove') {
-                                table.row('#' + item.DT_RowId).remove();
+                                table.row('#' + item.DT_RowId).remove();    // remove the row from the DT.
+                                table.draw('page');                         // refresh the current page.
                             } else {
-                                table.row('#' + item.DT_RowId).data(item);
-                                inclineInline._hilite_fade('#' + item.DT_RowId);
+                                table.row('#' + item.DT_RowId).data(item);  // refresh the row in the DT.
+                                inclineInline._go_to_record(item);          // find and hilight the record.
                             }
                         }
                     } else if (dataCount == 1) {
@@ -331,10 +333,10 @@ var inclineInline = {
 
         // we are done modifying the HTML and we can add it.
         html.detach();
-        body.append(html.children());
+        body.append(html.contents());
 
         // footer should only be visible if it has contents.
-        if (footer.children().length > 0) {
+        if (footer.children().length > 0 || footer.text() !== '') {
             footer.show();
         } else {
             footer.hide();
@@ -371,7 +373,7 @@ var inclineInline = {
         var table = $('table.dataTable');
         var params;
         var i;
-        var row_id = data.DT_RowId;
+        var row_id = '#' + data.DT_RowId;
 
         if (table.length < 1) return;
 
@@ -393,18 +395,23 @@ var inclineInline = {
                 if (recNum > -1) {
                     var pageLen = table.page.len();
                     var pageNum;
-                    var itemRow;
 
                     if (pageLen < 1) return;
 
-                    // bump up the record number by 1, avoid div by zero and ensure we get the correct page back.
-                    pageNum = Math.floor((recNum + 1) / pageLen);
+                    // avoid division by zero.
+                    if (recNum === 0) {
+                        pageNum = 0;
+                    } else {
+                        pageNum = Math.floor(recNum / pageLen);
+                    }
 
-                    // set the page number and refresh the datatable.
-                    table.page(pageNum).draw('page');
+                    // set the page number and refresh the datatable only if we are on a different page or the row isn't visible.
+                    if (table.page() != pageNum || $(row_id).length < 1) {
+                        table.page(pageNum).draw('page');
+                    }
 
                     // hilite the row (give DOM a quick chance to update).
-                    window.setTimeout(function() { inclineInline._hilite_fade('#' + row_id); }, 250 );
+                    window.setTimeout(function() { inclineInline._hilite_fade(row_id); }, 250 );
                 }
             }
         });
