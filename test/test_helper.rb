@@ -27,7 +27,11 @@ class MsSqlTestConn < ActiveRecord::Base
 
   cfg = ActiveRecord::Base.configurations['mssql_test']
   if cfg
-    establish_connection cfg
+    begin
+      establish_connection cfg
+    rescue TinyTds::Error
+      remove_connection
+    end
   end
 
   def self.skip_tests?
