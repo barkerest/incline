@@ -4,7 +4,6 @@ require_dependency "<%= namespaced_path %>/application_controller"
 <% end -%>
 <% module_namespacing do -%>
 class <%= controller_class_name %>Controller < ApplicationController
-  before_action :valid_user, except: [ :api ]
   before_action :set_dt_request, only: [ :index, :locate ]
   before_action :set_new_<%= singular_table_name %>, only: [ :new, :create ]
   before_action :set_<%= singular_table_name %>, only: [ :show, :edit, :update, :destroy ]

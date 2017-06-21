@@ -25,7 +25,7 @@ module Incline::Extensions
         protected
 
         def available_views
-          %w(index show details)
+          %w(index show _details)
         end
 
       end
