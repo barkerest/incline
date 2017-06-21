@@ -495,7 +495,7 @@ module Incline::Extensions
 
       lbl = label method do
         check_box(method, fopt) +
-            h(lopt[:text] || method.to_s.humanize) +
+            CGI::escape_html(lopt[:text] || method.to_s.humanize) +
             (lopt[:small_text] ? " <small>(#{CGI::escape_html lopt[:small_text]})</small>" : '').html_safe
       end
 

@@ -1,6 +1,6 @@
 unless <%= singular_table_name %>.new_record?
   json.set! 'DT_RowId', "<%= singular_table_name %>_#{<%= singular_table_name %>.id}"
-  json.set! 'DT_path', <%= singular_table_name %>_path(<%= singular_table_name %>)
+  json.set! 'DT_Path', <%= singular_table_name %>_path(<%= singular_table_name %>)
   if <%= singular_table_name %>.destroyed?
     json.set! 'DT_RowAction', 'remove'
   end

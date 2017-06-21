@@ -1,7 +1,7 @@
 
 function activateClassedItems(base) {
     if (base === undefined) base = $(document);
-    base.find('div.date').datepicker({ format: "yyyy-mm-dd", todayBtn: "linked", todayHighlight: true, clearBtn: true });
+    base.find('div.date').datepicker({ format: "mm/dd/yyyy", todayBtn: "linked", todayHighlight: true, clearBtn: true });
     base.find('input.float').regexMask('float');
     base.find('input.integer').regexMask('integer');
     base.find('.double-scroll').doubleScroll({ onlyIfScroll: true, resetOnWindowResize: true });

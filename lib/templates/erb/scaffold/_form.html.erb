@@ -9,8 +9,8 @@
       <%%= form_for(@<%= singular_table_name %>) do |f| %>
       <%- attributes.each do |attribute| -%>
           <%- if attribute.type == :boolean -%>
-          <%%= f.checkbox_form_group :<%= attribute.column_name %> %>
-          <%- elsif attribute.type == 'datetime' && attribute.column_name =~ /date/ && ~(attribute.column_name =~ /time/) -%>
+          <%%= f.check_box_form_group :<%= attribute.column_name %> %>
+          <%- elsif attribute.type == :date || (attribute.type == :datetime && attribute.column_name =~ /date/ && !(attribute.column_name =~ /time/)) -%>
           <%%= f.datepicker_form_group :<%= attribute.column_name %> %>
           <%- elsif (attribute.type == :references) || (attribute.type == :integer && attribute.column_name =~ /_id\z/)  -%>
               <%- if (ref_class = (attribute.column_name.gsub(/_id\z/,'').classify.constantize rescue nil)) -%>
