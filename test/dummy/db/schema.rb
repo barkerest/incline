@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170517193432) do
+ActiveRecord::Schema.define(version: 20170622172712) do
 
   create_table "incline_access_group_group_members", force: :cascade do |t|
     t.integer  "group_id",   null: false
@@ -42,6 +42,31 @@ ActiveRecord::Schema.define(version: 20170517193432) do
   end
 
   add_index "incline_access_groups", ["name"], name: "ux_incline_access_groups_name", unique: true
+
+  create_table "incline_action_groups", force: :cascade do |t|
+    t.integer  "action_security_id", null: false
+    t.integer  "access_group_id",    null: false
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+  end
+
+  add_index "incline_action_groups", ["access_group_id"], name: "index_incline_action_groups_on_access_group_id"
+  add_index "incline_action_groups", ["action_security_id", "access_group_id"], name: "ux_incline_action_groups", unique: true
+  add_index "incline_action_groups", ["action_security_id"], name: "index_incline_action_groups_on_action_security_id"
+
+  create_table "incline_action_securities", force: :cascade do |t|
+    t.string   "controller_name",    limit: 200, null: false
+    t.string   "action_name",        limit: 200, null: false
+    t.text     "path",                           null: false
+    t.boolean  "allow_anon"
+    t.boolean  "require_anon"
+    t.boolean  "require_admin"
+    t.boolean  "unknown_controller"
+    t.datetime "created_at",                     null: false
+    t.datetime "updated_at",                     null: false
+  end
+
+  add_index "incline_action_securities", ["controller_name", "action_name"], name: "ux_incline_action_securities", unique: true
 
   create_table "incline_user_login_histories", force: :cascade do |t|
     t.integer  "user_id",                null: false

@@ -43,14 +43,7 @@ module Incline::Extensions
         if args.blank?
           @allow_non_ssl ||= false
         else
-          @allow_non_ssl =
-              if args.include?(false)
-                false
-              elsif args.include?(true)
-                true
-              else
-                args.map{ |v| v.is_a?(::Symbol) ? v : v.to_s.to_sym }
-              end
+          @allow_non_ssl = setting_value(args)
         end
       end
 
@@ -71,14 +64,7 @@ module Incline::Extensions
         if args.blank?
           @allow_anon ||= false
         else
-          @allow_anon =
-              if args.include?(false)
-                false
-              elsif args.include?(true)
-                true
-              else
-                args.map{ |v| v.is_a?(::Symbol) ? v : v.to_s.to_sym }
-              end
+          @allow_anon = setting_value(args)
         end
       end
 
@@ -99,14 +85,7 @@ module Incline::Extensions
         if args.blank?
           @require_admin ||= false
         else
-          @require_admin =
-              if args.include?(false)
-                false
-              elsif args.include?(true)
-                true
-              else
-                args.map{ |v| v.is_a?(::Symbol) ? v : v.to_s.to_sym }
-              end
+          @require_admin = setting_value(args)
         end
       end
 
@@ -127,17 +106,55 @@ module Incline::Extensions
         if args.blank?
           @require_anon ||= false
         else
-          @require_anon =
-              if args.include?(false)
-                false
-              elsif args.include?(true)
-                true
-              else
-                args.map{ |v| v.is_a?(::Symbol) ? v : v.to_s.to_sym }
-              end
+          @require_anon = setting_value(args)
         end
       end
 
+      ##
+      # Determines if the current request can be allowed with an anonymous user.
+      #
+      # Overridden by require_admin_for_request?
+      # Implied by require_anon_for_request?
+      def allow_anon_for?(action)
+        require_anon_for?(action) || setting_for_action(allow_anon, action)
+      end
+
+      ##
+      # Determines if the current request requires a system administrator.
+      #
+      # Overrides all other access requirements.
+      def require_admin_for?(action)
+        setting_for_action require_admin, action
+      end
+
+      ##
+      # Determines if the current request requires an anonymous user.
+      #
+      # Overridden by require_admin_for_request?
+      # Implies allow_anon_for_request?
+      def require_anon_for?(action)
+        setting_for_action require_anon, action
+      end
+
+      private
+
+      def setting_value(args)
+        if args.include?(false)
+          false
+        elsif args.include?(true)
+          true
+        else
+          args.map{|v| v.is_a?(::Symbol) ? v : v.to_s.to_sym }
+        end
+      end
+
+      def setting_for_action(setting, action)
+        return false unless setting
+        if setting.is_a?(::Array)
+          return false unless setting.include?(action.to_sym)
+        end
+        true
+      end
 
     end
 
@@ -211,6 +228,9 @@ module Incline::Extensions
     def store_location
       session[:forwarding_url] = request.url if request.get?
     end
+
+
+
 
     protected
 
@@ -323,7 +343,7 @@ module Incline::Extensions
     ##
     # Determines if the current request can be allowed via HTTP (non-SSL).
     def allow_http_for_request? #:doc:
-      setting_for_request self.class.allow_non_ssl
+      self.class.setting_for_action self.class.allow_non_ssl, params[:action]
     end
 
     ##
@@ -332,7 +352,7 @@ module Incline::Extensions
     # Overridden by require_admin_for_request?
     # Implied by require_anon_for_request?
     def allow_anon_for_request? #:doc:
-      require_anon_for_request? || setting_for_request(self.class.allow_anon)
+      self.class.allow_anon_for? params[:action]
     end
 
     ##
@@ -340,7 +360,7 @@ module Incline::Extensions
     #
     # Overrides all other access requirements.
     def require_admin_for_request? #:doc:
-      setting_for_request self.class.require_admin
+      self.class.require_admin_for? params[:action]
     end
 
     ##
@@ -349,7 +369,7 @@ module Incline::Extensions
     # Overridden by require_admin_for_request?
     # Implies allow_anon_for_request?
     def require_anon_for_request? #:doc:
-      setting_for_request self.class.require_anon
+      self.class.require_anon_for? params[:action]
     end
 
 
@@ -394,8 +414,15 @@ module Incline::Extensions
           flash[:warning] = 'The specified action cannot be performed while logged in.'
           redirect_to current_user
         end
+      elsif allow_anon_for_request?
+        true
       else
-        allow_anon_for_request? || authorize!    # TODO: Permissions.
+        action = Incline::ActionSecurity.where(controller_name: self.class.controller_name, action_name: params[:action]).first
+        if action && action.groups.any?
+          authorize! action.groups.pluck(:name)
+        else
+          authorize!
+        end
       end
     end
 
@@ -467,14 +494,6 @@ module Incline::Extensions
         raise Incline::InvalidApiCall, 'Invalid API Action' if raise_on_invalid_action
         nil
       end
-    end
-
-    def setting_for_request(setting)
-      return false unless setting
-      if setting.is_a?(::Array)
-        return false unless setting.include?(params[:action].to_sym)
-      end
-      true
     end
 
     def raise_authorize_failure(message, log_message = nil)

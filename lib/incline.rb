@@ -174,14 +174,21 @@ module Incline
             engine:     engine_path,
             controller: r.controller,
             action:     r.action,
-            name:       r.name,
             verb:       r.verb,
             path:       engine_path + r.path
         }
       end
     end
 
-    result
+    result.inject([]) do |ret,item|
+      existing = ret.find{|r| r[:engine] == item[:engine] && r[:controller] == item[:controller] && r[:action] == item[:action]}
+      if existing
+        existing[:verb] += '|' + item[:verb]
+      else
+        ret << item
+      end
+      ret
+    end
   end
 
 end
