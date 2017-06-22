@@ -86,14 +86,17 @@ module Incline
       @valid_items = nil if refresh
       @valid_items ||=
           begin
-            ret = Incline.route_list.map do |r|
+            ret = Incline
+                      .route_list
+                      .reject{|r| r[:action] == 'api'}
+                      .map do |r|
               item = ActionSecurity.find_or_initialize_by(controller_name: r[:controller], action_name: r[:action])
               item.path = "#{r[:path]} [#{r[:verb]}]"
               item.update_flags if update_flags
               item.save!
               item
             end
-                .sort{|a,b| a.controller_name == b.controller_name ? a.action_name <=> b.action_name : a.controller_name <=> b.controller_name}
+                      .sort{|a,b| a.controller_name == b.controller_name ? a.action_name <=> b.action_name : a.controller_name <=> b.controller_name}
 
             def ret.[](*args)
               if args.length == 2
@@ -105,7 +108,7 @@ module Incline
               end
             end
 
-            ret
+            ret.freeze
           end
     end
 
