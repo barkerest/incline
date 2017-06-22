@@ -417,7 +417,7 @@ module Incline::Extensions
       elsif allow_anon_for_request?
         true
       else
-        action = Incline::ActionSecurity.where(controller_name: self.class.controller_name, action_name: params[:action]).first
+        action = Incline::ActionSecurity.valid_items[self.class.controller_name, params[:action]]
         if action && action.groups.any?
           authorize! action.groups.pluck(:name)
         else

@@ -13,7 +13,7 @@ module Incline
     ##
     # Updates the flags based on the controller configuration.
     def update_flags
-      self.allow_anon = self.require_anon = self.require_admin = self.unknown_controller = false
+      self.allow_anon = self.require_anon = self.require_admin = self.unknown_controller = self.non_standard = false
 
       options =
           if controller_name.include?('/')
@@ -53,6 +53,13 @@ module Incline
         elsif klass.allow_anon_for?(action_name)
           self.allow_anon = true
         end
+
+        # if the authentication methods are overridden, set a flag to alert the user that standard security may not be honored.
+        unless klass.instance_method(:valid_user?).owner == Incline::Extensions::ActionControllerBase &&
+            klass.instance_method(:authorize!).owner == Incline::Extensions::ActionControllerBase
+          self.non_standard = true
+        end
+
       end
 
     end
@@ -64,16 +71,41 @@ module Incline
     end
 
     ##
-    # Gets all of the actions with valid routes for the current application.
-    def self.valid_items(refresh = false)
+    # Generates a list of security items related to all of the current routes in the application.
+    #
+    # If "refresh" is true, the list will be rebuilt.
+    # If "update_flags" is true, the individual controllers will be loaded to regenerate the flags for the security.
+    #
+    # The returned list can be indexed two ways.  The normal way with a numeric index and also by specifying the
+    # controller_name and action_name.
+    #
+    #     Incline::ActionSecurity.valid_items[0]
+    #     Incline::ActionSecurity.valid_items['incline/welcome','home']
+    #
+    def self.valid_items(refresh = false, update_flags = true)
       @valid_items = nil if refresh
       @valid_items ||=
-          Incline.route_list.map do |r|
-            item = ActionSecurity.find_or_initialize_by(controller_name: r[:controller], action_name: r[:action])
-            item.path = "#{r[:path]} [#{r[:verb]}]"
-            item.update_flags
-            item.save!
-            item
+          begin
+            ret = Incline.route_list.map do |r|
+              item = ActionSecurity.find_or_initialize_by(controller_name: r[:controller], action_name: r[:action])
+              item.path = "#{r[:path]} [#{r[:verb]}]"
+              item.update_flags if update_flags
+              item.save!
+              item
+            end
+                .sort{|a,b| a.controller_name == b.controller_name ? a.action_name <=> b.action_name : a.controller_name <=> b.controller_name}
+
+            def ret.[](*args)
+              if args.length == 2
+                controller = args[0].to_s
+                action = args[1].to_s
+                find{|item| item.controller_name == controller && item.action_name == action}
+              else
+                super(*args)
+              end
+            end
+
+            ret
           end
     end
 
@@ -97,7 +129,12 @@ module Incline
                 end
           else
             'All Users'
-          end
+          end +
+              if non_standard
+                ' (Non-Standard)'
+              else
+                ''
+              end
     end
 
     ##
