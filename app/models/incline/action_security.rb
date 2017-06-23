@@ -9,8 +9,10 @@ module Incline
     has_many :groups, through: :action_groups, class_name: 'Incline::AccessGroup', source: :access_group
 
     validates :controller_name, presence: true, length: { maximum: 200 }
-    validates :action_name, presence: true, length: { maximum: 200 }, uniqueness: { scope: :controller_name }
+    validates :action_name, presence: true, length: { maximum: 200 }, uniqueness: { scope: :controller_name, case_sensitive: false }
     validates :path, presence: true
+
+    before_save :downcase_names
 
     scope :visible, ->{ where(visible: true) }
 
@@ -121,7 +123,8 @@ module Incline
 
     ##
     # Gets a string describing who is permitted to execute the action.
-    def permitted
+    def permitted(refresh = false)
+      @permitted = nil if refresh
       @permitted ||=
           if require_admin?
             'Administrators Only'
@@ -150,23 +153,22 @@ module Incline
     ##
     # Gets a short string describing who is permitted to execute the action.
     def short_permitted
-      @short_permitted ||=
-          if require_admin?
-            'Admins'
-          elsif require_anon?
-            'Anon'
-          elsif allow_anon?
-            'Everyone'
-          elsif groups.any?
-            'Custom'
+      if require_admin?
+        'Admins'
+      elsif require_anon?
+        'Anon'
+      elsif allow_anon?
+        'Everyone'
+      elsif groups.any?
+        'Custom'
+      else
+        'Users'
+      end +
+          if non_standard
+            '*'
           else
-            'Users'
-          end +
-              if non_standard
-                '*'
-              else
-                ''
-              end
+            ''
+          end
     end
 
     ##
@@ -190,6 +192,12 @@ module Incline
       self.groups = Incline::AccessGroup.where(id: values).to_a
     end
 
+    private
+
+    def downcase_names
+      controller_name.downcase!
+      action_name.downcase!
+    end
 
   end
 end

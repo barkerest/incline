@@ -2,6 +2,7 @@ require 'test_helper'
 
 module Incline
   class ActionGroupTest < ActiveSupport::TestCase
+
     def setup
       @item = Incline::ActionGroup.new(action_security: incline_action_securities(:one), access_group: incline_access_groups(:one))
     end
