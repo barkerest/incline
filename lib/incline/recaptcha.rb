@@ -291,6 +291,10 @@ function #{callback}(response) {
     ##
     # Pauses reCAPTCHA validation for the specified block of code.
     def self.pause_for(&block)
+      # already paused, so just call the block.
+      return block.call if paused?
+
+      # otherwise pause and then call the block.
       self.temp_lock = true
       begin
         return block.call
