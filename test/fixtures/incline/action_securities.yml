@@ -1,1 +1,13 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+one:
+  controller_name: world
+  action_name: hello
+  path: /world/hello
+  visible: true
+
+two:
+  controller_name: foo
+  action_name: bar
+  path: /foo/bar
+  visible: true
+
