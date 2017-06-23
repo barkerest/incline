@@ -1,6 +1,8 @@
 module Incline
   class ActionSecurity < ActiveRecord::Base
 
+    SHORT_PERMITTED_VALUES = %w(Admins Anon Custom Everyone Users).freeze
+
     has_many :action_groups
     private :action_groups, :action_groups=
 
@@ -9,6 +11,8 @@ module Incline
     validates :controller_name, presence: true, length: { maximum: 200 }
     validates :action_name, presence: true, length: { maximum: 200 }, uniqueness: { scope: :controller_name }
     validates :path, presence: true
+
+    scope :visible, ->{ where(visible: true) }
 
     ##
     # Updates the flags based on the controller configuration.
@@ -86,12 +90,15 @@ module Incline
       @valid_items = nil if refresh
       @valid_items ||=
           begin
+            Incline::ActionSecurity.update_all(visible: false)
+
             ret = Incline
                       .route_list
                       .reject{|r| r[:action] == 'api'}
                       .map do |r|
               item = ActionSecurity.find_or_initialize_by(controller_name: r[:controller], action_name: r[:action])
               item.path = "#{r[:path]} [#{r[:verb]}]"
+              item.visible = true
               item.update_flags if update_flags
               item.save!
               item
@@ -123,7 +130,7 @@ module Incline
           elsif allow_anon?
             'Everyone'
           elsif groups.any?
-            names = groups.pluck(:name)
+            names = groups.pluck(:name).map{|v| "\"#{v}\""}
             'Members of ' +
                 if names.count == 1
                   names.first
@@ -141,11 +148,47 @@ module Incline
     end
 
     ##
+    # Gets a short string describing who is permitted to execute the action.
+    def short_permitted
+      @short_permitted ||=
+          if require_admin?
+            'Admins'
+          elsif require_anon?
+            'Anon'
+          elsif allow_anon?
+            'Everyone'
+          elsif groups.any?
+            'Custom'
+          else
+            'Users'
+          end +
+              if non_standard
+                '*'
+              else
+                ''
+              end
+    end
+
+    ##
     # Description of action.
     def to_s
       @to_s ||= "#{controller_name}:#{action_name} [#{permitted}]"
     end
 
+    ##
+    # Gets the group IDs accepted by this action.
+    def group_ids
+      groups.pluck(:id)
+    end
+
+    ##
+    # Sets the group IDs accepted by this action.
+    def group_ids=(values)
+      values ||= []
+      values = [ values ] unless values.is_a?(::Array)
+      values = values.reject{|v| v.blank?}.map{|v| v.to_i}
+      self.groups = Incline::AccessGroup.where(id: values).to_a
+    end
 
 
   end

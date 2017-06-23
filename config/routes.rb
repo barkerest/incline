@@ -42,5 +42,12 @@ Incline::Engine.routes.draw do
     end
   end
 
+  # security
+  get     'security'            => 'security#index',    as: :index_security
+  get     'security/:id'        => 'security#show',     as: :security
+  match   'security/:id'        => 'security#update',   via: [ :patch, :put ]
+  get     'security/:id/edit'   => 'security#edit',     as: :edit_security
+  post    'security/:id/locate' => 'security#locate',   as: :locate_security
+  match   'security/api'        => 'security#api',      via: [ :get, :post ], as: :api_security
 
 end

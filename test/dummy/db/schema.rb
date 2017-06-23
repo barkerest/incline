@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170622195742) do
+ActiveRecord::Schema.define(version: 20170622230422) do
 
   create_table "incline_access_group_group_members", force: :cascade do |t|
     t.integer  "group_id",   null: false
@@ -65,6 +65,7 @@ ActiveRecord::Schema.define(version: 20170622195742) do
     t.datetime "created_at",                     null: false
     t.datetime "updated_at",                     null: false
     t.boolean  "non_standard"
+    t.boolean  "visible"
   end
 
   add_index "incline_action_securities", ["controller_name", "action_name"], name: "ux_incline_action_securities", unique: true

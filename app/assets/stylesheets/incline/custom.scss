@@ -72,6 +72,13 @@ textarea {
   margin-right: 10px;
 }
 
+ul.scrollable-menu {
+  height: auto;
+  max-height: 300px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
 tr.cell-danger > td, td.cell-danger {
   background-color: $alert-danger-bg;
   color: $alert-danger-text;

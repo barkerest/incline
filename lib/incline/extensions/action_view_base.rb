@@ -70,6 +70,39 @@ module Incline::Extensions
     end
 
     ##
+    # Renders a dropdown list that can be used for filtering a data table.
+    #
+    # This works in conjunction with the 'filter_column()' JS function.
+    # The Incline scaffold generates this function for you, so this helper
+    # can be used with generated lists.
+    #
+    # The +label+ is the text to display for the header.
+    # The +column+ is the column number of the data table to filter.
+    # The +list+ is an enumerable containing the data to filter with.
+    # An option will be added to the top of the list titled '- All -'.
+    def dt_header_filter(label, column, list)
+      column = CGI::escape_html(column.to_s)
+      label = CGI::escape_html(label.to_s)
+      if list&.any?
+        list = list
+                   .map{|v| CGI::escape_html(v.to_s) }
+                   .map{|v| "<li><a href=\"javascript:filter_column(#{column}, '#{v.gsub('\'','\\\'')}')\" title=\"#{v}\">#{v}</a></li>" }
+
+        <<-HTML.html_safe
+<div class="header-filter"><div class="dropdown">
+<a href="#" class="dropdown-toggle" id="header_filter_#{column}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">#{label} <span class="caret"></span></a>
+<ul class="dropdown-menu scrollable-menu" aria-labelledby="header_filter_#{CGI::escape_html(column)}">
+<li><a href="javascript:filter_column(#{column}, '')" title="- All -">- All -</a></li>
+#{list.join("\n")}
+</ul>
+</div></div>
+        HTML
+      else
+        label.html_safe
+      end
+    end
+
+    ##
     # Renders a dismissible alert message.
     #
     # The +type+ can be :info, :notice, :success, :danger, :alert, or :warning.

@@ -62,13 +62,13 @@ module Incline
     ##
     # Gets the user IDs for the members of this group.
     def user_ids
-      users.map{|u| u.id}
+      users.pluck(:id)
     end
 
     ##
     # Gets the group IDs for the members of this group.
     def group_ids
-      groups.map{|g| g.id}
+      groups.pluck(:id)
     end
 
     ##

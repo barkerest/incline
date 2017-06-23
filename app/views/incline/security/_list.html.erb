@@ -1,0 +1,89 @@
+<table id="dt-security" class="table" style="width: 100%;">
+  <thead>
+    <tr>
+      <th>Path</th>
+      <th>
+        <%= dt_header_filter 'Controller name', 1, @lists[:controller_name] %>
+      </th>
+      <th>
+        <%= dt_header_filter 'Action name', 2, @lists[:action_name] %>
+      </th>
+      <th>
+        <%= dt_header_filter 'Permitted', 3, @lists[:short_permitted] %>
+      </th>
+      <th class="text-right"></th>
+    </tr>
+  </thead>
+</table>
+
+
+<% provide :scripts do %>
+    <script type="text/javascript">
+      //<![CDATA[
+
+      function filter_column(column, text) {
+        var dt = $('#dt-security').dataTable().api();
+        var col = dt.column(column);
+
+        if (col.search() !== text) {
+          col.search(text).draw();
+        }
+      }
+
+      $(function() {
+        $('#dt-security').DataTable({
+          dom: '<"panel-body"<"col-sm-6 col-sm-offset-6"fr>>t<"panel-body"<"col-sm-6"i><"col-sm-6"p>>',
+          ajax: {
+            url: '<%= api_path %>',
+            type: 'POST'
+          },
+          columns: [
+            {
+              data: 'path',
+              orderable: true,
+              searchable: true
+            },
+            {
+              data: 'controller_name',
+              orderable: false,
+              searchable: true
+            },
+            {
+              data: 'action_name',
+              orderable: false,
+              searchable: true
+            },
+            {
+              data: 'short_permitted',
+              orderable: false,
+              searchable: true
+            },
+            {
+              orderable: false,
+              searchable: false,
+              data: function (row, type, set, meta) {
+                if (type === 'display') {
+                  var ret = '<div class="text-right">';
+
+                  // the show icon.
+                  ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '\')" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>';
+
+                  // the edit icon.
+                  ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '/edit\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
+
+                  ret += '</div>';
+                  return ret;
+                } else {
+                  return row.DT_Path;
+                }
+              }
+            }
+          ],
+          responsive: true,
+          serverSide: true
+        });
+
+      });
+      //]]>
+    </script>
+<% end %>

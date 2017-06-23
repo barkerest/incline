@@ -13,6 +13,15 @@
 <script type="text/javascript">
     //<![CDATA[
     $(function() {
+        function filter_column(column, text) {
+          var dt = $('#dt-<%= plural_table_name %>').dataTable().api();
+          var col = dt.column(column);
+
+          if (col.search() !== text) {
+            col.search(text).draw();
+          }
+        }
+
         $('#dt-<%= plural_table_name %>').DataTable({
             dom: '<"panel-body"<"col-sm-6 col-sm-offset-6"fr>>t<"panel-body"<"col-sm-6"i><"col-sm-6"p>>',
             ajax: {

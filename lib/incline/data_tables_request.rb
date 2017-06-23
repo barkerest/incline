@@ -59,6 +59,8 @@ module Incline
 
       params = params.deep_symbolize_keys
 
+      force_regex = params[:force_regex]
+
       if params[:draw]
         @config[:draw]   = params[:draw].to_s.to_i
         @config[:start]  = params[:start].to_s.to_i
@@ -68,8 +70,17 @@ module Incline
 
         tmp = params[:search]
         if tmp && !tmp[:value].blank?
-          if tmp[:regex].to_bool
-            @config[:search] = tmp[:value].is_a?(::Regexp) ? tmp[:value] : Regexp.new(tmp[:value], Regexp::IGNORECASE)
+          if tmp[:regex].to_bool || force_regex
+            @config[:search] =
+                if tmp[:value].is_a?(::Regexp)
+                  tmp[:value]
+                else
+                  begin
+                    Regexp.new(tmp[:value].to_s, Regexp::IGNORECASE)
+                  rescue RegexpError
+                    tmp[:value].to_s
+                  end
+                end
           elsif tmp
             @config[:search] = tmp[:value].to_s
           end
@@ -88,8 +99,17 @@ module Incline
             col[:orderable] = col[:orderable].to_bool
 
             if col[:search] && !col[:search][:value].blank?
-              if col[:search][:regex].to_bool
-                col[:search] = col[:search][:value].is_a?(::Regexp) ? col[:search][:value] : Regexp.new(col[:search][:value], Regexp::IGNORECASE)
+              if col[:search][:regex].to_bool || force_regex
+                col[:search] =
+                    if col[:search][:value].is_a?(::Regexp)
+                      col[:search][:value]
+                    else
+                      begin
+                        Regexp.new(col[:search][:value].to_s, Regexp::IGNORECASE)
+                      rescue RegexpError
+                        col[:search][:value].to_s
+                      end
+                    end
               else
                 col[:search] = col[:search][:value].to_s
               end
@@ -120,7 +140,6 @@ module Incline
       end
 
     end
-
 
     ##
     # Where the data tables parameters provided?
@@ -263,15 +282,23 @@ module Incline
           columns.reject{|c| c[:search].blank? || c[:name].blank?}.each do |col|
             name = col[:name].to_s
             srch = col[:search]
-            srch = Regexp.new(srch, Regexp::IGNORECASE) unless srch.is_a?(::Regexp)
-            relation = relation.select { |item| item.respond_to?(name) && item.send(name) =~ srch }
+            relation =
+                if srch.is_a?(::Regexp)
+                  relation.select { |item| item.respond_to?(name) && item.send(name) =~ srch }
+                else
+                  relation.select { |item| item.respond_to?(name) && item.send(name).to_s.include?(srch) }
+                end
           end
 
           ###  Local Multiple Filtering  ###
           unless search.blank?
-            srch = search.is_a?(::Regexp) ? search : Regexp.new(search, Regexp::IGNORECASE)
             cols = columns.select{|c| c[:searchable]}.map{|c| c[:name].to_s }.reject{|c| c.blank?}
-            relation = relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col) =~ srch} }
+            relation =
+                if search.is_a?(::Regexp)
+                  relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col) =~ search} }
+                else
+                  relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col).to_s.include?(search) }}
+                end
           end
 
           # store the filtered count.
