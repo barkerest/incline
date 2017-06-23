@@ -156,6 +156,7 @@ module Incline
       {   #           anon    allow   admin   user
           index:    [ false,  true,   false,  false ],
           new:      [ true,   false,  false,  false ],
+          create:   [ true,   false,  false,  false ],
           show:     [ false,  false,  false,  true ],
           edit:     [ false,  false,  true,   false ],
           update:   [ false,  false,  true,   false ],
