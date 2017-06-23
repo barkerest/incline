@@ -439,13 +439,15 @@ module Incline::Extensions
 
       assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
       assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
-      unless case_sensitive
-        copy.send(setter, original_value.to_s.upcase)
-        assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
-        assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
-        copy.send(setter, original_value.to_s.downcase)
-        assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
-        assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
+      if original_value.is_a?(::String)
+        unless case_sensitive
+          copy.send(setter, original_value.upcase)
+          assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
+          assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
+          copy.send(setter, original_value.downcase)
+          assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
+          assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
+        end
       end
 
       unless alternate_scopes.blank?

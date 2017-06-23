@@ -4,7 +4,7 @@ module Incline
     belongs_to :access_group
 
     validates :action_security, presence: true
-    validates :access_group, presence: true
+    validates :access_group, presence: true, uniqueness: { scope: :action_security }
 
   end
 end
