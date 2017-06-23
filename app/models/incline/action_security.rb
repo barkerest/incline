@@ -1,7 +1,14 @@
 module Incline
   class ActionSecurity < ActiveRecord::Base
 
-    SHORT_PERMITTED_VALUES = %w(Admins Anon Custom Everyone Users).freeze
+    SHORT_PERMITTED_FILTERS = {
+        '- Editable -' => 'users|custom',
+        'Admins' => 'admins',
+        'Anon' => 'anon',
+        'Custom' => 'custom',
+        'Everyone' => 'everyone',
+        'Users' => 'users'
+    }.freeze
 
     has_many :action_groups
     private :action_groups, :action_groups=

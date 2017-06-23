@@ -83,11 +83,22 @@ module Incline::Extensions
     def dt_header_filter(label, column, list)
       column = CGI::escape_html(column.to_s)
       label = CGI::escape_html(label.to_s)
-      if list&.any?
-        list = list
-                   .map{|v| CGI::escape_html(v.to_s) }
-                   .map{|v| "<li><a href=\"javascript:filter_column(#{column}, '#{v.gsub('\'','\\\'')}')\" title=\"#{v}\">#{v}</a></li>" }
 
+      list =
+          if list.is_a?(::Array) && list.any?
+            list
+                .map{|v| CGI::escape_html(v.to_s) }
+                .map{|v| "<li><a href=\"javascript:filter_column(#{column}, '#{v.gsub('\'','\\\'')}')\" title=\"#{v}\">#{v}</a></li>" }
+          elsif list.is_a?(::Hash) && list.any?
+            list
+                .inject({}){|memo,(display,value)| memo[CGI::escape_html(display.to_s)] = CGI::escape_html(value.to_s); memo }
+                .to_a
+                .map{|(d,v)| "<li><a href=\"javascript:filter_column(#{column}, '#{v.gsub('\'','\\\'')}')\" title=\"#{d}\">#{d}</a></li>" }
+          else
+            [ ]
+          end
+
+      if list&.any?
         <<-HTML.html_safe
 <div class="header-filter"><div class="dropdown">
 <a href="#" class="dropdown-toggle" id="header_filter_#{column}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">#{label} <span class="caret"></span></a>

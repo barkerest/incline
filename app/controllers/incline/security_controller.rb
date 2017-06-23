@@ -18,7 +18,7 @@ module Incline
         # build lists for the dropdown filters.
         @lists[:controller_name] = Incline::ActionSecurity.visible.pluck(:controller_name).uniq.sort
         @lists[:action_name] = Incline::ActionSecurity.visible.pluck(:action_name).uniq.sort
-        @lists[:short_permitted] = Incline::ActionSecurity::SHORT_PERMITTED_VALUES
+        @lists[:short_permitted] = Incline::ActionSecurity::SHORT_PERMITTED_FILTERS
       end
     end
 
