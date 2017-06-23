@@ -145,8 +145,10 @@ module Incline
             'Members of ' +
                 if names.count == 1
                   names.first
+                elsif names.count == 2
+                  names.join(' or ')
                 else
-                  names[0...-1].join(', ') + 'or ' + names.last
+                  names[0...-1].join(', ') + ', or ' + names.last
                 end
           else
             'All Users'

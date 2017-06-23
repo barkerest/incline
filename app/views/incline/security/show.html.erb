@@ -19,7 +19,7 @@
         </div>
         <div class="form-group">
           <label>Permitted</label>
-          <span class="form-control"><%= @security.permitted %></span>
+          <div class="form-control auto-height"><%= @security.permitted %></div>
         </div>
 
         <%= link_to 'Cancel', index_security_path, class: 'btn btn-default' %>
