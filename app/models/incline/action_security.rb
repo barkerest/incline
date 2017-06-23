@@ -21,23 +21,6 @@ module Incline
     def update_flags
       self.allow_anon = self.require_anon = self.require_admin = self.unknown_controller = self.non_standard = false
 
-      options =
-          if controller_name.include?('/')
-            ns = controller_name.rpartition('/')[0]
-            ctrl = controller_name.rpartition('/')[2]
-            options = [
-                "#{ns}/app/controllers/#{ns}/#{ctrl}_controller",
-                "app/controllers/#{ns}/#{ctrl}_controller",
-                "#{ns}/app/controllers/#{ctrl}_controller",
-                "#{ns}/#{ctrl}_controller"
-            ]
-          else
-            options = [
-                "app/controllers/#{controller_name}_controller",
-                "#{controller_name}_controller"
-            ]
-          end
-
       self.unknown_controller = true
       klass =
           begin
@@ -47,6 +30,23 @@ module Incline
           end
 
       unless klass
+        options =
+            if controller_name.include?('/')
+              ns = controller_name.rpartition('/')[0]
+              ctrl = controller_name.rpartition('/')[2]
+              options = [
+                  "#{ns}/app/controllers/#{ns}/#{ctrl}_controller",
+                  "app/controllers/#{ns}/#{ctrl}_controller",
+                  "#{ns}/app/controllers/#{ctrl}_controller",
+                  "#{ns}/#{ctrl}_controller"
+              ]
+            else
+              options = [
+                  "app/controllers/#{controller_name}_controller",
+                  "#{controller_name}_controller"
+              ]
+            end
+
         while (file = options.shift)
           begin
             require file
