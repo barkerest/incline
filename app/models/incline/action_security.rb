@@ -39,14 +39,22 @@ module Incline
           end
 
       self.unknown_controller = true
-      klass = nil
-      while (file = options.shift)
-        begin
-          require file
-          klass = (controller_name + '_controller').classify.constantize
-          break
-        rescue LoadError, NameError
-          # just preventing the error from bubbling up.
+      klass =
+          begin
+            (controller_name + '_controller').classify.constantize
+          rescue NameError
+             nil
+          end
+
+      unless klass
+        while (file = options.shift)
+          begin
+            require file
+            klass = (controller_name + '_controller').classify.constantize
+            break
+          rescue LoadError, NameError
+            # just preventing the error from bubbling up.
+          end
         end
       end
 

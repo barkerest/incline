@@ -3,6 +3,29 @@ require 'test_helper'
 module Incline
   class ActionSecurityTest < ActiveSupport::TestCase
 
+    class EveryoneController < ActionController::Base
+      allow_anon true
+    end
+
+    class AnonOnlyController < ActionController::Base
+      require_anon true
+    end
+
+    class AdminOnlyController < ActionController::Base
+      require_admin true
+    end
+
+    class AnyUserController < ActionController::Base
+
+    end
+
+    class MixedController < ActionController::Base
+      allow_anon :index
+      require_anon :new, :create
+      require_admin :edit, :update, :destroy
+      # And the final CRUD action (:show) is currently allowed by any logged in user.
+    end
+
     def setup
       @item = Incline::ActionSecurity.new(path: '/things', controller_name: 'things', action_name: 'index')
     end
@@ -81,7 +104,72 @@ module Incline
       assert_equal 'Custom', @item.short_permitted
     end
 
+    test 'anon_only test' do
+      %w(index new create show edit update destroy).each do |action|
+        @item = Incline::ActionSecurity.new(path: '/', controller_name: 'incline/action_security_test/anon_only', action_name: action)
+        @item.update_flags
+        assert_not @item.unknown_controller?
+        assert @item.require_anon?
+        assert_not @item.allow_anon?
+        assert_not @item.require_admin?
+        assert_not @item.allow_custom?
+      end
+    end
 
+    test 'everyone test' do
+      %w(index new create show edit update destroy).each do |action|
+        @item = Incline::ActionSecurity.new(path: '/', controller_name: 'incline/action_security_test/everyone', action_name: action)
+        @item.update_flags
+        assert_not @item.unknown_controller?
+        assert_not @item.require_anon?
+        assert @item.allow_anon?
+        assert_not @item.require_admin?
+        assert_not @item.allow_custom?
+      end
+    end
+
+    test 'admin_only test' do
+      %w(index new create show edit update destroy).each do |action|
+        @item = Incline::ActionSecurity.new(path: '/', controller_name: 'incline/action_security_test/admin_only', action_name: action)
+        @item.update_flags
+        assert_not @item.unknown_controller?
+        assert_not @item.require_anon?
+        assert_not @item.allow_anon?
+        assert @item.require_admin?
+        assert_not @item.allow_custom?
+      end
+    end
+
+    test 'any_user test' do
+      %w(index new create show edit update destroy).each do |action|
+        @item = Incline::ActionSecurity.new(path: '/', controller_name: 'incline/action_security_test/any_user', action_name: action)
+        @item.update_flags
+        assert_not @item.unknown_controller?
+        assert_not @item.require_anon?
+        assert_not @item.allow_anon?
+        assert_not @item.require_admin?
+        assert @item.allow_custom?
+      end
+    end
+
+    test 'mixed test' do
+      {   #           anon    allow   admin   user
+          index:    [ false,  true,   false,  false ],
+          new:      [ true,   false,  false,  false ],
+          show:     [ false,  false,  false,  true ],
+          edit:     [ false,  false,  true,   false ],
+          update:   [ false,  false,  true,   false ],
+          destroy:  [ false,  false,  true,   false ]
+      }.each do |action,(anon,allow,admin,user)|
+        @item = Incline::ActionSecurity.new(path: '/', controller_name: 'incline/action_security_test/mixed', action_name: action)
+        @item.update_flags
+        assert_not @item.unknown_controller?
+        assert_equal anon,  @item.require_anon?
+        assert_equal allow, @item.allow_anon?
+        assert_equal admin, @item.require_admin?
+        assert_equal user,  @item.allow_custom?
+      end
+    end
 
   end
 end
