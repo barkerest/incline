@@ -50,4 +50,12 @@ Incline::Engine.routes.draw do
   post    'security/:id/locate' => 'security#locate',   as: :locate_security
   match   'security/api'        => 'security#api',      via: [ :get, :post ], as: :api_security
 
+  if Rails.env.test?
+    get   'test/require_anon'   => 'access_test#test_require_anon',   as: :test_require_anon
+    get   'test/allow_anon'     => 'access_test#test_allow_anon',     as: :test_allow_anon
+    get   'test/require_admin'  => 'access_test#test_require_admin',  as: :test_require_admin
+    get   'test/require_user'   => 'access_test#test_require_user',   as: :test_require_user
+    get   'test/require_group'  => 'access_test#test_require_group',  as: :test_require_group
+  end
+
 end

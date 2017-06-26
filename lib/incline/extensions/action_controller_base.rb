@@ -417,8 +417,8 @@ module Incline::Extensions
       elsif allow_anon_for_request?
         true
       else
-        action = Incline::ActionSecurity.valid_items[self.class.controller_name, params[:action]]
-        if action && action.groups.any?
+        action = Incline::ActionSecurity.valid_items[self.class.controller_path, params[:action]]
+        if action && action.groups.count > 0
           authorize! action.groups.pluck(:name)
         else
           authorize!

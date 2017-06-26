@@ -11,3 +11,8 @@ two:
   path: /foo/bar
   visible: true
 
+test_require_group:
+  controller_name: incline/access_test
+  action_name: test_require_group
+  path: /incline/test/require_group
+  visible: true
