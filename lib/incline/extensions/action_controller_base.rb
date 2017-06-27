@@ -286,6 +286,7 @@ module Incline::Extensions
         else
           # clean up the group list.
           accepted_groups ||= []
+          accepted_groups.flatten!
           accepted_groups.delete false
           accepted_groups.delete ''
 
