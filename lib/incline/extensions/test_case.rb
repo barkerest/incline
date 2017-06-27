@@ -63,8 +63,11 @@ module Incline::Extensions
 
         if actions.count > 1
           data = actions.map{|act| access_tests_for(act, options.dup)}
-          data = data.join if options[:return_code]
-          return options[:return_code] ? data : nil
+          if options[:return_code]
+            return data.join
+          else
+            return nil
+          end
         end
 
         action = actions.first
@@ -107,7 +110,7 @@ module Incline::Extensions
           options[:controller] = options[:controller].to_s.underscore
         end
 
-        if options[:controller][-11..-1] == '_controller'
+        if options[:controller] =~ /_controller$/
           options[:controller] = options[:controller].rpartition('_')[0]
         end
 
