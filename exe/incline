@@ -10,5 +10,10 @@ end
 
 require 'incline/cli'
 
-Incline::Cli.new(*ARGV).run
+begin
+  Incline::Cli.new(*ARGV).run
+rescue Incline::Cli::CliError => e
+  Incline::Cli.new(help_message: e.message).help
+end
+
 

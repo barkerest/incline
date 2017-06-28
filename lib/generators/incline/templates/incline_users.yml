@@ -1,0 +1,64 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: George Jetson
+  email: george@example.com
+  activated: true
+  enabled: true
+  system_admin: false
+  password_digest: <%= Incline::User::digest 'Password123' %>
+  activated_at: <%= 20.days.ago %>
+  last_login_at: <%= 5.hours.ago %>
+  last_login_ip: 10.20.30.40
+
+two:
+  name: Fred Flintstone
+  email: fred@example.com
+  activated: true
+  enabled: true
+  system_admin: false
+  password_digest: <%= Incline::User::digest 'Password123' %>
+  activated_at: <%= 9.days.ago %>
+  last_login_at: <%= 3.days.ago %>
+  last_login_ip: 1:2::3:4
+
+admin:
+  name: Sys Admin
+  email: admin@example.com
+  activated: true
+  enabled: true
+  system_admin: true
+  password_digest: <%= Incline::User::digest 'Password123' %>
+  activated_at: <%= 30.days.ago %>
+
+basic:
+  name: Basic User
+  email: basic@example.com
+  activated: true
+  enabled: true
+  system_admin: false
+  password_digest: <%= Incline::User::digest 'Password123' %>
+  activated_at: <%= 10.days.ago %>
+
+disabled:
+  name: Bad User
+  email: bad@example.com
+  activated: true
+  enabled: false
+  system_admin: false
+  password_digest: <%= Incline::User::digest 'Password123' %>
+  disabled_by: admin@example.com
+  disabled_at: <%= 30.days.ago %>
+  activated_at: <%= 31.days.ago %>
+
+recently_disabled:
+  name: Recent User
+  email: recent@example.com
+  activated: true
+  enabled: false
+  system_admin: false
+  password_digest: <%= Incline::User::digest 'Password123' %>
+  disabled_by: admin@example.com
+  disabled_at: <%= 1.days.ago %>
+  activated_at: <%= 3.days.ago %>
+

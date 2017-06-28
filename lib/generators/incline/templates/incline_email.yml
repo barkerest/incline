@@ -1,0 +1,19 @@
+default: &default
+  default_url: www.example.com
+  default_recipient: someone@example.com
+  exception_recipient: someone@example.com
+  sender: noreply@example.com
+  server: mail.example.com
+  port: 587
+  user: noreply@example.com
+  password: FILL ME IN
+  auth: :plain
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default
