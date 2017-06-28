@@ -3,21 +3,19 @@ PATH
   specs:
     incline (0.0.2)
       ansi (~> 1.5.0)
-      bcrypt (~> 3.1.11)
-      bootstrap-sass (~> 3.3.7)
-      bootstrap-will_paginate (~> 1.0.0)
-      coffee-rails (~> 4.2.1)
+      bcrypt
+      bootstrap-sass
+      coffee-rails
       exception_notification (~> 4.2.1)
-      jbuilder (~> 2.6.3)
-      jquery-rails (~> 4.3.1)
-      nokogiri (~> 1.7.1)
+      jbuilder
+      jquery-rails
+      nokogiri
       rails (~> 4.2.8)
       redcarpet (~> 3.4.0)
       sass-rails (~> 5.0.6)
       shells (~> 0.1.9)
       spawnling (~> 2.1.6)
-      uglifier (~> 3.2.0)
-      will_paginate (~> 3.1.5)
+      uglifier
 
 GEM
   remote: https://rubygems.org/
@@ -66,8 +64,6 @@ GEM
     bootstrap-sass (3.3.7)
       autoprefixer-rails (>= 5.2.1)
       sass (>= 3.3.4)
-    bootstrap-will_paginate (1.0.0)
-      will_paginate
     builder (3.2.3)
     byebug (9.0.6)
     coffee-rails (4.2.2)
@@ -173,7 +169,6 @@ GEM
       activemodel (>= 4.2)
       debug_inspector
       railties (>= 4.2)
-    will_paginate (3.1.5)
 
 PLATFORMS
   ruby
