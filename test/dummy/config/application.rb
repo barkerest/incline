@@ -1,4 +1,3 @@
-require_relative './version'
 require File.expand_path('../boot', __FILE__)
 
 require 'rails/all'
@@ -17,7 +16,7 @@ module Dummy
 
     # This is your application version.  Change it in 'version.rb'.
     def app_version
-      Dummy::VERSION
+      '0.0.1'
     end
 
     # Settings in config/environments/* take precedence over those specified here.
