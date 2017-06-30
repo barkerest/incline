@@ -3,18 +3,7 @@
 ##
 # Script to generate a new rails app using the Incline gem.
 
-if $0 == __FILE__
-
-  if ARGV.count < 1
-    puts "Usage: $0 app_name [rails-options]\n"
-  else
-    args = %w(rails new)
-    args += ARGV.to_a
-    args += [ '-m', File.expand_path(__FILE__), '--skip-turbolinks', '--skip-spring', '--skip-bundle' ]
-    Kernel.exec *args
-  end
-
-else
+if Object.const_defined?(:Rails)
 
   ##    Template for 'rails new'     ##
   require 'incline/version'
@@ -25,7 +14,10 @@ else
   # Install the gem.
   run 'bundle install'
 
-  # Perform the cko5 install.
+  # Add a root route.
+  route "root 'incline/welcome#home'"
+
+  # Perform the Incline install.
   generate 'incline:install'
 
   # Create & migrate the db.
@@ -35,5 +27,16 @@ else
   git :init
   git :add => '-A'
   git :commit => '-am "Initialize repo"'
+
+else
+
+  if ARGV.count < 1
+    puts "Usage: $0 app_name [rails-options]\n"
+  else
+    args = %w(rails new)
+    args += ARGV.to_a
+    args += [ '-m', File.expand_path(__FILE__), '--skip-turbolinks', '--skip-spring', '--skip-bundle' ]
+    Kernel.exec *args
+  end
 
 end

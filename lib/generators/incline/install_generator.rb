@@ -107,7 +107,7 @@ module Incline
 
     def add_version
       # Make sure a version.rb file exists.
-      template 'incline_version.rb' => 'config/version.rb', skip: true
+      template 'incline_version.rb', 'config/version.rb', skip: true
     end
 
     def config_logger
