@@ -214,17 +214,17 @@ default: &default
         end
 
         # now ensure the three environments are set to inherit from default.
-        %w(development test production).each do |env|
-          missing_alias = /\A(.*\n)?#{env}:\s*\n/m
-          valid_alias = /\A(.*\n)?#{env}:\s*\n  <<:\s*\*default\s*\n/m
-
-          unless contents =~ valid_alias
-            if contents =~ missing_alias
+        %w(development test production).each do |section|
+          missing_alias = /\A(.*\n)?#{section}:\s*\n/m
+          valid_alias = /\A(.*\n)?#{section}:\s*\n  <<:\s*\*default\s*\n/m
+          
+          if contents =~ missing_alias
+            unless contents =~ valid_alias
               changed = true
               insert_into_file 'config/secrets.yml', "  <<: *default\n", after: missing_alias
-            else
-              say_status :missing, "config/secrets.yml [#{env}]", :red
             end
+          else
+            say_status :missing, "config/secrets.yml [#{section}]", :red
           end
         end
 

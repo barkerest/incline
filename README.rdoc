@@ -121,7 +121,7 @@ of course.  Two such files are included in any application that has had the 'inc
 
 ---
 
-
+reCAPTCHA support is built into the library.
 
 
 == License
