@@ -94,7 +94,7 @@ module Incline
 
         unless contents =~ /require_relative\s*['"]\.\/version['"]/
           changed = true
-          prepend_to_file 'config/application.rb', "require_relative './version'"
+          prepend_to_file 'config/application.rb', "require_relative './version'\n"
         end
 
         unless changed

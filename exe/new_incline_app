@@ -26,7 +26,7 @@ if Object.const_defined?(:Rails)
   # Initialize git repo and push to github.
   git :init
   git :add => '-A'
-  git :commit => '-am "Initialize repo"'
+  git :commit => '-m "Initialize repo"'
 
 else
 
