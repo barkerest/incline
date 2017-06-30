@@ -72,7 +72,12 @@ Rails.application.configure do
   config.active_support.deprecation = :notify
 
   # Use default logging formatter so that PID and timestamp are not suppressed.
-  config.log_formatter = ::Logger::Formatter.new
+  # config.log_formatter = ::Logger::Formatter.new
+  
+  # Incline::JsonLogFormatter also includes the PID and timestamp, plus it makes the log easier to parse.
+  # If you want to revert to using the standard formatter above, uncomment that line and comment out this line instead.
+  config.log_formatter = ::Incline::JsonLogFormatter.new
+
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false

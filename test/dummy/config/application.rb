@@ -1,3 +1,4 @@
+require_relative './version'
 require File.expand_path('../boot', __FILE__)
 
 require 'rails/all'
@@ -7,6 +8,18 @@ require "incline"
 
 module Dummy
   class Application < Rails::Application
+
+    # This is your application name.  Set it as appropriate.
+    def app_name
+      "Dummy"
+    end
+
+
+    # This is your application version.  Change it in 'version.rb'.
+    def app_version
+      Dummy::VERSION
+    end
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.

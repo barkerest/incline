@@ -88,7 +88,7 @@ module Incline
               EOD
             end
             changed = true
-            insert_into_file 'config/application.rb', new_data, after: /class\s+Application\s+<\s+(::)?Rails::Application\n/
+            insert_into_file 'config/application.rb', new_data, after: /class\s+Application\s+<\s+(::)?Rails::Application\n/m
           end
         end
 
@@ -112,7 +112,7 @@ module Incline
 
     def config_logger
       # Change the production environment to use JsonLogFormatter instead of Logger::Formatter
-      gsub_file 'config/environments/production.rb',  /\n\s*config\.log_formatter\s*=\s*(::)?Logger::Formatter.new/, <<-EOS
+      gsub_file 'config/environments/production.rb',  /\n\s*config\.log_formatter\s*=\s*(::)?Logger::Formatter.new/m, <<-EOS
 
   # config.log_formatter = ::Logger::Formatter.new
   
@@ -125,10 +125,10 @@ module Incline
         if File.exist?(cfg)
           contents = File.read(cfg)
 
-          if contents =~ /\n\s*config\.log_formatter\s*=/
+          if contents =~ /\n\s*config\.log_formatter\s*=/m
             say_status :ok, cfg, :blue
           else
-            insert_into_file cfg, "\n  config.log_formatter = ::Incline::JsonLogFormatter.new\n", before: /end\s*$/
+            insert_into_file cfg, "\n  config.log_formatter = ::Incline::JsonLogFormatter.new\n", before: /end\s*\Z/m
           end
         else
           say_status :missing, cfg, :red
@@ -188,18 +188,19 @@ vendor/bundle/
       if File.exist?('config/secrets.yml')
         contents = File.read('config/secrets.yml')
         changed = false
-        missing_alias = /\A(.*\n)?default:\s*\n/m
-        valid_alias = /\A(.*\n)?default:\s+&default\s*\n/m
+        missing_alias = /^(default:\s*\n)/m
+        valid_alias = /^default:\s+&default\s*\n/m
 
         unless contents =~ valid_alias
           if contents =~ missing_alias
             # section exists, but is missing the &default label
+            flag = $1
             changed = true
-            gsub_file 'config/secrets.yml', missing_alias, "default: &default\n"
+            contents.gsub! /^#{flag}/, "default: &default\n"
           else
             # section does not exist.
             changed = true
-            prepend_to_file 'config/secrets.yml', <<-EOF
+            to_insert =  <<-EOF
 default: &default
   # define your recaptcha keys.
   recaptcha_public:
@@ -210,25 +211,32 @@ default: &default
     password: MySecretPassword
 
             EOF
+            
+            contents = to_insert + contents
           end
         end
 
         # now ensure the three environments are set to inherit from default.
         %w(development test production).each do |section|
-          missing_alias = /\A(.*\n)?#{section}:\s*\n/m
-          valid_alias = /\A(.*\n)?#{section}:\s*\n  <<:\s*\*default\s*\n/m
-          
-          if contents =~ missing_alias
-            unless contents =~ valid_alias
+          missing_alias = /^(#{section}:\s*\n)/m
+          valid_alias = /^#{section}:\s*\n  <<:\s*\*default\s*\n/m
+          unless contents =~ valid_alias
+            if contents =~ missing_alias
+              flag = $1
               changed = true
-              insert_into_file 'config/secrets.yml', "  <<: *default\n", after: missing_alias
+              contents.gsub! /^#{flag}/, "\\0  <<: *default\n"
+            else
+              say_status :missing, "config/secrets.yml [#{section}]", :red
             end
-          else
-            say_status :missing, "config/secrets.yml [#{section}]", :red
           end
         end
 
-        unless changed
+        if changed
+          unless options[:pretend]
+            File.write 'config/secrets.yml', contents
+          end
+          say_status :modified, 'config/secrets.yml', :green
+        else
           say_status :ok, 'config/secrets.yml', :blue
         end
       end

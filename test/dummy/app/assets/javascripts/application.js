@@ -4,11 +4,9 @@
 // Any JavaScript/Coffee file within this directory, lib/assets/javascripts, vendor/assets/javascripts,
 // or any plugin's vendor/assets/javascripts directory can be referenced here using a relative path.
 //
-// It's not advisable to add code directly here, but if you do, it'll appear at the bottom of the
-// compiled file.
-//
-// Read Sprockets README (https://github.com/rails/sprockets#sprockets-directives) for details
-// about supported directives.
+// This manifest inherits the default functionality from the Incline gem.
 //
 //= require incline/application
-//= require_tree .
+
+// Require any addition scripts you want/need, but you probably do not want to use "require_tree ." since that may
+// lead to over-bloated JS code.
