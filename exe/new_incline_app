@@ -12,7 +12,7 @@ if Object.const_defined?(:Rails)
   gem 'incline', "~> #{Incline::VERSION}"
 
   # Install the gem.
-  run 'bundle install'
+  run 'bundle install', capture: true
 
   # Add a root route.
   route "root 'incline/welcome#home'"
@@ -21,7 +21,7 @@ if Object.const_defined?(:Rails)
   generate 'incline:install'
 
   # Create & migrate the db.
-  run 'rake db:migrate'
+  run 'rake db:migrate', capture: true
 
   # Initialize git repo and push to github.
   git :init
