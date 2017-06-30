@@ -55,8 +55,6 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline.const_defined? :IpAddressValidator
     assert Incline.const_defined? :RecaptchaValidator
 
-    # Should not be loaded except by the 'incline' script.
-    assert_not Incline.const_defined? :Cli
   end
 
 

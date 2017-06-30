@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+##
+# Script to generate a new rails app using the Incline gem.
+
+if $0 == __FILE__
+
+  if ARGV.count < 1
+    puts "Usage: $0 app_name [rails-options]\n"
+  else
+    args = %w(rails new)
+    args += ARGV.to_a
+    args += [ '-m', File.expand_path(__FILE__), '--skip-turbolinks', '--skip-spring', '--skip-bundle' ]
+    Kernel.exec *args
+  end
+
+else
+
+  ##    Template for 'rails new'     ##
+  require 'incline/version'
+
+  # Add the incline gem.
+  gem 'incline', "~> #{Incline::VERSION}"
+
+  # Install the gem.
+  run 'bundle install'
+
+  # Perform the cko5 install.
+  generate 'incline:install'
+
+  # Create & migrate the db.
+  run 'rake db:migrate'
+
+  # Initialize git repo and push to github.
+  git :init
+  git :add => '-A'
+  git :commit => '-am "Initialize repo"'
+
+end
