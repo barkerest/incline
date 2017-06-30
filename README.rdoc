@@ -72,6 +72,8 @@ When a user requests an action, the controller will end up taking one of these 1
 9. If the user is a member of at least one group assigned to the action, grant access.
 10. Redirect to root page with error.
 
+---
+
 There are ways to override this behavior, and the Incline::UsersController actually does by redefining the #valid_user?
 method.  The Incline::UsersController allows the user to review and edit their own details, and it allows system admins
 to add new users.  Without overriding this method, users would not be able to view or update their own details, and
