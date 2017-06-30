@@ -110,12 +110,12 @@ return false.
 So now you've seen how to setup security for your controllers and actions, how do you best access them?  With a menu
 of course.  Two such files are included in any application that has had the 'incline:install' generator run.
 
-__app/views/layouts/incline/_app_menu_anon.html.erb__
+__app/views/layouts/incline/_app_menu_anon.html.erb__  
 This file defines the menu made available to everyone.  It is a standard ERB file and therefore can contain embedded
 Ruby to customize the menu even more.  For instance you may only want a link displayed to a resource if
 current_user.anonymous? is true.
 
-__app/views/layouts/incline/_app_menu_authenticated.html.erb__
+__app/views/layouts/incline/_app_menu_authenticated.html.erb__  
 This file defines the menu made available to users logged into the system.  Just like the anonymous file, it is a
 standard ERB file and you can use Ruby to customize the menu more.
 
