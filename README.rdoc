@@ -61,16 +61,16 @@ Security objects are defined in the Incline::ActionSecurity model.
 
 When a user requests an action, the controller will end up taking one of these 10 actions:
 
-1) If 'require_admin' is set and no user is logged in, redirect to login page.
-2) If 'require_admin' is set and a non-admin is logged in, redirect to root page with error.
-3) If 'require_admin' is set and an admin is logged in, grant access.
-4) If 'require_anon' is set and no user is logged in, grant access.
-5) If 'require_anon' is set and any user is logged in, redirect to root page with error.
-6) If 'allow_anon' is set for the action, grant access.
-7) If no user is logged in, redirect to login page.
-8) If no groups are assign to the action, grant access.
-9) If the user is a member of at least one group assigned to the action, grant access.
-10) Redirect to root page with error.
+1. If 'require_admin' is set and no user is logged in, redirect to login page.
+2. If 'require_admin' is set and a non-admin is logged in, redirect to root page with error.
+3. If 'require_admin' is set and an admin is logged in, grant access.
+4. If 'require_anon' is set and no user is logged in, grant access.
+5. If 'require_anon' is set and any user is logged in, redirect to root page with error.
+6. If 'allow_anon' is set for the action, grant access.
+7. If no user is logged in, redirect to login page.
+8. If no groups are assign to the action, grant access.
+9. If the user is a member of at least one group assigned to the action, grant access.
+10. Redirect to root page with error.
 
 There are ways to override this behavior, and the Incline::UsersController actually does by redefining the #valid_user?
 method.  The Incline::UsersController allows the user to review and edit their own details, and it allows system admins
