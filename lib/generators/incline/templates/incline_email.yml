@@ -1,13 +1,13 @@
 default: &default
   default_url: www.example.com
   default_recipient: someone@example.com
-  exception_recipient: someone@example.com
   sender: noreply@example.com
   server: mail.example.com
-  port: 587
-  user: noreply@example.com
-  password: FILL ME IN
   auth: :plain
+  start_tls: false
+  ssl:  true
+  port: 465
+  # user and password should be set in secrets.yml
 
 development:
   <<: *default

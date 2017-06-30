@@ -180,7 +180,7 @@ tmp/
 vendor/bundle/
           EOF
         end
-        say_status :created, '.gitignore', :green
+        say_status :create, '.gitignore', :green
       end
     end
 
@@ -235,7 +235,7 @@ default: &default
           unless options[:pretend]
             File.write 'config/secrets.yml', contents
           end
-          say_status :modified, 'config/secrets.yml', :green
+          say_status :modify, 'config/secrets.yml', :green
         else
           say_status :ok, 'config/secrets.yml', :blue
         end
