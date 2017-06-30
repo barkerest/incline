@@ -9,25 +9,118 @@ with a fairly simple layout, built-in authentication and authorization, and quit
 the various Rails classes (e.g. - ActiveRecord::Base, ActionView::Base, ActionController::Base, etc).
 
 The scaffold generator has also been updated to be more useful out of the box by scaffolding with bootstrap themed
-views and the [DataTables](https://datatables.net) library being used for the index views.  The ActionController::Base
-class has also been updated to support passing the API calls from the [DataTables Editor](https://editor.datatables.net)
-library as well.
+views and the DataTables (https://datatables.net) library being used for the index views.
+
+Incline is currently locked to Rails 4.2, specifically 4.2.8 or higher.  It has not been tested against Rails 5.
 
 == Installation
 
-Add these line to your application's Gemfile:
-    gem 'rails',    '4.2.8'
+The easiest way to get started with Incline:
+    $ gem install incline
+    $ new_incline_app my_app
+
+This will create an application depending on Incline, configure the application, generate a database, and initialize
+a local git repository for the application.
+
+You could also manually perform the necessary steps by creating a rails app and adding Incline to your Gemfile.
     gem 'incline'
 
-And then execute
+Followed by running bundle and then the 'incline:install' generator.
     $ bundle
-
-Or install it yourself as:
-    $ gem install incline
+    $ bundle exec rails generate incline:install
 
 == Usage
 
-TODO: Fill me in!
+Where to get started.  If you use 'new_incline_app' or the 'incline:install' generator, your Rails app will now be
+setup with a basic, yet powerful, security model.  All users are either standard users or system admins.  There must
+always be at least one system admin.  A system admin can promote other users to system admin or demote them back to
+standard users.  A system admin has automatic access to everything that does not require an anonymous user.  Standard
+users gain access through Access Groups.  Users are defined in the Incline::User model.
+
+Access Groups are completely customizable.  You can create however many you want.  Each access group can contain any
+number of other access groups or users.  Any user who is a member of an access group added to another access group is
+also a member of the other access group.  For instance.  Group A includes Group B, so members of Group B are
+automatically members of Group A.  Access Groups are defined in the Incline::AccessGroup model.
+
+The final part of the security model is the Action Security objects.  Each routed action in the application has an
+Action Security object.  The object asks the controller for any hard settings for the action.  The hard settings would
+be 'allow_anon' (grants access to everyone), 'require_anon' (requires an anonymous user), and 'require_admin' (requires
+a system admin).  If any of the hard settings are flagged, 'require_admin' takes precedence, followed by 'require_anon'
+and finally 'allow_anon'.  Access Groups can be added to Action Security objects with no hard settings.  Action
+Security objects are defined in the Incline::ActionSecurity model.
+
+    class FirstController < ActionController::Base
+      allow_anon :index, :show
+      require_anon :new, :create
+      require_admin :edit, :update, :destroy
+    end
+
+    class SecondController < ActionController::Base
+      require_admin true
+    end
+
+When a user requests an action, the controller will end up taking one of these 10 actions:
+
+1) If 'require_admin' is set and no user is logged in, redirect to login page.
+2) If 'require_admin' is set and a non-admin is logged in, redirect to root page with error.
+3) If 'require_admin' is set and an admin is logged in, grant access.
+4) If 'require_anon' is set and no user is logged in, grant access.
+5) If 'require_anon' is set and any user is logged in, redirect to root page with error.
+6) If 'allow_anon' is set for the action, grant access.
+7) If no user is logged in, redirect to login page.
+8) If no groups are assign to the action, grant access.
+9) If the user is a member of at least one group assigned to the action, grant access.
+10) Redirect to root page with error.
+
+There are ways to override this behavior, and the Incline::UsersController actually does by redefining the #valid_user?
+method.  The Incline::UsersController allows the user to review and edit their own details, and it allows system admins
+to add new users.  Without overriding this method, users would not be able to view or update their own details, and
+system admins would not be able to add new users since they are obviously already logged in.
+
+When #valid_user? or #authorize! are redefined by a controller, the Action Security model will take notice of that fact
+and mark them as non-standard.  Non-standard controllers will be treated the same when defining security, but may not
+behave the same as standard controllers.  Going back to the Incline::UsersController, it doesn't behave the way the
+standard security model expects because of the exceptions created for a few actions.
+
+If you do decide to redefine security for a controller, redefine #valid_user? and leave #authorize! alone unless you
+have a good reason.  At the end of your #valid_user? method, you should call super to allow the standard security
+model to handle any non-exception cases.  The #valid_user? method should return true or redirect as appropriate and
+return false.
+
+    def valid_user?
+      action = params[:action].to_sym
+
+      # In order to delete resources, the user must be a member of 'super user' or 'can delete'.
+      if action == :destroy && !current_user.has_any_group?('super user', 'can delete')
+        redirect_to root_url
+        return false
+      end
+
+      # Members of the 'super user' group are granted access to all actions of this controller.
+      return true if current_user.has_any_group?('super user')
+
+      # Fall back on standard processing for everything else.
+      super
+    end
+
+---
+
+So now you've seen how to setup security for your controllers and actions, how do you best access them?  With a menu
+of course.  Two such files are included in any application that has had the 'incline:install' generator run.
+
+__app/views/layouts/incline/_app_menu_anon.html.erb__
+This file defines the menu made available to everyone.  It is a standard ERB file and therefore can contain embedded
+Ruby to customize the menu even more.  For instance you may only want a link displayed to a resource if
+current_user.anonymous? is true.
+
+__app/views/layouts/incline/_app_menu_authenticated.html.erb__
+This file defines the menu made available to users logged into the system.  Just like the anonymous file, it is a
+standard ERB file and you can use Ruby to customize the menu more.
+
+---
+
+
+
 
 == License
 

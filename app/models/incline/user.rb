@@ -136,6 +136,7 @@ module Incline
     # Does this user have the equivalent of one or more of these groups?
     def has_any_group?(*group_list)
       return :system_admin if system_admin?
+      return false if anonymous?
 
       r = group_list.select{|g| effective_groups.include?(g.upcase)}
 
