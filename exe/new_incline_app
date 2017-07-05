@@ -24,10 +24,10 @@ if Object.const_defined?(:Rails)
   run 'rake db:migrate', capture: true
 
   # Initialize git repo and push to github.
-  git :init
-  git :add => '-A'
-  git :commit => '-m "Initialize repo"'
-
+  run 'git init', capture: true
+  run 'git add -A', capture: true
+  run 'git commit -m "Initialize repo"', capture: true
+  
 else
 
   if ARGV.count < 1
