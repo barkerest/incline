@@ -173,9 +173,42 @@ set to true.  It is not recommended to utilize SMTP without some form of encrypt
 If for some reason you don't want to use the SMTP configuration support, simply delete the 'email.yml' file from
 your configuration directory.
 
+---
 
+Migrations and seeds from the Incline gem are included into your application automatically.  They do not get copied into
+your application and you should not copy them local since they may be overridden in the future.  You shouldn't add onto
+Incline models directly unless you are sure about what you are doing.  A future Incline upgrade may conflict with fields
+you add on.  Instead of adding on, you may want to define a related model.
 
-
+    class CreateUserDetails < ActiveRecord::Migration
+      def change
+        create_table :user_details do |t|
+          t.integer :user_id, null: false
+          t.string :full_name
+          t.string :address1
+          t.string :address2
+          t.string :city
+          t.string :state
+          t.string :zip_code
+          t.string :phone_number
+        end
+        add_index :user_details, :user_id, :unique => true
+      end
+    end
+    
+    def UserDetails < ActiveRecord::Base    
+        belongs_to :user, class_name: 'Incline::User'
+        
+        module AddUserDetailsToUser
+          def self.included(base)
+            base.class_eval do
+              has_one :details, :class_name => 'UserDetail', :foreign_key => 'user_id', :dependent => :destroy
+            end
+          end
+        end
+        
+        ::Incline::User.include UserDetails::AddUserDetailsToUser
+    end
 
 
 == License
