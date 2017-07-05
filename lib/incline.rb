@@ -54,13 +54,7 @@ module Incline
                 start_tls: true,
                 ssl: false
             }.merge(cfg)
-
-            Incline::Log::warn 'The "user" key for the email configuration should be in "secrets.yml" instead of "email.yml".' unless cfg[:user].blank?
-            Incline::Log::warn 'The "password" key for the email configuration should be in "secrets.yml" instead of "email.yml".' unless cfg[:password].blank?
-
-            cred = (Rails.application.secrets[:email] || {}).symbolize_keys.select{|k,_| [:user, :password, :auth].include? k }
-            cfg.merge! cred
-
+            
             Incline::Log::warn 'The email configuration is missing the "user" key.' if cfg[:user].blank?
             Incline::Log::warn 'The email configuration is missing the "password" key.' if cfg[:password].blank?
             Incline::Log::error 'The email configuration is missing the "server" key.' if cfg[:server].blank?

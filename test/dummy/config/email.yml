@@ -6,6 +6,9 @@ default: &default
   ssl:  true
   server: smtp.zoho.com
   port: 465
+  user: <%= (Rails.application.secrets['email'] || {})['user'] %>
+  password: <%= (Rails.application.secrets['email'] || {})['password'] %>
+
 
 test:
   <<: *default

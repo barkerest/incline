@@ -160,6 +160,21 @@ Still pretty simple.
 
 ---
 
+Email support is also built into the library.  This is of course configuring email for use with SMTP.  SMTP allows for
+a more consistent experience across platforms, so I generally find myself adding SMTP configuration to an application.
+Incline handles that configuration for you by reading from a simple to use 'email.yml' file.  The default 'email.yml'
+from the 'incline:install' generator includes all of the necessary configuration information and shows how to utilize
+'secrets.yml' to store the login credentials.  
+(The 'incline:install' generator also adds a line to '.gitignore' to exclude 'secrets.yml' from the git repo.)
+
+For email, generally port 465 is used with the ssl parameter set to true and port 587 is used with start_tls parameter
+set to true.  It is not recommended to utilize SMTP without some form of encryption.
+
+If for some reason you don't want to use the SMTP configuration support, simply delete the 'email.yml' file from
+your configuration directory.
+
+
+
 
 
 
