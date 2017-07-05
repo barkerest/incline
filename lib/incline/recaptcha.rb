@@ -128,7 +128,7 @@ function #{callback}(response) {
     ##
     # Determines if recaptcha is disabled either due to a test environment or because :recaptcha_public or :recaptcha_private is not defined in +secrets.yml+.
     def self.disabled?
-      temp_lock || Rails.env.test? || public_key.blank? || private_key.blank?
+      temp_lock || public_key.blank? || private_key.blank? || (Rails.env.test? && !enabled_for_testing?)
     end
 
     ##
@@ -153,7 +153,7 @@ function #{callback}(response) {
     ##
     # Generates the bare minimum code needed to include a reCAPTCHA challenge in a form.
     def self.add
-      unless recaptcha_disabled?
+      unless disabled?
         "<div class=\"g-recaptcha\" data-sitekey=\"#{CGI::escape_html(public_key)}\"></div>\n<script src=\"https://www.google.com/recaptcha/api.js\"></script><br>".html_safe
       end
     end
@@ -311,9 +311,28 @@ function #{callback}(response) {
     def self.paused?
       temp_lock
     end
-
+    
     private
-
+    
+    def self.enable_for_testing(pub_key = nil, priv_key = nil)
+      raise 'This method is only valid when testing.' unless Rails.env.test?
+      
+      @enabled_for_testing = true
+      @public_key = pub_key
+      @private_key = priv_key
+      begin
+        yield if block_given?
+      ensure
+        @private_key = nil
+        @public_key = nil
+        @enabled_for_testing = false
+      end
+    end
+    
+    def self.enabled_for_testing?
+      @enabled_for_testing ||= false
+    end
+    
     def self.temp_lock
       @temp_lock ||= false
     end
