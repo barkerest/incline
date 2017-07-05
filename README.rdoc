@@ -198,16 +198,8 @@ you add on.  Instead of adding on, you may want to define a related model.
     
     class UserDetails < ActiveRecord::Base    
         belongs_to :user, class_name: 'Incline::User'
-        
-        module AddUserDetailsToUser
-          def self.included(base)
-            base.class_eval do
-              has_one :details, :class_name => 'UserDetail', :foreign_key => 'user_id', :dependent => :destroy
-            end
-          end
-        end
-        
-        ::Incline::User.include UserDetails::AddUserDetailsToUser
+         
+        ::Incline::User.has_one :details, :class_name => 'UserDetail', :foreign_key => 'user_id', :dependent => :destroy
     end
 
 
