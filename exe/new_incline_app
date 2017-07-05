@@ -12,7 +12,7 @@ if Object.const_defined?(:Rails)
   gem 'incline', "~> #{Incline::VERSION}"
 
   # Install the gem.
-  run 'bundle install', capture: true
+  run 'bundle install'
 
   # Add a root route.
   route "root 'incline/welcome#home'"
