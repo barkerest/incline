@@ -177,12 +177,15 @@ function #{callback}(response) {
     # request::
     #     Specifies the request to use for information.
     #     This must be provided unless :response and :remote_ip are both specified.
+    #     This is the default option if an object other than a Hash is provided to #verify.
     #
     # Returns true on success, or false on failure.
     #
     def self.verify(options = {})
       return true if temp_lock
-
+      
+      options = { request: options } unless options.is_a?(::Hash)
+      
       model = options[:model]
 
       response =

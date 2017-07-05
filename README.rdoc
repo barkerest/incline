@@ -121,7 +121,46 @@ of course.  Two such files are included in any application that has had the 'inc
 
 ---
 
-reCAPTCHA support is built into the library.
+reCAPTCHA support is built into the library.  To enable the support, you have to define the "recaptcha_public" and 
+"recaptcha_private" values to be your site key and secret key from Google.  If these are both defined, the gem will
+enable the reCAPTCHA functionality and force users to complete the challenges.  If either of these are blank, the gem
+disables the reCAPTCHA functionality and silently passes the challenges.
+
+You can use reCAPTCHA in two ways.  The first way is via a validated model attribute and then using the form builder
+to include the necessary code in the form.
+
+    class MyModel < ActiveRecord::Base
+      attr_accessor :recaptcha_field
+      validates :recaptcha_field, 'incline/recaptcha' => true
+      ...
+    end
+    
+    <%= form_for @my_model do |f| %>
+      ...
+      <%= f.recaptcha :recaptcha_field %>
+    <% end %>
+
+Nice and simple.
+
+The second way reCAPTCHA can be used is by explicitly including the challenge on a form and then explicitly checking
+the result on submission.
+
+    <%= form_for @another_model do |f| %>
+      ...
+      <%= Incline::Recaptcha.add %>
+    <% end %>
+
+    def update
+      unless Incline::Recaptcha.verify(request)
+        @another_model.errors[:base] << 'You must complete the reCAPTCHA challenge.'
+      end
+    end
+
+Still pretty simple.
+
+---
+
+
 
 
 == License
