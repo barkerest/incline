@@ -196,7 +196,7 @@ you add on.  Instead of adding on, you may want to define a related model.
       end
     end
     
-    def UserDetails < ActiveRecord::Base    
+    class UserDetails < ActiveRecord::Base    
         belongs_to :user, class_name: 'Incline::User'
         
         module AddUserDetailsToUser
