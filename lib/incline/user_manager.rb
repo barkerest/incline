@@ -66,11 +66,25 @@ module Incline
     # +client_ip+.
     #
     # The +authenticate+ method of the engine should return an Incline::User object on success or nil on failure.
+    #
+    #   class MyAuthEngine
+    #     def initialize(options = {})
+    #       ...
+    #     end
+    #
+    #     def authenticate(email, password, client_ip)
+    #       ...
+    #     end
+    #   end
+    #
+    #   Incline::UserManager.register_auth_engine(MyAuthEngine, 'example.com', 'example.net', 'example.org')
+    #
     def register_auth_engine(engine, *domains)
-      raise ArgumentError, "The 'engine' parameter must be a class." unless engine.is_a?(::Class)
-      domains = domains.map do |dom|
-        dom.to_s.downcase
-        raise ArgumentError, "The domain #{dom.inspect} does not appear to be a valid domain." unless dom =~ /[a-z0-9]+(?:-[a-z0-9]+)*\.[a-z]+/
+      raise ArgumentError, "The 'engine' parameter must be a class." unless engine.is_a?(::Class) || engine.nil?
+      domains.map do |dom|
+        dom.to_s.downcase.strip
+        raise ArgumentError, "The domain #{dom.inspect} does not appear to be a valid domain." unless dom =~ /\A[a-z0-9]+(?:[-.][a-z0-9]+)*\.[a-z]+\Z/
+        dom
       end.each do |dom|
         auth_engines[dom] = engine
       end
@@ -86,6 +100,18 @@ module Incline
     # The +authenticate+ method of the engine should return an Incline::User object on success or nil on failure.
     def self.register_auth_engine(engine, *domains)
       default.register_auth_engine engine, *domains
+    end
+    
+    ##
+    # Clears any registered authentication engine for one or more domains.
+    def clear_auth_engine(*domains)
+      register_auth_engine nil, *domains
+    end
+    
+    ##
+    # Clears any registered authentication engine for one or more domains.
+    def self.clear_auth_engine(*domains)
+      default.clear_auth_engine *domains
     end
 
     private
