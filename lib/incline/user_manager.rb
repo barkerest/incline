@@ -14,9 +14,45 @@ module Incline
     # The user manager itself takes no options, however options will be passed to
     # any registered authentication engines when they are instantiated.
     #
+    # The options can be used to pre-register engines and provide configuration for them.
+    # The engines will have specific configurations, but the UserManager class recognizes
+    # the 'engines' key.
+    #
+    # The 'engines' key will have engine names as the subkeys.  These should be in underscore
+    # format.  And each subkey will be an array of domain names to register to the engine.
+    #
+    #     {
+    #       :engines => {
+    #         'example_engine' => [
+    #           'example.com',
+    #           'example.net'
+    #         ],
+    #         'my_gem/my_engine' => [
+    #           'example.org'
+    #         ]
+    #       }
+    #     }
+    #
     def initialize(options = {})
-      @options = (options || {}).symbolize_keys
+      @options = (options || {}).deep_symbolize_keys
       Incline::User.ensure_admin_exists!
+
+      if @options[:engines].is_a?(::Hash)
+        @options[:engines].each do |engine_name, domain_list|
+          domain_list = [ domain_list ] unless domain_list.is_a?(::Array)
+          engine =
+              begin
+                engine_name.classify.constantize
+              rescue NameError
+                nil
+              end
+
+          if engine
+            register_auth_engine engine, *domain_list
+          end
+
+        end
+      end
     end
 
     ##
