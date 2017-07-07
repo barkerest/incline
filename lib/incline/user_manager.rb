@@ -6,7 +6,7 @@ module Incline
   # The default authentication system is the database, but other systems are supported.
   # Out of the box we support LDAP, but the class can be extended to add other functionality.
   #
-  class UserManager
+  class UserManager < AuthEngineBase
 
     ##
     # Creates a new user manager.
@@ -18,41 +18,61 @@ module Incline
     # The engines will have specific configurations, but the UserManager class recognizes
     # the 'engines' key.
     #
-    # The 'engines' key will have engine names as the subkeys.  These should be in underscore
-    # format.  And each subkey will be an array of domain names to register to the engine.
-    #
     #     {
     #       :engines => {
-    #         'example_engine' => [
-    #           'example.com',
-    #           'example.net'
-    #         ],
-    #         'my_gem/my_engine' => [
-    #           'example.org'
-    #         ]
+    #         'example.com' => {
+    #           :engine => MySuperAuthEngine.new(...)
+    #         },
+    #         'example.org' => {
+    #           :engine => 'incline_ldap/auth_engine',
+    #           :config => {
+    #             :host => 'ldap.example.org',
+    #             :port => 636,
+    #             :base_dn => 'DC=ldap,DC=example,DC=org'
+    #           }
+    #         }
     #       }
     #     }
     #
+    # When an 'engines' key is processed, the configuration options for the engines are pulled
+    # from the subkeys.  Once the processing of the 'engines' key is complete, it will be removed
+    # from the options hash so any engines registered in the future will not receive the extra options.
     def initialize(options = {})
       @options = (options || {}).deep_symbolize_keys
       Incline::User.ensure_admin_exists!
 
       if @options[:engines].is_a?(::Hash)
-        @options[:engines].each do |engine_name, domain_list|
-          domain_list = [ domain_list ] unless domain_list.is_a?(::Array)
-          engine =
-              begin
-                engine_name.classify.constantize
-              rescue NameError
-                nil
+        @options[:engines].each do |domain_name, domain_config|
+          if domain_config[:engine].blank?
+            ::Incline::Log::info "Domain #{domain_name} is missing an engine definition and will not be registered."
+          elsif domain_config[:engine].is_a?(::Incline::AuthEngineBase)
+            ::Incline::Log::info "Using supplied auth engine for #{domain_name}."
+            register_auth_engine domain_config[:engine], domain_name
+          else
+            engine =
+                begin
+                  domain_config[:engine].to_s.classify.constantize
+                rescue NameError
+                  nil
+                end
+
+            if engine
+              engine = engine.new(domain_config[:config] || {})
+              if engine.is_a?(::Incline::AuthEngineBase)
+                ::Incline::Log::info "Using newly created auth engine for #{domain_name}."
+                register_auth_engine engine, domain_name
+              else
+                ::Incline::Log::warn "Object created for #{domain_name} does not inherit from Incline::AuthEngineBase."
               end
-
-          if engine
-            register_auth_engine engine, *domain_list
+            else
+              ::Incline::Log::warn "Failed to create auth engine for #{domain_name}."
+            end
           end
-
         end
       end
+
+      @options.delete(:engines)
+
     end
 
     ##
@@ -64,7 +84,6 @@ module Incline
       # If an engine is registered for the email domain, then use it.
       engine = get_auth_engine(email)
       if engine
-        engine = engine.new(@options)
         return engine.authenticate(email, password, client_ip)
       end
 
@@ -116,7 +135,13 @@ module Incline
     #   Incline::UserManager.register_auth_engine(MyAuthEngine, 'example.com', 'example.net', 'example.org')
     #
     def register_auth_engine(engine, *domains)
-      raise ArgumentError, "The 'engine' parameter must be a class." unless engine.is_a?(::Class) || engine.nil?
+      unless engine.nil?
+        unless engine.is_a?(::Incline::AuthEngineBase)
+          raise ArgumentError, "The 'engine' parameter must be an instance of an auth engine or a class defining an auth engine." unless engine.is_a?(::Class)
+          engine = engine.new(@options)
+          raise ArgumentError, "The 'engine' parameter must be an instance of an auth engine or a class defining an auth engine." unless engine.is_a?(::Incline::AuthEngineBase)
+        end
+      end
       domains.map do |dom|
         dom.to_s.downcase.strip
         raise ArgumentError, "The domain #{dom.inspect} does not appear to be a valid domain." unless dom =~ /\A[a-z0-9]+(?:[-.][a-z0-9]+)*\.[a-z]+\Z/
@@ -135,19 +160,19 @@ module Incline
     #
     # The +authenticate+ method of the engine should return an Incline::User object on success or nil on failure.
     def self.register_auth_engine(engine, *domains)
-      default.register_auth_engine engine, *domains
+      default.register_auth_engine(engine, *domains)
     end
     
     ##
     # Clears any registered authentication engine for one or more domains.
     def clear_auth_engine(*domains)
-      register_auth_engine nil, *domains
+      register_auth_engine(nil, *domains)
     end
     
     ##
     # Clears any registered authentication engine for one or more domains.
     def self.clear_auth_engine(*domains)
-      default.clear_auth_engine *domains
+      default.clear_auth_engine(*domains)
     end
 
     private
@@ -159,28 +184,6 @@ module Incline
     def get_auth_engine(email)
       dom = email.partition('@')[2].downcase
       auth_engines[dom]
-    end
-
-    def purge_old_history_for(user, max_months = 2)
-      user.login_histories.where('"incline_user_login_histories"."created_at" <= ?', Time.zone.now - max_months.months).delete_all
-    end
-
-    def add_failure_to(user, message, client_ip)
-      Incline::Log::info "LOGIN(#{user}) FAILURE FROM #{client_ip}: #{message}"
-      history_length = 2
-      unless user.is_a?(::Incline::User)
-        message = "[email: #{user}] #{message}"
-        user = User.anonymous
-        history_length = 6
-      end
-      purge_old_history_for user, history_length
-      user.login_histories.create(ip_address: client_ip, successful: false, message: message)
-    end
-
-    def add_success_to(user, message, client_ip)
-      Incline::Log::info "LOGIN(#{user}) SUCCESS FROM #{client_ip}: #{message}"
-      purge_old_history_for user
-      user.login_histories.create(ip_address: client_ip, successful: true, message: message)
     end
 
     def self.auth_config

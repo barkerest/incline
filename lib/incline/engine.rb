@@ -5,6 +5,7 @@ require 'incline/json_log_formatter'
 require 'incline/global_status'
 require 'incline/data_tables_request'
 require 'incline/recaptcha'
+require 'incline/auth_engine_base'
 require 'incline/user_manager'
 
 # Preloaded gems

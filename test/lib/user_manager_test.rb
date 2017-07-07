@@ -2,7 +2,7 @@ require 'test_helper'
 
 class UserManagerTest < ::ActiveSupport::TestCase
   
-  class MyAuthEngine
+  class MyAuthEngine < ::Incline::AuthEngineBase
     def initialize(options = {})
       @valid_password = options[:valid_password] || 'password'
     end
