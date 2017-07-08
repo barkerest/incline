@@ -9,7 +9,7 @@ require 'incline/auth_engine_base'
 require 'incline/user_manager'
 
 # Preloaded gems
-require 'rails/version'
+require 'rails'
 require 'jbuilder'
 require 'jquery-rails'
 require 'bootstrap-sass'
