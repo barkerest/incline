@@ -1,7 +1,9 @@
+require 'logger'
+
 module Incline
   ##
   # A log formatter that writes entries in JSON format (each line is a valid JSON object).
-  class JsonLogFormatter < Logger::Formatter
+  class JsonLogFormatter < ::Logger::Formatter
 
     ##
     # Regular expressions used to auto-classify any matching message as a debug message.
