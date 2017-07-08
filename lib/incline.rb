@@ -140,6 +140,12 @@ module Incline
         end
   end
 
+  ##
+  # Performs a database migration against the configured database.
+  def self.migrate!
+    ActiveRecord::Migrator.migrate File.expand_path('../../db/migrate', __FILE__), nil
+  end
+
   private
 
   def self.default_gem_patterns
