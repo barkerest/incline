@@ -1,6 +1,7 @@
 require 'cgi/util'
 require 'yaml'
 require 'fileutils'
+require 'rails'
 
 module Incline::Extensions
   ##

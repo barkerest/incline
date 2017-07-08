@@ -1,5 +1,6 @@
 require 'incline/date_time_formats'
 require 'incline/extensions/time_zone_converter'
+require 'active_record'
 
 module Incline::Extensions
 

@@ -1,4 +1,5 @@
 require 'cgi/util'
+require 'action_view'
 
 module Incline::Extensions
   ##

@@ -1,3 +1,5 @@
+require 'rails'
+
 module Incline::Extensions
   ##
   # Creates a default database configuration to use when config/database.yml is not present.

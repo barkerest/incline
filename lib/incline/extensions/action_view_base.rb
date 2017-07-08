@@ -3,6 +3,7 @@ silence_warnings do
   require 'redcarpet'
 end
 
+require 'action_view'
 
 module Incline::Extensions
 

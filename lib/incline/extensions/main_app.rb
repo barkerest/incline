@@ -1,3 +1,7 @@
+require 'action_controller'
+require 'action_mailer'
+require 'action_view'
+
 module Incline::Extensions
 
   ##

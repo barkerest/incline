@@ -1,3 +1,5 @@
+require 'active_record'
+
 module Incline::Extensions
   ##
   # Adds some extra functionality to database connections.

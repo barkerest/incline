@@ -1,3 +1,5 @@
+require 'action_controller'
+
 module Incline::Extensions
 
   ##

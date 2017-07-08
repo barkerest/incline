@@ -1,3 +1,5 @@
+require 'active_support'
+
 module Incline::Extensions
   ##
   # Adds some extra assertions and methods for use in tests.

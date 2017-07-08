@@ -1,4 +1,5 @@
 require 'incline/number_formats'
+require 'active_record'
 
 module Incline::Extensions
   ##

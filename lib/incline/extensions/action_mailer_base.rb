@@ -1,3 +1,5 @@
+require 'action_mailer'
+
 module Incline::Extensions
 
   ##
