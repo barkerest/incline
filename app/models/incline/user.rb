@@ -1,3 +1,6 @@
+require_relative './access_group'
+require_relative './user_login_history'
+
 module Incline
 
   ##

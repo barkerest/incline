@@ -1,3 +1,5 @@
+require_relative './access_group'
+
 module Incline
   class ActionGroup < ActiveRecord::Base
     belongs_to :action_security

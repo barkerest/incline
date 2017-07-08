@@ -46,6 +46,10 @@ require 'incline/validators/safe_name_validator'
 require 'incline/validators/ip_address_validator'
 require 'incline/validators/recaptcha_validator'
 
+# Models
+require_relative '../../app/models/incline/access_group'
+require_relative '../../app/models/incline/action_security'
+require_relative '../../app/models/incline/user'
 
 
 module Incline

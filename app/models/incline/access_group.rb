@@ -1,3 +1,6 @@
+require_relative './access_group_group_member'
+require_relative './access_group_user_member'
+
 module Incline
   class AccessGroup < ActiveRecord::Base
 
