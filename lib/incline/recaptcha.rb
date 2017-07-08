@@ -1,5 +1,6 @@
 require 'cgi/util'
 require 'net/http'
+require 'action_view/helpers/tags/base'
 
 module Incline
   ##
