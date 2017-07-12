@@ -179,7 +179,7 @@ module Incline
 
       update_columns(
           disabled_by: other_user.email,
-          disabled_at: Time.zone.now,
+          disabled_at: Time.now,
           disabled_reason: reason,
           enabled: false
       ) && refresh_comments
@@ -201,7 +201,7 @@ module Incline
     def activate
       update_columns(
           activated: true,
-          activated_at: Time.zone.now,
+          activated_at: Time.now,
           activation_digest: nil
       ) && refresh_comments
     end
@@ -218,7 +218,7 @@ module Incline
       self.reset_token = Incline::User::new_token
       update_columns(
           reset_digest: Incline::User::digest(reset_token),
-          reset_sent_at: Time.zone.now
+          reset_sent_at: Time.now
       )
     end
 
@@ -352,7 +352,7 @@ module Incline
                   enabled: true,
                   system_admin: true,
                   activated: true,
-                  activated_at: Time.zone.now,
+                  activated_at: Time.now,
                   recaptcha: 'na'
               )
         end
@@ -364,7 +364,7 @@ module Incline
           user.enabled = true
           user.system_admin = true
           user.activated = true
-          user.activated_at = Time.zone.now
+          user.activated_at = Time.now
           user.save!
         end
       end
@@ -383,7 +383,7 @@ module Incline
                     name: 'Anonymous',
                     enabled: false,
                     activated: true,
-                    activated_at: Time.zone.now,
+                    activated_at: Time.now,
                     password: pwd,
                     password_confirmation: pwd
                 )

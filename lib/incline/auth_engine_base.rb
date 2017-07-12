@@ -45,7 +45,7 @@ module Incline
     private
 
     def purge_old_history_for(user, max_months = 2)
-      user.login_histories.where('"incline_user_login_histories"."created_at" <= ?', Time.zone.now - max_months.months).delete_all
+      user.login_histories.where('"incline_user_login_histories"."created_at" <= ?', Time.now - max_months.months).delete_all
     end
 
   end

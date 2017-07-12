@@ -38,7 +38,7 @@ Incline::Recaptcha::pause_for do
               end
 
           r += 0.2 if r < 0.2
-          while activated < Time.zone.now
+          while activated < Time.now
 
             success,message = if hist == :fail
                                 [ false, 'Invalid email or password.' ]
