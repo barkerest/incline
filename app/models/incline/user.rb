@@ -375,17 +375,19 @@ module Incline
     def self.anonymous
       @anonymous = nil if Rails.env.test? # always start fresh in test environment.
       @anonymous ||=
-          begin
+          Incline::Recaptcha::pause_for do
             pwd = new_token
-            where(email: ANONYMOUS_EMAIL)
-                .first_or_create(
+            User
+                .where(email: ANONYMOUS_EMAIL)
+                .first_or_create!(
                     email: ANONYMOUS_EMAIL,
                     name: 'Anonymous',
                     enabled: false,
                     activated: true,
                     activated_at: Time.now,
                     password: pwd,
-                    password_confirmation: pwd
+                    password_confirmation: pwd,
+                    recaptcha: 'na'
                 )
           end
     end
