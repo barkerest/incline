@@ -35,9 +35,11 @@ Rails.application.configure do
   # Checks for improperly declared sprockets dependencies.
   # Raises helpful error messages.
   config.assets.raise_runtime_errors = true
-
+  
+  # Rotate log files every 5 MB and keep 2 historical copies.
+  config.logger = ::Incline::JsonLogger.new(config.paths['log'].first, 2, 5.megabytes)
+  
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
-
-  config.log_formatter = ::Incline::JsonLogFormatter.new
+  
 end

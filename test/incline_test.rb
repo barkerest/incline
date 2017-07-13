@@ -14,6 +14,7 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline.const_defined? :Engine
     assert Incline.const_defined? :WorkPath
     assert Incline.const_defined? :JsonLogFormatter
+    assert Incline.const_defined? :JsonLogger
     assert Incline.const_defined? :GlobalStatus
     assert Incline.const_defined? :DataTablesRequest
     assert Incline.const_defined? :DateTimeFormats

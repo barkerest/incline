@@ -2,6 +2,7 @@
 require 'incline/errors'
 require 'incline/work_path'
 require 'incline/json_log_formatter'
+require 'incline/json_logger'
 require 'incline/global_status'
 require 'incline/data_tables_request'
 require 'incline/recaptcha'

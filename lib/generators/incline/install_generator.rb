@@ -112,6 +112,9 @@ module Incline
 
     def config_logger
       # Change the production environment to use JsonLogFormatter instead of Logger::Formatter
+      # NOTE: We are switching to using Incline::JsonLogger but we will leave this gsub in place
+      # to keep the options open for the end user (if they want to change loggers, but use the same formatter).
+      # The log formatter must be set after the logger.
       gsub_file 'config/environments/production.rb',  /\n\s*config\.log_formatter\s*=\s*(::)?Logger::Formatter.new/m, <<-EOS
 
   # config.log_formatter = ::Logger::Formatter.new
@@ -121,14 +124,23 @@ module Incline
   config.log_formatter = ::Incline::JsonLogFormatter.new
       EOS
 
-      %w(config/environments/development.rb config/environments/test.rb).each do |cfg|
+      %w(config/environments/development.rb config/environments/test.rb config/environments/production.rb).each do |cfg|
         if File.exist?(cfg)
           contents = File.read(cfg)
-
-          if contents =~ /\n\s*config\.log_formatter\s*=/m
+          
+          if contents =~ /\n\s*config.logger\s*=/m
+            # a logger is already explicitly configured.
             say_status :ok, cfg, :blue
+          elsif contents =~ /\n\s*config.log_formatter\s*=/m
+            # a log formatter is configured, so configure a logger with rotation and use the existing formatter.
+            gsub_file cfg, /\n\s*config.log_formatter\s*=([^\n]*)/m, <<-EOS
+
+  config.logger = ::ActiveSupport::Logger(config.paths['log'].first, 2, 5.megabytes)
+  config.logger.formatter =\\1
+            EOS
           else
-            insert_into_file cfg, "\n  config.log_formatter = ::Incline::JsonLogFormatter.new\n", before: /end\s*\Z/m
+            # no log formatter or logger is configured, so configure a JsonLogger with rotation.
+            insert_into_file cfg, "\n  config.logger = ::Incline::JsonLogger.new(config.paths['log'].first, 2, 5.megabytes)\n", before: /end\s*\Z/m
           end
         else
           say_status :missing, cfg, :red

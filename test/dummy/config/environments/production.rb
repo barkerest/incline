@@ -76,7 +76,8 @@ Rails.application.configure do
   
   # Incline::JsonLogFormatter also includes the PID and timestamp, plus it makes the log easier to parse.
   # If you want to revert to using the standard formatter above, uncomment that line and comment out this line instead.
-  config.log_formatter = ::Incline::JsonLogFormatter.new
+  config.logger = ::ActiveSupport::Logger(config.paths['log'].first, 2, 5.megabytes)
+  config.logger.formatter = ::Incline::JsonLogFormatter.new
 
 
   # Do not dump schema after migrations.
