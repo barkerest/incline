@@ -1,5 +1,6 @@
 require 'incline/version'
 require 'incline/log'
+require 'erb'
 
 ##
 # A Rails quick start library.
@@ -45,7 +46,7 @@ module Incline
         begin
           yaml = Rails.root.join('config', 'email.yml')
           if File.exist?(yaml)
-            cfg = File.exist?(yaml) ? YAML.load_file(yaml) : { }
+            cfg = File.exist?(yaml) ? YAML.load(ERB.new(File.read(yaml)).result) : { }
             cfg = (cfg[Rails.env] || {}).symbolize_keys
 
             cfg = {

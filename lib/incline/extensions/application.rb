@@ -2,6 +2,7 @@ require 'cgi/util'
 require 'yaml'
 require 'fileutils'
 require 'rails'
+require 'erb'
 
 module Incline::Extensions
   ##
@@ -42,7 +43,7 @@ module Incline::Extensions
           begin
             yaml = Rails.root.join('config','instance.yml')
             if File.exist?(yaml)
-              yaml = (YAML.load_file(yaml) || {}).symbolize_keys
+              yaml = (YAML.load(ERB.new(File.read(yaml)).result) || {}).symbolize_keys
               yaml[:name].blank? ? 'default' : yaml[:name]
             else
               'default'

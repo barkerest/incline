@@ -1,3 +1,4 @@
+require 'erb'
 
 module Incline
   ##
@@ -191,7 +192,7 @@ module Incline
           begin
             cfg = Rails.root.join('config','auth.yml')
             if File.exist?(cfg)
-              cfg = YAML.load_file(cfg)
+              cfg = YAML.load(ERB.new(File.read(cfg)).result)
               if cfg.is_a?(::Hash)
                 cfg = cfg[Rails.env]
                 (cfg || {}).symbolize_keys
