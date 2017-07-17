@@ -144,7 +144,7 @@ module Incline
         end
       end
       domains.map do |dom|
-        dom.to_s.downcase.strip
+        dom = dom.to_s.downcase.strip
         raise ArgumentError, "The domain #{dom.inspect} does not appear to be a valid domain." unless dom =~ /\A[a-z0-9]+(?:[-.][a-z0-9]+)*\.[a-z]+\Z/
         dom
       end.each do |dom|
