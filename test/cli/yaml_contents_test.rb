@@ -36,6 +36,21 @@ default:
     alpha: false
   YAML
 
+  MULTIPLE_ADD_RESULT = <<-YAML.strip
+# Top of file.
+three:
+  charlie: 3
+  foxtrot: 6
+
+two:
+  bravo: 2
+  echo: 5
+
+one:
+  alpha: 1
+  delta: 4
+  YAML
+
   test 'does not modify unnecessarily on realign' do
     contents = Incline::CliHelpers::Yaml::YamlContents.new(CLEAN_YAML)
     contents.realign!
@@ -54,6 +69,17 @@ default:
     assert_equal SIMPLE_REPLACE_RESULT, contents.to_s.strip
   end
 
+  test 'multiple add works as expected' do
+    contents = Incline::CliHelpers::Yaml::YamlContents.new(TOP_OF_FILE)
 
+    contents.add_key %w(one alpha), 1
+    contents.add_key %w(two bravo), 2
+    contents.add_key %w(three charlie), 3
+    contents.add_key %w(one delta), 4
+    contents.add_key %w(two echo), 5
+    contents.add_key %w(three foxtrot), 6
+
+    assert_equal MULTIPLE_ADD_RESULT, contents.to_s.strip
+  end
 
 end
