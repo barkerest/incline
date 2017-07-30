@@ -55,23 +55,10 @@ module Incline
         # The :safe value can be set to true and the :value option can set the value, or
         # the :safe value can be set to the value directly since all strings are non-false.
         #
-        # The third option, :before_default, tells add_key to insert the section before the
-        # 'default' section (if the section doesn't exist).  This can be useful if the 'default'
+        # The third option, :before_section, tells add_key to insert the section before the
+        # named section (if the new section doesn't exist).  This can be useful if the named
         # section is going to be referencing the key you are adding.  Otherwise, when a
-        # section needs to be added, it gets added right after the 'default' section ends.
-        #
-        # That means if you are adding a number of sections, they will be added in reverse order.
-        #
-        #     contents.add_key [ "three", "abc" ], 123
-        #     contents.add_key [ "two", "abc" ], 123
-        #     contents.add_key [ "one", "abc" ], 123
-        #
-        #     one:
-        #       abc: 123
-        #     two:
-        #       abc: 123
-        #     three:
-        #       abc: 123
+        # section needs to be added, it gets added to the end of the file.
         #
         # Returns the contents object.
         def add_key(key, value, make_safe_value = true)
@@ -100,21 +87,24 @@ module Incline
             end
             if level == key.count - 1
               if level == 0
-                # at level 0, make the "parent" any leading comments or blank lines in the file.
-                # and as a special check, if the current attr is not "default" and "default" exists, make sure it comes first
-                # as well.  However, we can specify the :before_default value option to put this top level before default.
+                # At level 0 we cheat and use a very simple regular expression to confirm the section exists.
+                rex_str = "^#{attr}:"
+                # If it doesn't exists, the prefix regex will usually want to put the new section at the end of the
+                # file.  However if the :before_section option is set, and the other section exists, then we
+                # want to ensure that we are putting the new section before it.
                 #
-                # notice we swap the start of line anchor with the start of string anchor.
-                rex_str =
-                    if attr != 'default' && @content =~ /^default:/ && !(value.is_a?(::Hash) && value[:before_default])
-                      '\\A((?:\\s*(?:#.*)?\\n)+default:.*\\n(?:\\s\\s.*\\n)*(?:\\s*\\n)*'
-                    else
-                      '\\A((?:\\s*(?:#.*)?\\n)+'
-                    end
+                # Down below we take care to reverse the replacement string when key.count == 1.
+                rex_prefix =
+                  if value.is_a?(::Hash) && value[:before_section] && @content =~ /^#{value[:before_section]}:/
+                    /(^#{value[:before_section]}:)/
+                  else
+                    /(\z)/   # match the end of the contents.
+                  end
+              else
+                rex_str += ')'
+                rex_prefix = Regexp.new(rex_str)
+                rex_str += '(' + lev + attr + ':.*\\n)'
               end
-              rex_str += ')'
-              rex_prefix = Regexp.new(rex_str)
-              rex_str += '(' + lev + attr + ':.*\\n)'
             else
               rex_str += lev + attr + ':.*\\n'
             end
@@ -132,10 +122,16 @@ module Incline
               value = value[:value]
             end
             value = '' if value =~ /\A\s*\z/
-            # should be true thanks to first step in this method.
-            # capture 1 would be the parent group.
-            rep = "\\1#{'  ' * (key.count - 1)}#{val_name}:#{value}\n"
-            rep += "\n" if key.count == 1
+            # Should be true thanks to first step in this method.
+            # Capture 1 would be the parent group.
+            # When key.count == 1 then we want to put our new value before capture 1.
+            # Otherwise we put our new value after capture 1.
+            rep = if key.count == 1
+                    "\n#{val_name}:#{value}\n\\1"
+                  else
+                    "\\1#{'  ' * (key.count - 1)}#{val_name}:#{value}\n"
+                  end
+
             @content.gsub! rex_prefix, rep
           else
             raise ::Incline::CliHelpers::Yaml::YamlError, "Failed to create parent group for '#{key.join('/')}'."
@@ -413,7 +409,7 @@ module Incline
         private
 
         def value_with_comment(key, value, comment)
-          vh = value.is_a?(::Hash) ? value : { safe: false, value: value, before_default: false }
+          vh = value.is_a?(::Hash) ? value : { safe: false, value: value, before_section: nil }
           unless vh[:safe]
             vh[:value] = add_comment(key, add_value_offset(key, safe_value(vh[:value])), comment)
             vh[:safe] = true

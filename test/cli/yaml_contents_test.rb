@@ -3,7 +3,7 @@ require 'incline/cli'
 
 class YamlContentsTest < ActiveSupport::TestCase
 
-  CLEAN_YAML = <<-YAML
+  ALIGNED_YAML = <<-YAML
 default: &default
   alpha:    # comment for alpha
   bravo:    # comment for bravo
@@ -24,6 +24,7 @@ three:   &three
 
   SIMPLE_ADD_KEY_RESULT = <<-YAML.strip
 # Top of file.
+
 default:
   one:
     alpha: true
@@ -31,6 +32,7 @@ default:
 
   SIMPLE_REPLACE_RESULT = <<-YAML.strip
 # Top of file.
+
 default:
   one:
     alpha: false
@@ -38,23 +40,24 @@ default:
 
   MULTIPLE_ADD_RESULT = <<-YAML.strip
 # Top of file.
-three:
-  charlie: 3
-  foxtrot: 6
+
+one:
+  alpha: 1
+  delta: 4
 
 two:
   bravo: 2
   echo: 5
 
-one:
-  alpha: 1
-  delta: 4
+three:
+  charlie: 3
+  foxtrot: 6
   YAML
 
   test 'does not modify unnecessarily on realign' do
-    contents = Incline::CliHelpers::Yaml::YamlContents.new(CLEAN_YAML)
+    contents = Incline::CliHelpers::Yaml::YamlContents.new(ALIGNED_YAML)
     contents.realign!
-    assert_equal CLEAN_YAML, contents.to_s
+    assert_equal ALIGNED_YAML, contents.to_s
   end
 
   test 'should insert as appropriate' do
