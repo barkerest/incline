@@ -148,13 +148,19 @@ module Incline
         #   add_key_with_comment [ "default", "name" ], "george", "this is the name of the default user"
         #
         # The 'key' should be an array defining the path.
+        # If the 'comment' is blank (nil or ''), then it will not modify the comment.
+        # Use a whitespace string (' ') to indicate that you want a blank comment added.
         #
         # Value can be nil, a string, a symbol, a number, or a boolean.
         # Value can also be a hash according to #add_key.
         #
         # Returns the contents object.
         def add_key_with_comment(key, value, comment)
-          add_key key, value_with_comment(key, value, comment), false
+          if comment.to_s == ''
+            add_key key, value
+          else
+            add_key key, value_with_comment(key, value, comment), false
+          end
         end
 
         ##
@@ -221,13 +227,163 @@ module Incline
         #   set_key_with_comment [ "default", "name" ], "george", "this is the name of the default user"
         #
         # The 'key' should be an array defining the path.
+        # If the 'comment' is blank (nil or ''), then it will not modify the comment.
+        # Use a whitespace string (' ') to indicate that you want a blank comment added.
         #
         # Value can be nil, a string, a symbol, a number, or a boolean.
         # Value can also be a hash according to #add_key.
         #
         # Returns the contents object.
         def set_key_with_comment(key, value, comment)
-          set_key key, value_with_comment(key, value, comment), false
+          if comment.to_s == ''
+            set_key key, value
+          else
+            set_key key, value_with_comment(key, value, comment), false
+          end
+        end
+
+        ##
+        # Removes the specified key from the contents.
+        #
+        # Returns an array containing the contents of the key.
+        # The first element will be for the key itself.  If the
+        # key had child keys, then they will also be included in
+        # the array.
+        #
+        # The returned array will contain hashes for each removed
+        # key.
+        #
+        #     data = remove_key %w(pet dog)
+        #
+        #     [
+        #       {
+        #         :key => [ "pet", "dog" ],
+        #         :value => "",
+        #         :safe => true,
+        #         :comment => "This list has the family dogs."
+        #       },
+        #       {
+        #         :key => [ "pet", "dog", "sadie" ],
+        #         :value => "",
+        #         :safe => true,
+        #         :comment => ""
+        #       },
+        #       {
+        #         :key => [ "pet", "dog", "sadie", "breed" ],
+        #         :value => "boxer",
+        #         :safe => true,
+        #         :comment => ""
+        #       },
+        #       {
+        #         :key => [ "pet", "dog", "sadie", "dob" ],
+        #         :value => "\"2016-06-01\"",
+        #         :safe => true,
+        #         :comment => "Estimated date of birth since she was a rescue."
+        #       }
+        #     ]
+        #
+        # The returned hashes can be fired right back into #add_key.
+        #
+        #     data.each do |item|
+        #       add_key_with_comment item[:key], item, item[:comment]
+        #     end
+        #
+        # This method can be used to move a section within the file.
+        #
+        #     # remove the 'familes' section from the file.
+        #     section = remove_key [ "families" ]
+        #     item = section.delete(section.first)
+        #
+        #     # add the 'familes' section back in before the 'pets' section.
+        #     add_key_with_comment item[:key], { before_section: "pets" }.merge(item), item[:comment]
+        #
+        #     # add the data back into the 'familes' section.
+        #     section.each do |item|
+        #       add_key_with_comment item[:key], item, item[:comment]
+        #     end
+        #
+        def remove_key(key)
+          rex_str = '(^'
+          key.each_with_index do |attr,level|
+            lev = (level < 1 ? '' : ('\\s\\s' * level))
+            if lev != ''
+              rex_str += '(?:' + lev + '.*\\n)*'
+            end
+            if level == key.count - 1
+              if level == 0
+                rex_str = '(^)(' + attr + ':[^\\n]*\\n(?:\\s\\s[^\\n]*\\n)*)'
+              else
+                rex_str += ')(' + lev + attr + ':[^\\n]*\\n(?:' + lev + '\\s\\s[^\\n]*\\n)*)'
+              end
+            else
+              rex_str += lev + attr + ':[^\\n]*\\n'
+            end
+          end
+
+          # match result 1 is the parent key structure leading up to the key to be extracted.
+          # match result 2 is the key with all child elements to be extracted.
+
+          rex = Regexp.new(rex_str)
+
+          if @content =~ rex
+
+            # cache the key contents
+            key_content = $2
+
+            # remove the key from the main contents.
+            @content.gsub!(rex, "\\1")
+
+            # and separate into lines.
+            lines = extract_to_array(key_content)
+
+            ret = []
+
+            base_key = key.length == 1 ? [] : key[0...-1]
+
+            last_line = nil
+
+            lines.each do |line|
+              level = line[:level]
+              if level > 0 && line[:key]
+                # go from base 1 to base 0
+                level -= 1
+
+                # make sure the base key is the right length for the current key.
+                while level > base_key.length
+                  base_key.push '?' # hopefully this never occurs.
+                end
+                while level < base_key.length
+                  base_key.pop
+                end
+
+                # add our key to the base key.
+                # if the next key is below it, this ensures the parent structure is correct.
+                # if the next key is higher or at the same level the above loops should make it correct.
+                base_key << line[:key]
+
+                last_line = {
+                    key: base_key,
+                    value: line[:value].to_s,
+                    comment: line[:comment],
+                    safe: true
+                }
+
+                ret << last_line
+              elsif level > 0 && line[:comment]
+                if last_line && last_line[:key].length == level
+                  if last_line[:comment]
+                    last_line[:comment] += "\n" + line[:comment]
+                  else
+                    last_line[:comment] = "\n" + line[:comment]
+                  end
+                end
+              end
+            end
+
+            ret
+          else
+            []
+          end
         end
 
         ##
@@ -235,50 +391,7 @@ module Incline
         #
         # All values and comments will line up at each level when complete.
         def realign!
-          # match 1 = lead white
-          # ([ \t]*)
-          # match 2 = key name
-          # (\S+):
-          # match 3 = value with leading whitespace
-          # ((?:[ \t]*(?:"(?:[^"]*(?:(?:\\{1}|\\{3}|\\{5}|\\{7}|\\{9})")?)*"|'(?:[^']*(?:(?:\\{1}|\\{3}|\\{5}|\\{7}|\\{9})')?)*'|[^\s#"']+))*)
-          # ignore white between value and comment (if any).
-          # [ \t]*
-          # match 4 = comment (if any).
-          # (?:#([^\n]*))?
-          line_regex = /\A([ \t]*)(\S+):((?:[ \t]*(?:"(?:[^"]*(?:(?:\\{1}|\\{3}|\\{5}|\\{7}|\\{9})")?)*"|'(?:[^']*(?:(?:\\{1}|\\{3}|\\{5}|\\{7}|\\{9})')?)*'|[^\s#"']+))*)[ \t]*(?:#([^\n]*))?\z/
-          last_level = 0
-          lines = @content.split("\n").map do |raw_line|
-            # assuming the file is valid any lines not matching the regex should be comments or blank.
-            match = line_regex.match(raw_line)
-            if match    # a key: value line
-              last_level = (match[1].length / 2).to_i + 1 # one level per 2 spaces.
-              {
-                  level: last_level,
-                  key: match[2].strip,
-                  value: match[3] ? match[3].strip : nil,
-                  comment: match[4] ? match[4].lstrip : nil
-              }
-            elsif raw_line =~ /\A(\s*)#(.*)\z/    # a comment
-              whitespace = $1
-              raw_line = $2
-              level =
-                  if whitespace.length >= (last_level * 2)
-                    last_level
-                  else
-                    (whitespace.length / 2).to_i + 1
-                  end
-              raw_line = raw_line[1..-1] if raw_line[0] == ' '
-              {
-                  level: level,
-                  comment: raw_line
-              }
-            else
-              {
-                  level: 0,
-                  value: raw_line
-              }
-            end
-          end
+          lines = extract_to_array(@content)
 
           # reset the offsets.
           value_offsets.clear
@@ -407,6 +520,53 @@ module Incline
         end
 
         private
+
+        def extract_to_array(data)
+          # match 1 = lead white
+          # ([ \t]*)
+          # match 2 = key name
+          # (\S+):
+          # match 3 = value with leading whitespace
+          # ((?:[ \t]*(?:"(?:[^"]*(?:(?:\\{1}|\\{3}|\\{5}|\\{7}|\\{9})")?)*"|'(?:[^']*(?:(?:\\{1}|\\{3}|\\{5}|\\{7}|\\{9})')?)*'|[^\s#"']+))*)
+          # ignore white between value and comment (if any).
+          # [ \t]*
+          # match 4 = comment (if any).
+          # (?:#([^\n]*))?
+          line_regex = /\A([ \t]*)(\S+):((?:[ \t]*(?:"(?:[^"]*(?:(?:\\{1}|\\{3}|\\{5}|\\{7}|\\{9})")?)*"|'(?:[^']*(?:(?:\\{1}|\\{3}|\\{5}|\\{7}|\\{9})')?)*'|[^\s#"']+))*)[ \t]*(?:#([^\n]*))?\z/
+          last_level = 0
+          data.split("\n").map do |raw_line|
+            # assuming the file is valid any lines not matching the regex should be comments or blank.
+            match = line_regex.match(raw_line)
+            if match    # a key: value line
+              last_level = (match[1].length / 2).to_i + 1 # one level per 2 spaces.
+              {
+                  level: last_level,
+                  key: match[2].strip,
+                  value: match[3] ? match[3].strip : nil,
+                  comment: match[4] ? match[4].lstrip : nil
+              }
+            elsif raw_line =~ /\A(\s*)#(.*)\z/    # a comment
+              whitespace = $1
+              raw_line = $2
+              level =
+                  if whitespace.length >= (last_level * 2)
+                    last_level
+                  else
+                    (whitespace.length / 2).to_i + 1
+                  end
+              raw_line = raw_line[1..-1] if raw_line[0] == ' '
+              {
+                  level: level,
+                  comment: raw_line
+              }
+            else
+              {
+                  level: 0,
+                  value: raw_line
+              }
+            end
+          end
+        end
 
         def value_with_comment(key, value, comment)
           vh = value.is_a?(::Hash) ? value : { safe: false, value: value, before_section: nil }
