@@ -318,7 +318,7 @@ module Incline::Extensions
       rescue ::Incline::NotAuthorized => err
 
         flash[:danger] = err.message
-        redirect_to root_url and return false
+        redirect_to main_app.root_url and return false
       end
       true
 

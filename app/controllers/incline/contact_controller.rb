@@ -17,7 +17,7 @@ module Incline
         @msg.remote_ip = request.remote_ip
         @msg.send_message
         flash[:success] = 'Your message has been sent.'
-        redirect_to root_url
+        redirect_to main_app.root_url
       else
         render 'new'
       end

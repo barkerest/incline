@@ -40,7 +40,7 @@ module Incline
       end
 
       flash[:info] = 'An email with password reset information has been sent to you.'
-      redirect_to root_url
+      redirect_to main_app.root_url
     end
 
     ##
@@ -98,7 +98,7 @@ module Incline
 
     def valid_user
       unless @user && @user.enabled? && @user.activated? && @user.authenticated?(:reset, params[:id])
-        redirect_to root_url
+        redirect_to main_app.root_url
       end
     end
 

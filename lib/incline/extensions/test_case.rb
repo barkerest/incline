@@ -216,11 +216,17 @@ module Incline::Extensions
     end
 
     ##
-    # Make sure main_app is available and working correctly.
+    # Make sure main_app is available and working correctly in tests.
     def main_app
       Rails.application.class.routes.url_helpers
     end
-
+    
+    ##
+    # Make sure incline is available and working correctly in tests.
+    def incline
+      Incline::Engine.routes.url_helpers
+    end
+    
     ##
     # Determines if a user is logged into the test session
     def is_logged_in?

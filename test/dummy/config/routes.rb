@@ -2,5 +2,7 @@ Rails.application.routes.draw do
 
   mount Incline::Engine => "/incline"
 
-  root 'incline/welcome#home'
+  # need to ensure that custom root paths work.
+  root 'dummy#hello'
+  # root 'incline/welcome#home'
 end

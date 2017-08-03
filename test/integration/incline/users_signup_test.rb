@@ -131,12 +131,12 @@ module Incline
       assert_not is_logged_in?
 
       # invalid activation token
-      get incline.edit_account_activation_url('invalid-token', email: user.email)
+      get incline.edit_account_activation_path('invalid-token', email: user.email)
       assert_not is_logged_in?
       assert_not user.reload.activated?
 
       # valid activation token
-      get incline.edit_account_activation_url(token, email: user.email)
+      get incline.edit_account_activation_path(token, email: user.email)
       assert user.reload.activated?
       follow_redirect!
       assert_template 'incline/users/show'

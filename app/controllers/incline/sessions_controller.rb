@@ -29,7 +29,7 @@ module Incline
           redirect_back_or @user
         else
           flash[:safe_warning] = 'Your account has not yet been activated.<br/>Check your email for the activation link.'
-          redirect_to root_url
+          redirect_to main_app.root_url
         end
       else
         # deny login.
@@ -42,7 +42,7 @@ module Incline
     # DELETE /incline/logout
     def destroy
       log_out if logged_in?
-      redirect_to root_url
+      redirect_to main_app.root_url
     end
 
   end

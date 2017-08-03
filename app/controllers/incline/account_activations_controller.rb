@@ -8,7 +8,7 @@ module Incline
     def edit
       if logged_in?
         flash[:danger] = 'You cannot reactivate your account.'
-        redirect_to root_url
+        redirect_to main_app.root_url
       else
         user = User.find_by(email: params[:email].downcase)
         if user && !user.activated? && user.authenticated?(:activation, params[:id])
@@ -18,7 +18,7 @@ module Incline
           redirect_to user
         else
           flash[:danger] = 'Invalid activation link'
-          redirect_to root_url
+          redirect_to main_app.root_url
         end
       end
     end

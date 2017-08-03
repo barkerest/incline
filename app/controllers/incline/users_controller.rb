@@ -59,7 +59,7 @@ module Incline
             if inline_request?
               render 'show', formats: [ :json ]
             else
-              redirect_to root_url
+              redirect_to main_app.root_url
             end
             return
           end
