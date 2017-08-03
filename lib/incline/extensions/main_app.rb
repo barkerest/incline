@@ -38,3 +38,4 @@ end
 ActionController::Base.include Incline::Extensions::MainApp
 ActionMailer::Base.include Incline::Extensions::MainApp
 ActionView::Base.include Incline::Extensions::MainApp
+ActiveSupport::TestCase.include Incline::Extensions::MainApp
