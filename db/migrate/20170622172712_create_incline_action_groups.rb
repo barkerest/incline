@@ -1,8 +1,8 @@
 class CreateInclineActionGroups < ActiveRecord::Migration
   def change
     create_table :incline_action_groups do |t|
-      t.belongs_to  :action_security, null: false,  index: true, foreign_key: true
-      t.belongs_to  :access_group,    null: false,  index: true, foreign_key: true
+      t.belongs_to  :action_security, null: false,  index: true
+      t.belongs_to  :access_group,    null: false,  index: true
 
       t.timestamps null: false
     end
