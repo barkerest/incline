@@ -138,6 +138,13 @@ module Incline::Extensions
         setting_for_action require_anon, action
       end
 
+      ##
+      # Determines if the current request can be allowed via HTTP (non-SSL).
+      def allow_http_for?(action)
+        setting_for_action allow_non_ssl, action
+      end
+
+
       private
 
       def setting_value(args)
@@ -346,7 +353,7 @@ module Incline::Extensions
     ##
     # Determines if the current request can be allowed via HTTP (non-SSL).
     def allow_http_for_request? #:doc:
-      self.class.setting_for_action self.class.allow_non_ssl, params[:action]
+      self.class.allow_http_for? params[:action]
     end
 
     ##
