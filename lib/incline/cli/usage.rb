@@ -8,38 +8,68 @@ module Incline
 
       ##
       # Creates a new 'usage' command for the CLI.
-      def initialize
-
+      def initialize(command = nil)
+        @command = command ? command.to_s.downcase.to_sym : nil
       end
 
       ##
       # Shows usage information for the application.
       def run
-
-        commands = Incline::CLI::valid_commands.sort{|a,b| a[0] <=> b[0]}
-
-        msg = ANSI.ansi(:bold) { "Usage: #{$PROGRAM_NAME} command <arguments>" }
-        msg += "\nValid Commands:\n"
-
-        commands.each do |(name,klass,params)|
-          comment = get_run_comment(klass)
-          comment = "(No description)" if comment.to_s.strip == ''
-          comment = '    ' + comment.gsub("\n", "\n    ")
-          msg += "  #{name}"
-          pend = ''
-          params.each do |t,p|
-            msg += ' '
-            if t == :req
-              msg += p.to_s
-            elsif t == :opt
-              msg += '[' + p.to_s
-              pend += ']'
-            else
-              msg += '<...>'
+        msg = nil
+        
+        if @command
+          command = Incline::CLI::valid_commands.find{|c| c[0] == @command}
+          if command
+            msg = "Usage: #{$PROGRAM_NAME} #{command[0]}"
+            pend = ''
+            command[2].each do |t,p|
+              msg += ' '
+              if t == :req
+                msg += p.to_s
+              elsif t == :opt
+                msg += '[' + p.to_s
+                pend += ']'
+              else
+                msg += '<...>'
+              end
+              msg += pend
             end
+            msg = ANSI.ansi(:bold) { msg }
+            msg += "\n"
+            comment = get_run_comment(command[1])
+            comment = "(No additional information)" if comment.to_s.strip == ''
+            comment = '    ' + comment.gsub("\n", "\n    ")
+            msg += comment + "\n"
           end
-          msg += "\n" + comment + "\n"
         end
+        
+        unless msg
+          commands = Incline::CLI::valid_commands.sort{|a,b| a[0] <=> b[0]}
+          
+          msg = ANSI.ansi(:bold) { "Usage: #{$PROGRAM_NAME} command <arguments>" }
+          if @command
+            msg += "\nInvalid Command: #{@command}\n"
+          end
+          msg += "\nValid Commands:\n"
+          commands.each do |(name,klass,params)|
+            msg += "  #{name}"
+            pend = ''
+            params.each do |t,p|
+              msg += ' '
+              if t == :req
+                msg += p.to_s
+              elsif t == :opt
+                msg += '[' + p.to_s
+                pend += ']'
+              else
+                msg += '<...>'
+              end
+            end
+            msg += pend + "\n"
+          end
+          
+        end
+        
 
         STDOUT.print msg
         msg

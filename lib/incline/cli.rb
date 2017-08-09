@@ -6,6 +6,7 @@ require 'incline/cli/helpers/yaml'
 
 require 'incline/cli/version'
 require 'incline/cli/usage'
+require 'incline/cli/prepare'
 
 
 module Incline
@@ -18,14 +19,14 @@ module Incline
 
     def execute(*args)
       begin
-        if args.empty? || %w(usage help /? -? -help --help).include?(args.first)
+        if args.empty? || %w(help /? -? -help --help).include?(args.first)
           process_command(:usage)
         else
           process_command(*args)
         end
       rescue UsageError => err
         STDERR.puts err.message
-        process_command(:usage)
+        process_command(:usage, err.command)
       rescue CliError => err
         STDERR.puts ANSI.code(:red) { 'ERROR:' }
         STDERR.puts err.message
@@ -40,27 +41,27 @@ module Incline
       cmd_info = self.class.command_list.find{|c| c[:method] == command}
       if cmd_info
         args = args.dup
-        args = []
+        command_args = []
         cmd_info[:new_params].each do |(type,name)|
           if type == :rest
-            args += args
+            command_args += args
             break
           elsif type == :req
             if args.empty?
               raise UsageError, "Missing required parameter '#{name}' for command '#{command}'."
             end
-            args << args.delete_at(0)
+            command_args << args.delete_at(0)
           elsif type == :opt
             if args.empty?
               break
             else
-              args << args.delete_at(0)
+              command_args << args.delete_at(0)
             end
           else
             raise UsageError, "Unknown parameter type '#{type}' for command '#{command}'."
           end
         end
-        cmd_object = cmd_info[:klass].new(*args)
+        cmd_object = cmd_info[:klass].new(*command_args)
         cmd_object.send(:run)
       else
         raise UsageError, "Unknown command '#{command}'."
@@ -80,9 +81,9 @@ module Incline
           begin
             constants.map do |c|
               klass = const_get c
-              # class must have a :new class method and a :run instance method.
+              # class must have a :new class method (:initialize instance method) and a :run instance method.
               if klass.instance_methods.include?(:run) && klass.methods.include?(:new)
-                m = klass.method(:new)
+                m = klass.instance_method(:initialize)
                 new_params = m.parameters.select{ |p| p[1] && (p[0] == :req || p[0] == :opt || p[0] == :rest) }.freeze
                 m = klass.instance_method(:run)
                 run_params = m.parameters.select{ |p| p[1] && (p[0] == :req || p[0] == :opt || p[0] == :rest) }.freeze
