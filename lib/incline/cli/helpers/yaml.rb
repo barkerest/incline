@@ -362,7 +362,7 @@ module Incline
                 base_key << line[:key]
 
                 last_line = {
-                    key: base_key,
+                    key: base_key.dup,
                     value: line[:value].to_s,
                     comment: line[:comment],
                     safe: true

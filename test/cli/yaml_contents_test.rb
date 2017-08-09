@@ -54,6 +54,47 @@ three:
   foxtrot: 6
   YAML
 
+  PRE_REMOVE_YAML = <<-YAML.strip
+# Top of file.
+
+one:
+  alpha: 1
+  delta: 4
+
+two:  # the second section
+  bravo: 2
+  echo: <%= 'hello' %>  # just a simple embedded ruby command.
+
+three:
+  charlie: 3
+  foxtrot: 6
+  YAML
+  
+  POST_REMOVE_RESULT = <<-YAML.strip
+# Top of file.
+
+one:
+  alpha: 1
+  delta: 4
+
+
+three:
+  charlie: 3
+  foxtrot: 6
+  YAML
+
+  POST_POST_REMOVE_RESULT = <<-YAML.strip
+# Top of file.
+
+one:
+  delta: 4
+
+
+three:
+  charlie: 3
+  foxtrot: 6
+  YAML
+
   test 'does not modify unnecessarily on realign' do
     contents = Incline::CliHelpers::Yaml::YamlContents.new(ALIGNED_YAML)
     contents.realign!
@@ -83,6 +124,48 @@ three:
     contents.add_key %w(three foxtrot), 6
 
     assert_equal MULTIPLE_ADD_RESULT, contents.to_s.strip
+  end
+  
+  test 'remove_key works as expected' do
+    contents = Incline::CliHelpers::Yaml::YamlContents.new(PRE_REMOVE_YAML)
+    
+    extracted = contents.remove_key %w(two)
+    
+    assert_equal POST_REMOVE_RESULT, contents.to_s.strip
+    
+    # there should be three items in the extracted contents.
+    assert_equal 3, extracted.length
+    
+    # the first item should be the base key.
+    assert_equal %w(two), extracted[0][:key]
+    assert_equal '', extracted[0][:value]
+    assert_equal 'the second section', extracted[0][:comment]
+    assert extracted[0][:safe]
+    
+    # followed by bravo.
+    assert_equal %w(two bravo), extracted[1][:key]
+    assert_equal '2', extracted[1][:value]
+    assert_nil extracted[1][:comment]
+    assert extracted[1][:safe]
+    
+    # and finally echo.
+    assert_equal %w(two echo), extracted[2][:key]
+    assert_equal '<%= \'hello\' %>', extracted[2][:value]
+    assert_equal 'just a simple embedded ruby command.', extracted[2][:comment]
+    assert extracted[2][:safe]
+    
+    # one more test just to ensure we can remove subkeys safely.
+    extracted = contents.remove_key %w(one alpha)
+    
+    assert_equal POST_POST_REMOVE_RESULT, contents.to_s.strip
+    assert_equal 1, extracted.length
+    
+    extracted = extracted.first
+    assert_equal %w(one alpha), extracted[:key]
+    assert_equal '1', extracted[:value]
+    assert_nil extracted[:comment]
+    assert extracted[:safe]
+    
   end
 
 end
