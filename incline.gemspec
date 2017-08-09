@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.files                   = `git ls-files -z`.split("\x0").reject{|f| f == 'incline.gemspec'}
   s.require_path            = 'lib'
   s.bindir                  = 'exe'
-  s.executables             = %w(new_incline_app)
+  s.executables             = %w(new_incline_app incline)
   s.required_ruby_version   = '>= 2.3.0'
 
   s.add_dependency 'rails',                         '~> 4.2.8'
