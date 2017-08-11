@@ -55,10 +55,6 @@ module Incline
           case flag
             when '--ssh-password'
               @options[:admin_password] = options.delete_at(0).to_s.strip
-            when '--ssh-password-prompt'
-              print 'Please enter the SSH password: '
-              @options[:admin_password] = STDIN.noecho(&:gets).to_s.strip
-              puts ''
             when '--port'
               @options[:port] = options.delete_at(0).to_s.to_i
             when '--deploy-user'
@@ -77,6 +73,14 @@ module Incline
         end
         
         @options[:port] = 22 unless (1..65535).include?(@options[:port])
+        if @options[:admin_password].to_s.strip == ''
+          print 'Please enter the sudo password: '
+          @options[:admin_password] = STDIN.noecho(&:gets).to_s.strip
+          puts ''
+          if @options[:admin_password].to_s.strip == ''
+            puts 'WARNING: Sudo password is blank and script may fail because of this.'
+          end
+        end
         
       end
       
@@ -85,25 +89,26 @@ module Incline
       #
       # Set 'host_name_or_ip' to the DNS name or IP address for the host.
       # Set 'ssh_user' to the user name you want to access the host as.
-      # This user must be able to run 'sudo' commands.
+      # This user must be able to run 'sudo' commands and must not be 'root'.
       #
       # You can provide a port value either appended to the host name or as a 
       # separate argument using the '--port' option.
       # e.g. ssh.example.com:22 or --port 22
       #
-      # If you are configured with key authentication to the host already, then you
-      # do not need to provide an ssh password.  However, if you are not configured
-      # with key authentication yet, you can specify the SSH user's password using 
-      # the '--ssh-password' option.  Alternatively, you can use the 
-      # '--ssh-password-prompt' option to get prompted to enter the ssh password.
-      # If either of these options is specified, the prepare action will setup key
-      # authentication for you as part of the setup process.
-      # e.g. --ssh-password secret or --ssh-password-prompt
+      # If you are configured with key authentication to the host then you don't 
+      # need to provide an SSH password to connect.  However, this password is 
+      # also used to run sudo commands.  You can specify a password on the command
+      # line by using the '--ssh-password' option.  If you do not, then the script
+      # will prompt you for a "sudo" password to use.  You can leave this blank,
+      # but the script will warn you that it may lead to failure.  Obviously, if 
+      # you are configured with NOPASSWD in the sudoers file, then you can safely
+      # leave the password blank.
       #
       # By default, a deployment user named 'deploy' will be created on the host.
       # If a user by this name already exists, that user will be removed first.
-      # You can change the name of the deployment user using the '--deploy-user'
-      # option.
+      # This means that any data stored in the user profile will be destroyed by
+      # the script prior to creating the new user. You can change the name of the
+      # deployment user using the '--deploy-user' option.
       # e.g. --deploy_user bob
       #
       # The script will install 'rbenv' under the deploy user's account and then
