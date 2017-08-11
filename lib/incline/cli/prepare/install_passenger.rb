@@ -23,10 +23,10 @@ module Incline
         distro = distros[@host_info['VERSION_ID']]
         shell.with_stat('Installing Phusion Passenger') do
           shell.sudo_exec 'apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7'
-          shell.sudo_exec 'apt-get -y install apt-transport-https ca-certificates'
+          shell.sudo_exec 'DEBIAN_FRONTEND=noninteractive apt-get -y -q install apt-transport-https ca-certificates'
           shell.sudo_exec "echo deb https://oss-binaries.phusionpassenger.com/apt/passenger #{distro} main > /etc/apt/sources.list.d/passenger.list"
-          shell.sudo_exec 'apt-get update'
-          shell.sudo_exec 'apt-get -y install nginx-extras passenger'
+          shell.sudo_exec 'apt-get -q update'
+          shell.sudo_exec 'DEBIAN_FRONTEND=noninteractive apt-get -y -q install nginx-extras passenger'
           begin
             shell.sudo_exec 'systemctl stop nginx'
           rescue

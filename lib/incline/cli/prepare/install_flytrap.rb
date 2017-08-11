@@ -34,7 +34,7 @@ production:
       private_constant :FLY_TRAP_PING, :FLY_TRAP_ROUTES, :FLY_TRAP_SECRETS
 
       def flytrap_path
-        "http://#{host}/#{FLY_TRAP_PING}"
+        "http://#{@options[:host]}/#{FLY_TRAP_PING}"
       end
       
       private

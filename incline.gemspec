@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'bcrypt'
   s.add_dependency 'nokogiri'
   s.add_dependency 'spawnling',                     '~> 2.1.6'
-  s.add_dependency 'shells',                        '~> 0.1.9'
+  s.add_dependency 'shells',                        '~> 0.1.12'
   s.add_dependency 'ansi',                          '~> 1.5.0'
   s.add_dependency 'exception_notification',        '~> 4.2.1'
   s.add_dependency 'redcarpet',                     '~> 3.4.0'

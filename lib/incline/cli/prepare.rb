@@ -114,7 +114,7 @@ module Incline
       #
       def run
         @host_info = {}
-        
+
         admin_shell do |admin|
           # test the connection and sudo capabilities.
           admin.sudo_stat_exec 'Testing connection', 'ls -al /root'
@@ -188,13 +188,21 @@ module Incline
         logfile.flush
         logfile.close
         @logfile = nil
+
       end
+
       
       private
       
       
       def logfile
-        @logfile ||= File.open(File.expand_path("~/incline-logs/prepare-#{@host}.log"), 'wt')
+        @logfile ||=
+            begin
+              dir = File.expand_path('~/incline-logs')
+              Dir.mkdir(dir) unless Dir.exist?(dir)
+              File.open(File.expand_path("#{dir}/prepare-#{@options[:host]}.log"), 'wt')
+            end
+
       end
       
       # Add full logging to the shell.
@@ -262,7 +270,8 @@ module Incline
             user: @options[:admin_user],
             password: @options[:admin_password],
             retrieve_exit_code: true,
-            on_non_zero_exit_code: :raise
+            on_non_zero_exit_code: :raise,
+            silence_timeout: 5
         ) do |sh|
           extend_shell sh, '# '
           yield sh
@@ -276,7 +285,8 @@ module Incline
             user: @options[:deploy_user],
             password: @options[:deploy_password],
             retrieve_exit_code: true,
-            on_non_zero_exit_code: :raise
+            on_non_zero_exit_code: :raise,
+            silence_timeout: 5
         ) do |sh|
           extend_shell sh, '$ '
           yield sh

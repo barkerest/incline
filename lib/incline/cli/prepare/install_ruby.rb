@@ -6,7 +6,7 @@ module Incline
       private
       
       def install_ruby(shell)
-        shell.with_stat("Install Ruby #{@options[:ruby_version]}", 1024) do
+        shell.with_stat("Install Ruby #{@options[:ruby_version]}") do
           result = shell.exec('which rbenv').to_s.strip
           raise 'failed to install rbenv' if result == ''
 

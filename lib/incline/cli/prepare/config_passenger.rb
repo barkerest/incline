@@ -116,14 +116,20 @@ location / {
           shell.sudo_exec "useradd -mU ruby-apps", on_non_zero_exit_code: :ignore
 
           # add both users to each other.
-          shell.sudo_exec "usermod -G ruby-apps -a #{deploy_user}", on_non_zero_exit_code: :ignore
-          shell.sudo_exec "usermod -G #{deploy_user} -a ruby-apps", on_non_zero_exit_code: :ignore
+          shell.sudo_exec "usermod -G ruby-apps -a #{@options[:deploy_user]}", on_non_zero_exit_code: :ignore
+          shell.sudo_exec "usermod -G #{@options[:deploy_user]} -a ruby-apps", on_non_zero_exit_code: :ignore
 
           # backup and remove the original configuration.
           shell.sudo_exec 'if [ ! -f /etc/nginx/nginx.conf.original ]; then mv -f /etc/nginx/nginx.conf /etc/nginx/nginx.conf.original; fi'
 
           # get the passenger_root path.
-          pr_path = shell.sudo_exec_ignore("ls {#{PASSENGER_ROOT_SEARCH.join(',')}}/#{PASSENGER_ROOT_PATH} 2>/dev/null")
+          pr_path =
+              begin
+                shell.sudo_exec("ls {#{PASSENGER_ROOT_SEARCH.join(',')}}/#{PASSENGER_ROOT_PATH} 2>/dev/null")
+              rescue
+                nil
+              end
+
           pr_path = pr_path.to_s.split("\n").first.to_s.strip
           raise 'failed to locate passenger_root path' if pr_path == ''
           
