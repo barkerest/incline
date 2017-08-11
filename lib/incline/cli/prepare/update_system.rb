@@ -6,9 +6,9 @@ module Incline
       private
       
       def update_system(shell)
-        shell.sudo_stat_exec 'Retrieving updates', 'apt-get -q update'
-        shell.sudo_stat_exec 'Updating system', 'DEBIAN_FRONTEND=noninteractive apt-get -y -q upgrade'
-        shell.sudo_stat_exec 'Updating kernel', 'DEBIAN_FRONTEND=noninteractive apt-get -y -q install linux-generic linux-headers-generic linux-image-generic'
+        shell.with_stat('Retrieving updates') { shell.apt_get 'update' }
+        shell.with_stat('Updating system') { shell.apt_get 'upgrade' }
+        shell.with_stat('Updating kernel') { shell.apt_get 'install linux-generic linux-headers-generic linux-image-generic' }
       end
       
     end

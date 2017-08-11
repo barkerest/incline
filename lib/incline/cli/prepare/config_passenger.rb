@@ -12,6 +12,7 @@ module Incline
 
       NGINX_CONFIG = <<-EOCFG
 # General nginx configuration from Incline prepare script.
+# Configuration file generated #{Time.now}.
 
 user              ruby-apps;
 worker_processes  1;
@@ -112,26 +113,23 @@ location / {
       
       def config_passenger(shell)
         shell.with_stat('Configuring Passenger') do
+          
           # add the ruby-apps user.
-          shell.sudo_exec "useradd -mU ruby-apps", on_non_zero_exit_code: :ignore
-
-          # add both users to each other.
-          shell.sudo_exec "usermod -G ruby-apps -a #{@options[:deploy_user]}", on_non_zero_exit_code: :ignore
-          shell.sudo_exec "usermod -G #{@options[:deploy_user]} -a ruby-apps", on_non_zero_exit_code: :ignore
+          if shell.get_user_id('ruby-apps') == 0
+            shell.sudo_exec "useradd -mU ruby-apps"
+          end
+          
+          # add ruby-apps and deploy groups to each other.
+          shell.sudo_exec_ignore_code "usermod -G ruby-apps -a #{@options[:deploy_user]}"
+          shell.sudo_exec_ignore_code "usermod -G #{@options[:deploy_user]} -a ruby-apps"
 
           # backup and remove the original configuration.
           shell.sudo_exec 'if [ ! -f /etc/nginx/nginx.conf.original ]; then mv -f /etc/nginx/nginx.conf /etc/nginx/nginx.conf.original; fi'
 
           # get the passenger_root path.
-          pr_path =
-              begin
-                shell.sudo_exec("ls {#{PASSENGER_ROOT_SEARCH.join(',')}}/#{PASSENGER_ROOT_PATH} 2>/dev/null")
-              rescue
-                nil
-              end
-
+          pr_path = shell.sudo_exec_ignore_code "ls {#{PASSENGER_ROOT_SEARCH.join(',')}}/#{PASSENGER_ROOT_PATH} 2>/dev/null"
           pr_path = pr_path.to_s.split("\n").first.to_s.strip
-          raise 'failed to locate passenger_root path' if pr_path == ''
+          raise CliError, 'Failed to locate passenger_root path' if pr_path == ''
           
           # write the new configuration to a temporary file.
           shell.write_file(
@@ -139,7 +137,7 @@ location / {
               NGINX_CONFIG
                   .gsub(PASSENGER_ROOT_PLACEHOLDER, pr_path)
                   .gsub(DEPLOY_HOME_PLACEHOLDER, @options[:deploy_home])
-                  .gsub(INST_REG_COMMENT_PLACEHOLDER, @host_info['ID'] == :centos ? '' : '# ')
+                  .gsub(INST_REG_COMMENT_PLACEHOLDER, host_id == :centos ? '' : '# ')
           )
 
           # move it where it belongs.
@@ -170,7 +168,7 @@ location / {
           # strengthen SSL by using unique dhparams
           shell.sudo_exec 'openssl dhparam -out /var/ssl/dhparams.pem 2048'
           # generate a generic self-signed certificate to get started with.
-          shell.sudo_exec 'openssl req -x509 -nodes -days 365 -newkey rsa:4096 -subj "/C=US/ST=Pennsylvania/L=Pittsburgh/O=WEB/CN=$(hostname -f)" -keyout /var/ssl/ssl.key -out /var/ssl/ssl.crt'
+          shell.sudo_exec "openssl req -x509 -nodes -days 365 -newkey rsa:4096 -subj \"/C=#{@options[:ssl_country]}/ST=#{@options[:ssl_state]}/L=#{@options[:ssl_location]}/O=#{@options[:ssl_org]}/CN=$(hostname -f)\" -keyout /var/ssl/ssl.key -out /var/ssl/ssl.crt"
           shell.sudo_exec 'chown ruby-apps:root /var/ssl/* -R && chmod 600 /var/ssl/*'
         end
       end

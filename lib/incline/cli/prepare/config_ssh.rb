@@ -20,9 +20,9 @@ module Incline
             shell.sudo_exec "mv -f #{shell.home_path}/tmp_sshd_conf /etc/ssh/sshd_config"
             
             begin
-              shell.sudo_exec 'systemctl restart sshd.service'
+              shell.sudo_exec_ignore_code 'systemctl restart sshd.service'
             rescue
-              # ignore any errors from the SSH restart.
+              # ignore any errors from the SSH restart since we should be exiting the SSH session immediately after this gets executed anyway.
             end
           end
         end

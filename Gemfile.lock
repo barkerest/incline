@@ -13,7 +13,7 @@ PATH
       rails (~> 4.2.8)
       redcarpet (~> 3.4.0)
       sass-rails (~> 5.0.6)
-      shells (~> 0.1.12)
+      shells (~> 0.1.15)
       spawnling (~> 2.1.6)
       uglifier
 
@@ -151,7 +151,7 @@ GEM
       sprockets (>= 2.8, < 4.0)
       sprockets-rails (>= 2.0, < 4.0)
       tilt (>= 1.1, < 3)
-    shells (0.1.12)
+    shells (0.1.15)
       net-ssh (~> 4.1.0)
       rubyserial (~> 0.4.0)
     spawnling (2.1.6)

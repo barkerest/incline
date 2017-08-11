@@ -53,7 +53,7 @@ production:
           shell.exec "bundle exec rake db:migrate:reset RAILS_ENV=production"
           shell.exec "bundle exec rake assets:precompile RAILS_ENV=production RAILS_GROUPS=assets RAILS_RELATIVE_URL_ROOT=\"/\""
           shell.exec "cd #{shell.home_path}"
-          # generate the cron job.
+          # generate the cron job
           shell.exec "(crontab -l; echo \"*/5 * * * * curl http://localhost/#{FLY_TRAP_PING} >/dev/null 2>&1\";) | crontab -"
         end
       end

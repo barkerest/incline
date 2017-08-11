@@ -5,22 +5,46 @@ module Incline
       
       private
       
+      def user_process_list(shell, user)
+        shell.sudo_exec_ignore_code("pgrep -u #{@options[:deploy_user]}").to_s.split("\n").map(&:strip).reject{|s| s == ''}
+      end
+      
+      def kill_processes(shell, user, signal)
+        if user_process_list(shell, user).any?
+          shell.sudo_exec_ignore_code "pkill -#{signal} -u #{user}"
+          et = Time.now + 5
+          while Time.now < et
+            return true if user_process_list(shell, user).empty?
+            sleep 1
+          end
+          user_process_list(shell,user).any?
+        else
+          true
+        end
+      end
+      
       def add_deploy_user(shell)
-        shell.with_stat('Adding deploy user') do
-          # clean up first
-          begin
-            shell.sudo_exec "userdel -fr #{@options[:deploy_user]}"
-          rescue
-            # ignore
+        # clean up first
+        unless shell.get_user_id(@options[:deploy_user]) == 0
+          shell.with_stat('Removing previous deploy user') do
+            unless kill_processes(shell, @options[:deploy_user], 'TERM')
+              unless kill_processes(shell, @options[:deploy_user], 'KILL')
+                raise CliError, "Failed to kill all processes owned by #{@options[:deploy_user]}."
+              end
+            end
+            # remove crontab for user.
+            shell.sudo_exec_ignore_code "crontab -u #{@options[:deploy_user]} -r"
+            # remove at jobs for user.
+            shell.sudo_exec_ignore_code "find /var/spool/cron/atjobs -name \"[^.]*\" -type f -user #{@options[:deploy_user]} -delete"
+            # remove the user.
+            shell.sudo_exec "userdel -r #{@options[:deploy_user]}"
+            # remove the main user group.
+            shell.sudo_exec_ignore_code "groupdel #{@options[:deploy_user]}"
           end
-          
-          begin
-            shell.sudo_exec "groupdel #{@options[:deploy_user]}"
-          rescue
-            # ignore
-          end
+        end
 
-          # recreate the user.
+        shell.with_stat('Adding deploy user') do
+          # create the user.
           shell.sudo_exec "useradd -mU -s /bin/bash #{@options[:deploy_user]}"
           shell.sudo_exec "printf \"#{@options[:deploy_password]}\\n#{@options[:deploy_password]}\\n\" | passwd #{@options[:deploy_user]}"
 

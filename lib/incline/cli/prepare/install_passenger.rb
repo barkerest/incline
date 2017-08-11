@@ -20,18 +20,14 @@ module Incline
             '17.04' => 'zesty'
         }
 
-        distro = distros[@host_info['VERSION_ID']]
+        distro = distros[host_info['VERSION_ID']]
         shell.with_stat('Installing Phusion Passenger') do
           shell.sudo_exec 'apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7'
-          shell.sudo_exec 'DEBIAN_FRONTEND=noninteractive apt-get -y -q install apt-transport-https ca-certificates'
+          shell.apt_get 'install apt-transport-https ca-certificates'
           shell.sudo_exec "echo deb https://oss-binaries.phusionpassenger.com/apt/passenger #{distro} main > /etc/apt/sources.list.d/passenger.list"
-          shell.sudo_exec 'apt-get -q update'
-          shell.sudo_exec 'DEBIAN_FRONTEND=noninteractive apt-get -y -q install nginx-extras passenger'
-          begin
-            shell.sudo_exec 'systemctl stop nginx'
-          rescue
-            # ignore service stoppage errors.
-          end
+          shell.apt_get 'update'
+          shell.apt_get 'install nginx-extras passenger'
+          shell.sudo_exec_ignore_code 'systemctl stop nginx'
           shell.sudo_exec 'systemctl start nginx'
           shell.sudo_exec 'systemctl enable nginx'
         end

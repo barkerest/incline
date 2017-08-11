@@ -3,7 +3,7 @@ require 'shells'
 require 'io/console'
 require 'ansi/code'
 
-require 'incline/cli/prepare/get_host_info'
+require 'incline/cli/prepare/extend_shell'
 require 'incline/cli/prepare/update_system'
 require 'incline/cli/prepare/ssh_copy_id'
 require 'incline/cli/prepare/config_ssh'
@@ -67,6 +67,17 @@ module Incline
             when '--rails-version'
               @options[:rails_version] = options.delete_at(0).to_s.strip
               raise UsageError.new("The '--rails-version' parameter must be at least 4.2.", 'prepare') if @options[:rails_version].to_f < 4.2
+              
+            # These options can be used to customize the self-signed certificate created initially.
+            when '--ssl-country'
+              @options[:ssl_country] = options.delete_at(0).to_s.strip
+            when '--ssl-state', '--ssl-province'
+              @options[:ssl_state] = options.delete_at(0).to_s.strip
+            when '--ssl-location', '--ssl-city'
+              @options[:ssl_location] = options.delete_at(0).to_s.strip
+            when '--ssl-org'
+              @options[:ssl_org] = options.delete_at(0).to_s.strip
+              
             else
               raise UsageError.new("The '#{flag}' parameter is not recognized.", 'prepare')
           end
@@ -81,6 +92,11 @@ module Incline
             puts 'WARNING: Sudo password is blank and script may fail because of this.'
           end
         end
+        
+        @options[:ssl_country] = 'US' if @options[:ssl_country].to_s == ''
+        @options[:ssl_state] = 'Pennsylvania' if @options[:ssl_state].to_s == ''
+        @options[:ssl_location] = 'Pittsburgh' if @options[:ssl_location].to_s == ''
+        @options[:ssl_org] = 'WEB' if @options[:ssl_org].to_s == ''
         
       end
       
@@ -118,15 +134,16 @@ module Incline
       # must be at least 2.3 and the rails version must be at least 4.2.
       #
       def run
-        @host_info = {}
-
+        # reset the host info.
+        @host_info = nil
+        
         admin_shell do |admin|
           # test the connection and sudo capabilities.
           admin.sudo_stat_exec 'Testing connection', 'ls -al /root'
           
-          # retrieve the host info.
-          @host_info = get_host_info(admin)
-          raise CliError, "Host OS (#{@host_info['ID']}) is not supported." unless [ :ubuntu ].include?(@host_info['ID'])
+          # retrieve the host info now that we are connected.
+          @host_info = admin.host_info
+          raise CliError, "Host OS (#{host_id}) is not supported." unless [ :ubuntu ].include?(host_id)
           
           # update the system and configure SSH.
           update_system admin
@@ -173,10 +190,10 @@ module Incline
           restart_nginx admin
           
           puts 'Testing nginx server...'
-          admin.exec 'curl http://localhost/this-is-a-test', on_non_zero_exit_code: :ignore
+          admin.exec_ignore_code 'curl http://localhost/this-is-a-test'
           admin.exec "curl #{flytrap_path}"
         end
-
+        
         puts ''
         puts ANSI.ansi(:bold, :white) { 'Host preparation completed.' }
         puts ''
@@ -195,9 +212,17 @@ module Incline
         @logfile = nil
 
       end
-
+      
       
       private
+      
+      def host_info
+        @host_info ||= {}
+      end
+      
+      def host_id
+        host_info['ID'] ||= :unknown
+      end
       
       
       def logfile
@@ -208,64 +233,6 @@ module Incline
               File.open(File.expand_path("#{dir}/prepare-#{@options[:host]}.log"), 'wt')
             end
 
-      end
-      
-      # Add full logging to the shell.
-      # The prefix is used to identify the shell creating the messages and will be prefixed to each line in the log.
-      def extend_shell(sh, prefix)
-        logfile.write "\n" + prefix
-        sh.instance_variable_set :@prep_log, logfile
-        sh.instance_variable_set :@prep_prefix, "\n#{prefix}"
-        sh.instance_variable_set :@stat_count, -1
-        sh.instance_variable_set :@stat_every, 128
-        sh.instance_variable_set :@home_path, nil
-        
-        def sh.home_path
-          @home_path ||= exec("eval echo \"~#{@options[:user]}\"").split("\n").first.strip
-        end
-        
-        def sh.with_stat(status, stat_every = 128)
-          if @stat_count > -1
-            yield
-          else
-            @stat_count = 0
-            @stat_every = stat_every < 1 ? 128 : stat_every
-            print status
-            yield
-            print "\n"
-            @stat_count = -1
-            @stat_every = 128
-          end
-        end
-
-        def sh.exec(cmd, options = {}, &block)
-          super(cmd, options) do |data, type|
-            @prep_log.write data.gsub("\n", @prep_prefix)
-            @prep_log.flush
-            if @stat_count > -1
-              @stat_count += data.to_s.length
-              while @stat_count >= @stat_every
-                @stat_count -= @stat_every
-                print '.'
-              end
-            end
-            if block
-              block.call data, type
-            else
-              nil
-            end
-          end
-        end
-        
-        def sh.stat_exec(status, cmd, options = {}, &block)
-          with_stat(status) { exec(cmd, options, &block) }
-        end
-        
-        def sh.sudo_stat_exec(status, cmd, options = {}, &block)
-          with_stat(status) { sudo_exec(cmd, options, &block) }
-        end
-        
-        sh
       end
       
       def admin_shell

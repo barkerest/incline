@@ -11,12 +11,8 @@ module Incline
           shell.sudo_exec('nginx -t')
 
           # stop the service.
-          begin
-            shell.sudo_exec 'systemctl stop nginx.service'
-          rescue
-            # ignore service stoppage errors.
-          end
-
+          shell.sudo_exec_ignore_code 'systemctl stop nginx.service'
+          
           # start the service.
           shell.sudo_exec 'systemctl start nginx.service'
         end
