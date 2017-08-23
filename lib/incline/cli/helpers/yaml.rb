@@ -606,7 +606,7 @@ module Incline
           key_len = key.last.to_s.length + 1 # add one for the colon.
           coff = level_comment_offset(key.count) - key_len - safe_value.length
           coff = 1 if coff < 1
-          coff_total = ((key.count - 1) * 2) + value.length + coff
+          coff_total = ((key.count - 1) * 2) + safe_value.length + coff
 
           safe_value + (' ' * coff) + '# ' + comment.to_s.gsub("\r\n", "\n").gsub("\n", "\n#{' ' * coff_total}# ")
         end
