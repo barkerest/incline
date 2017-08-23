@@ -518,6 +518,23 @@ module Incline
         def =~(regexp)
           @content =~ regexp
         end
+        
+        ##
+        # Inserts a comment to the beginning of the contents.
+        def insert_comment(text)
+          text = '# ' + text.gsub("\r\n", "\n").gsub("\n", "\n# ") + "\n"
+          @content = @content.insert(0, text)
+        end
+        
+        ##
+        # Appends a comment to the end of the contents.
+        def append_comment(text)
+          text = '# ' + text.gsub("\r\n", "\n").gsub("\n", "\n# ") + "\n"
+          unless @content[-1] == "\n"
+            @content += "\n"
+          end
+          @content += text
+        end
 
         private
 
