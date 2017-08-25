@@ -109,19 +109,45 @@ module Incline
     end
 
     ##
+    # The begin_external_authentication method takes a request object to determine if it should process authentication or
+    # return nil.  If it decides to process authentication, it should return a URL to redirect to.
+    def begin_external_authentication(request)
+      # We don't have an email domain to work from.
+      # Instead, we'll call each engine's authenticate_external method.
+      # If one of them returns a user, then we return that value and skip further processing.
+      auth_engines.each do |dom,engine|
+        unless engine.nil?
+          url = engine.begin_external_authentication(request)
+          return url unless url.blank?
+        end
+      end
+      nil
+    end
+
+    ##
     # Attempts to authenticate the user and returns the model on success.
     def self.authenticate(email, password, client_ip)
       default.authenticate email, password, client_ip
     end
 
     ##
+    # The begin_external_authentication method takes a request object to determine if it should process authentication or
+    # return nil.  If it decides to process authentication, it should return a URL to redirect to.
+    def self.begin_external_authentication(request)
+      default.begin_external_authentication request
+    end
+    
+    ##
     # Registers an authentication engine for one or more domains.
     #
     # The +engine+ passed in should take an options hash as the only argument to +initialize+
     # and should provide an +authenticate+ method that takes the +email+, +password+, and
-    # +client_ip+.
+    # +client_ip+.  You can optionally define an +authenticate_external+ method that takes the
+    # current +request+ as the only parameter.
     #
     # The +authenticate+ method of the engine should return an Incline::User object on success or nil on failure.
+    # The +begin_external_authentication+ method of the engine should return a URL to redirect to on success
+    # or nil on failure.
     #
     #   class MyAuthEngine
     #     def initialize(options = {})
@@ -129,6 +155,10 @@ module Incline
     #     end
     #
     #     def authenticate(email, password, client_ip)
+    #       ...
+    #     end
+    #     
+    #     def begin_external_authentication(request)
     #       ...
     #     end
     #   end

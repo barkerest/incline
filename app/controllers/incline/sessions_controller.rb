@@ -12,6 +12,7 @@ module Incline
     ##
     # GET /incline/login
     def new
+      
     end
 
     ##

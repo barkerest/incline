@@ -16,6 +16,13 @@ module Incline
     def authenticate(email, password, client_ip)
       nil
     end
+    
+    ##
+    # The begin_external_authentication method takes a request object to determine if it should process authentication or
+    # return nil.  If it decides to process authentication, it should return a URL to redirect to.
+    def begin_external_authentication(request)
+      nil
+    end
 
     protected
 
