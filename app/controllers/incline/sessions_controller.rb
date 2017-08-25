@@ -12,7 +12,9 @@ module Incline
     ##
     # GET /incline/login
     def new
-      
+      # Before displaying the login form, make sure an external auth system shouldn't be used.
+      auth_url = ::Incline::UserManager.begin_external_authentication(request)
+      redirect_to auth_url unless auth_url.blank?
     end
 
     ##
