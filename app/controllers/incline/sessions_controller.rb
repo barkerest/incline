@@ -44,8 +44,14 @@ module Incline
     ##
     # DELETE /incline/logout
     def destroy
-      log_out if logged_in?
-      redirect_to main_app.root_url
+      # Check to see if an external auth system should be used.
+      auth_url = ::Incline::UserManager.end_external_authentication(request)
+      if auth_url.blank?
+        log_out if logged_in?
+        redirect_to main_app.root_url
+      else
+        redirect_to auth_url
+      end
     end
 
   end

@@ -109,8 +109,8 @@ module Incline
     end
 
     ##
-    # The begin_external_authentication method takes a request object to determine if it should process authentication or
-    # return nil.  If it decides to process authentication, it should return a URL to redirect to.
+    # The begin_external_authentication method takes a request object to determine if it should process a login
+    # or return nil.  If it decides to process authentication, it should return a URL to redirect to.
     def begin_external_authentication(request)
       # We don't have an email domain to work from.
       # Instead, we'll call each engine's authenticate_external method.
@@ -125,16 +125,37 @@ module Incline
     end
 
     ##
+    # The end_external_authentication method takes a request object to determine if it should process a logout
+    # or return nil.  If it decides to process authentication, it should return a URL to redirect to.
+    def end_external_authentication(request)
+      # We don't have an email domain to work from.
+      # Instead, we'll call each engine's authenticate_external method.
+      # If one of them returns a user, then we return that value and skip further processing.
+      auth_engines.each do |dom,engine|
+        unless engine.nil?
+          url = engine.end_external_authentication(request)
+          return url unless url.blank?
+        end
+      end
+      nil
+    end
+
+    ##
     # Attempts to authenticate the user and returns the model on success.
     def self.authenticate(email, password, client_ip)
       default.authenticate email, password, client_ip
     end
 
     ##
-    # The begin_external_authentication method takes a request object to determine if it should process authentication or
-    # return nil.  If it decides to process authentication, it should return a URL to redirect to.
+    # Returns a URL if an external login is to be used, or nil to use local authentication.
     def self.begin_external_authentication(request)
       default.begin_external_authentication request
+    end
+
+    ##
+    # Returns a URL if an external logout is to be used, or nil to use local authentication.
+    def self.end_external_authentication(request)
+      default.end_external_authentication request
     end
     
     ##

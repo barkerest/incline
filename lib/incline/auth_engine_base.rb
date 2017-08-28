@@ -18,9 +18,16 @@ module Incline
     end
     
     ##
-    # The begin_external_authentication method takes a request object to determine if it should process authentication or
-    # return nil.  If it decides to process authentication, it should return a URL to redirect to.
+    # The begin_external_authentication method takes a request object to determine if it should process a login
+    # or return nil.  If it decides to process authentication, it should return a URL to redirect to.
     def begin_external_authentication(request)
+      nil
+    end
+
+    ##
+    # The end_external_authentication method takes a request object to determine if it should process a logout
+    # or return nil.  If it decides to process authentication, it should return a URL to redirect to.
+    def end_external_authentication(request)
       nil
     end
 
