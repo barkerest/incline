@@ -429,7 +429,7 @@ module Incline::Extensions
       elsif require_anon_for_request?
         if logged_in?
           flash[:warning] = 'The specified action cannot be performed while logged in.'
-          redirect_to current_user
+          redirect_to incline.user_path(current_user)
         end
       elsif allow_anon_for_request?
         true
