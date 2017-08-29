@@ -285,13 +285,13 @@ module Incline::Extensions
         # an authenticated user must exist.
         unless logged_in?
           
+          store_location
+          
           if (auth_url = ::Incline::UserManager.begin_external_authentication(request))
             ::Incline::Log.debug 'Redirecting for external authentication.'
             redirect_to auth_url
             return false
           end
-          
-          store_location
 
           raise_not_logged_in "You need to login to access '#{request.fullpath}'.",
                               'nobody is logged in'
