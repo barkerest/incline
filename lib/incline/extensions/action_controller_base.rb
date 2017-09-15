@@ -285,13 +285,13 @@ module Incline::Extensions
         # an authenticated user must exist.
         unless logged_in?
           
+          store_location
+          
           if (auth_url = ::Incline::UserManager.begin_external_authentication(request))
             ::Incline::Log.debug 'Redirecting for external authentication.'
             redirect_to auth_url
             return false
           end
-          
-          store_location
 
           raise_not_logged_in "You need to login to access '#{request.fullpath}'.",
                               'nobody is logged in'
@@ -429,7 +429,7 @@ module Incline::Extensions
       elsif require_anon_for_request?
         if logged_in?
           flash[:warning] = 'The specified action cannot be performed while logged in.'
-          redirect_to current_user
+          redirect_to incline.user_path(current_user)
         end
       elsif allow_anon_for_request?
         true
