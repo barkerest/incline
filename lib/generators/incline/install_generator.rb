@@ -135,7 +135,7 @@ module Incline
             # a log formatter is configured, so configure a logger with rotation and use the existing formatter.
             gsub_file cfg, /\n\s*config.log_formatter\s*=([^\n]*)/m, <<-EOS
 
-  config.logger = ::ActiveSupport::Logger(config.paths['log'].first, 2, 5.megabytes)
+  config.logger = ::ActiveSupport::Logger.new(config.paths['log'].first, 2, 5.megabytes)
   config.logger.formatter =\\1
             EOS
           else
