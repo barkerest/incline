@@ -203,14 +203,21 @@ module Incline
     ##
     # Find the record represented by #locate_id.
     def find_record(relation = nil)
-      return -1 if locate_id == 0
+      if locate_id.nil? || (locate_id.is_a?(::Numeric) && locate_id == 0) || (locate_id.to_s == '')
+        return -1
+      end
 
       dataset = load_records(relation, false)
       return -1 if dataset.blank?
 
       return -1 unless dataset.first.respond_to?(:id)
-
-      dataset.index{|item| item.id == locate_id} || -1
+      if locate_id.is_a?(::Numeric)
+        dataset.index{|item| item.id == locate_id} || -1
+      else
+        loc_id = locate_id.to_s.downcase
+        dataset.index{|item| item.id.to_s.downcase == loc_id} || -1
+      end
+      
     end
 
     ##
