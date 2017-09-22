@@ -65,7 +65,7 @@ module Incline
         @config[:draw]   = params[:draw].to_s.to_i
         @config[:start]  = params[:start].to_s.to_i
         @config[:length] = params[:length].to_s.to_i
-        @config[:locate_id] = params[:locate_id].to_s.to_i
+        @config[:locate_id] = params[:locate_id]
 
 
         tmp = params[:search]
