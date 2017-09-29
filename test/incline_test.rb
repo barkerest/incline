@@ -34,6 +34,7 @@ class InclineTest < ActiveSupport::TestCase
     assert Incline::Extensions.const_defined? :ConnectionAdapter
     assert Incline::Extensions.const_defined? :MainApp
     assert Incline::Extensions.const_defined? :ActionControllerBase
+    assert Incline::Extensions.const_defined? :CurrentRequest
     assert Incline::Extensions.const_defined? :ActionMailerBase
     assert Incline::Extensions.const_defined? :ActionViewBase
     assert Incline::Extensions.const_defined? :Session
