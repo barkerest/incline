@@ -64,12 +64,15 @@
               data: function (row, type, set, meta) {
                 if (type === 'display') {
                   var ret = '<div class="text-right">';
+                    var p_start = row.DT_Path.indexOf('?');
+                    var item_path = p_start >= 0 ? row.DT_Path.substr(0, p_start) : row.DT_Path;
+                    var item_params = p_start >= 0 ? row.DT_Path.substr(p_start) : '';
 
-                  // the show icon.
-                  ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '\')" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>';
+                    // the show icon.
+                    ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '\')" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>';
 
-                  // the edit icon.
-                  ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '/edit\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
+                    // the edit icon.
+                    ret += '<a href="javascript:inlineForm(\'' + item_path + '/edit' + item_params + '\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
 
                   ret += '</div>';
                   return ret;

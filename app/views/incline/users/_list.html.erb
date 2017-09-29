@@ -49,28 +49,31 @@
             {
               var ret = '<div class="text-right">';
               var drop = row.show_disable || row.show_enable || row.show_promote || row.show_demote || row.show_delete;
+              var p_start = row.DT_Path.indexOf('?');
+              var item_path = p_start >= 0 ? row.DT_Path.substr(0, p_start) : row.DT_Path;
+              var item_params = p_start >= 0 ? row.DT_Path.substr(p_start) : '';
 
               ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '\')" title="Details" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-zoom-in"></i></a>';
 
               if (drop) {
                   ret += '&nbsp;<div class="btn-group">';
                   if (row.show_edit) {
-                      ret += '<a href="javascript:inlineForm(\'' + row.DT_Path + '/edit\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
+                      ret += '<a href="javascript:inlineForm(\'' + item_path + '/edit' + item_params + '\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
                   } else {
                       ret += '<a href="javascript:void(0)" title="Options" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-star"></i></a>';
                   }
                   ret += '<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button><ul class="dropdown-menu">'
 
                   if (row.show_promote) {
-                      ret += '<li><a href="javascript:inlineAction(\'' + row.DT_Path + '/promote\',\'patch\')" title="Promote to administrator">Promote</a></li>';
+                      ret += '<li><a href="javascript:inlineAction(\'' + item_path + '/promote' + item_params + '\',\'patch\')" title="Promote to administrator">Promote</a></li>';
                   } else if (row.show_demote) {
-                      ret += '<li><a href="javascript:inlineAction(\'' + row.DT_Path + '/demote\',\'patch\')" title="Demote from administrator">Demote</a></li>';
+                      ret += '<li><a href="javascript:inlineAction(\'' + item_path + '/demote' + item_params + '\',\'patch\')" title="Demote from administrator">Demote</a></li>';
                   }
 
                   if (row.show_disable) {
-                      ret += '<li><a href="javascript:inlineForm(\'' + row.DT_Path + '/disable\')" title="Disable">Disable</a></li>';
+                      ret += '<li><a href="javascript:inlineForm(\'' + item_path + '/disable' + item_params + '\')" title="Disable">Disable</a></li>';
                   } else if (row.show_enable) {
-                      ret += '<li><a href="javascript:inlineAction(\'' + row.DT_Path + '/enable\',\'patch\')" title="Enable">Enable</a></li>';
+                      ret += '<li><a href="javascript:inlineAction(\'' + item_path + '/enable' + item_params + '\',\'patch\')" title="Enable">Enable</a></li>';
                   }
 
                   if (row.show_delete) {
@@ -80,7 +83,7 @@
                   ret += '</ul></div>';
               } else {
                   if (row.show_edit) {
-                      ret += '&nbsp;<a href="javascript:inlineForm(\'' + row.DT_Path + '/edit\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
+                      ret += '&nbsp;<a href="javascript:inlineForm(\'' + item_path + '/edit' + item_params + '\')" title="Edit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-pencil"></i></a>';
                   }
               }
 
