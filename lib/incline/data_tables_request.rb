@@ -293,7 +293,8 @@ module Incline
                 if srch.is_a?(::Regexp)
                   relation.select { |item| item.respond_to?(name) && item.send(name) =~ srch }
                 else
-                  relation.select { |item| item.respond_to?(name) && item.send(name).to_s.include?(srch) }
+                  srch = srch.to_s.upcase
+                  relation.select { |item| item.respond_to?(name) && item.send(name).to_s.upcase.include?(srch) }
                 end
           end
 
@@ -304,7 +305,8 @@ module Incline
                 if search.is_a?(::Regexp)
                   relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col) =~ search} }
                 else
-                  relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col).to_s.include?(search) }}
+                  srch = search.to_s.upcase
+                  relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col).to_s.upcase.include?(srch) }}
                 end
           end
 
