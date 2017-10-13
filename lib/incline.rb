@@ -126,11 +126,7 @@ module Incline
           get_routes(Rails.application.routes.routes).sort do |a,b|
             if a[:engine] == b[:engine]
               if a[:controller] == b[:controller]
-                if a[:action] == b[:action]
-                  a[:path] <=> b[:path]
-                else
-                  a[:action] <=> b[:action]
-                end
+                a[:action] <=> b[:action]
               else
                 a[:controller] <=> b[:controller]
               end
@@ -242,11 +238,13 @@ module Incline
     end
 
     result.inject([]) do |ret,item|
-      existing = ret.find{|r| r[:engine] == item[:engine] && r[:controller] == item[:controller] && r[:action] == item[:action]}
+      existing = ret.find{|r| r[:engine] == item[:engine] && r[:controller] == item[:controller] && r[:action] == item[:action] && r[:path] == item[:path]}
       if existing
-        existing[:verb] += '|' + item[:verb]
+        verbs = existing[:verb].split('|')
+        verbs << item[:verb] unless verbs.include?(item[:verb])
+        existing[:verb] += verbs.sort.join('|')
       else
-        ret << item
+        ret << item.dup
       end
       ret
     end
