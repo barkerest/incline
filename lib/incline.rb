@@ -146,6 +146,66 @@ module Incline
   def self.migrate!
     ActiveRecord::Migrator.migrate File.expand_path('../../db/migrate', __FILE__), nil
   end
+  
+  ##
+  # Locates and loads a controller's class definition.
+  #
+  # If found, returns the controller class, otherwise nil.
+  def self.get_controller_class(controller_name)
+    controller_name += '_controller' unless controller_name =~ /_controller$/
+    class_name = controller_name.classify
+    
+    klass =
+        begin
+          class_name.constantize
+        rescue NameError
+          nil
+        end
+    
+    if klass
+      unless klass <= ::ActionController::Base
+        ::Incline::Log::warn "The '#{class_name}' class does not inherit from 'ActionController::Base'."
+        return nil
+      end
+    end
+    
+    unless klass
+      file_options =
+          if controller_name.include?('/')
+            ns,_,ctrl = controller_name.rpartition('/')
+            [
+                "#{ns}/app/controllers/#{ns}/#{ctrl}_controller",
+                "app/controllers/#{ns}/#{ctrl}_controller",
+                "#{ns}/app/controllers/#{ctrl}_controller",
+                "#{ns}/#{ctrl}_controller"
+            ]
+          else
+            [
+                "app/controllers/#{controller_name}_controller",
+                "#{controller_name}_controller"
+            ]
+          end
+      
+      while (file = file_options.shift)
+        begin
+          require file
+          klass = class_name.constantize
+          if klass <= ::ActionController::Base
+            ::Incline::Log::debug "Found '#{class_name}' in '#{file}'."
+          else
+            ::Incline::Log::warn "Found '#{class_name}' in '#{file}', but it does not inherit from 'ActionController::Base'."
+            klass = nil
+          end
+          break
+        rescue LoadError, NameError
+          # don't bubble up these errors.
+          klass = nil
+        end
+      end
+    end
+    
+    klass
+  end
 
   private
 

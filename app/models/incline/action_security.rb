@@ -31,41 +31,7 @@ module Incline
       self.allow_anon = self.require_anon = self.require_admin = self.unknown_controller = self.non_standard = false
 
       self.unknown_controller = true
-      klass =
-          begin
-            (controller_name + '_controller').classify.constantize
-          rescue NameError
-             nil
-          end
-
-      unless klass
-        options =
-            if controller_name.include?('/')
-              ns = controller_name.rpartition('/')[0]
-              ctrl = controller_name.rpartition('/')[2]
-              options = [
-                  "#{ns}/app/controllers/#{ns}/#{ctrl}_controller",
-                  "app/controllers/#{ns}/#{ctrl}_controller",
-                  "#{ns}/app/controllers/#{ctrl}_controller",
-                  "#{ns}/#{ctrl}_controller"
-              ]
-            else
-              options = [
-                  "app/controllers/#{controller_name}_controller",
-                  "#{controller_name}_controller"
-              ]
-            end
-
-        while (file = options.shift)
-          begin
-            require file
-            klass = (controller_name + '_controller').classify.constantize
-            break
-          rescue LoadError, NameError
-            # just preventing the error from bubbling up.
-          end
-        end
-      end
+      klass = ::Incline.get_controller_class(controller_name)
 
       if klass
         self.unknown_controller = false
