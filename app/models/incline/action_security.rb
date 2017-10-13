@@ -109,20 +109,39 @@ module Incline
       @valid_items = nil if refresh
       @valid_items ||=
           begin
-            Incline::ActionSecurity.update_all(visible: false)
+            # remove all paths and set all items to hidden.
+            Incline::ActionSecurity.update_all(visible: false, path: '#')
 
             ret = Incline
                       .route_list
-                      .reject{|r| r[:action] == 'api'}
+                      .reject{|r| %w(api locate).include?(r[:action]) }
                       .map do |r|
+              
               item = ActionSecurity.find_or_initialize_by(controller_name: r[:controller], action_name: r[:action])
-              item.path = "#{r[:path]} [#{r[:verb]}]"
+              
+              # ensure the current path is set to the item.
+              item_path = "#{r[:path]} [#{r[:verb]}]"
+              if item.path == '#' || item.path.blank?
+                item.path = item_path
+                # only update the flags once if the path has not yet been set.
+                item.update_flags if update_flags
+              elsif !item.path.include?(item_path)
+                item.path += "\n" + item_path
+              end
+              
+              # re-sort the path list and make the item visible.
+              item.path = item.path.split("\n").sort.join("\n")
               item.visible = true
-              item.update_flags if update_flags
+              
               item.save!
               item
+            end.sort do |a,b|
+              if a.controller_name == b.controller_name
+                a.action_name <=> b.action_name
+              else
+                a.controller_name <=> b.controller_name
+              end
             end
-                      .sort{|a,b| a.controller_name == b.controller_name ? a.action_name <=> b.action_name : a.controller_name <=> b.controller_name}
 
             def ret.[](*args)
               if args.length == 2
