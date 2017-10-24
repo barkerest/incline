@@ -56,7 +56,13 @@ module Incline::Extensions
     def to_bool
       self != 0
     end
-
+    
+    ##
+    # Is this value a power of two?
+    def power_of_2?
+      (self.to_i == self) && (self != 0) && ((self & (self - 1)) == 0)
+    end
+    
   end
 end
 

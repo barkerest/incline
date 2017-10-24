@@ -8,6 +8,8 @@ require 'incline/data_tables_request'
 require 'incline/recaptcha'
 require 'incline/auth_engine_base'
 require 'incline/user_manager'
+require 'incline/constant_enum'
+require 'incline/bit_enum'
 
 # Preloaded gems
 require 'rails'
