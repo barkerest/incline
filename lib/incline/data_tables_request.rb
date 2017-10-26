@@ -209,13 +209,19 @@ module Incline
 
       dataset = load_records(relation, false)
       return -1 if dataset.blank?
+      
+      first_item = dataset.first
+      klass = first_item.class
+      
+      id_field = klass.respond_to?('primary_key')       ? klass.primary_key   : nil
+      id_field ||= first_item.respond_to?('id')         ? 'id'                : nil
 
-      return -1 unless dataset.first.respond_to?(:id)
+      return -1 unless id_field
       if locate_id.is_a?(::Numeric)
-        dataset.index{|item| item.id == locate_id} || -1
+        dataset.index{|item| item.send(id_field) == locate_id} || -1
       else
         loc_id = locate_id.to_s.downcase
-        dataset.index{|item| item.id.to_s.downcase == loc_id} || -1
+        dataset.index{|item| item.send(id_field).to_s.downcase == loc_id} || -1
       end
       
     end
@@ -240,15 +246,19 @@ module Incline
         # store the unfiltered count.
         @config[:records_total] = relation.count
 
-        # If any of these is true, then filtering must be done locally in our code.
-        filter_local = (
-            # main search is a regex.
-            search.is_a?(::Regexp) ||
-            # one or more column searches is a regex.
-            columns.select{|c| c[:search].is_a?(::Regexp)}.any? ||
-            # one or more searchable columns is not in the database model.
-            columns.reject {|c| !c[:searchable] || relation.model.column_names.include?(c[:name].to_s)}.any?
-        )
+        # If we have search parameters and any of the search parameters is a regular expression or 
+        # one or more columns being searched is not a database column, then filtering must be done
+        # locally.
+        filter_local =
+            !(search.blank? && columns.reject{|c| c[:search].blank? }.blank?) &&
+                (
+                    # main search is a regex.
+                    search.is_a?(::Regexp) ||
+                    # one or more column searches is a regex.
+                    columns.select{|c| c[:search].is_a?(::Regexp)}.any? ||
+                    # one or more searchable columns is not in the database model
+                    columns.reject {|c| !c[:searchable] || relation.model.column_names.include?(c[:name].to_s) }.any?
+                )
 
         Incline::Log::debug "Filtering will be done #{filter_local ? 'application' : 'database'}-side."
 
