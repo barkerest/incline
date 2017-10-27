@@ -5,6 +5,13 @@ require 'erb'
 ##
 # A Rails quick start library.
 module Incline
+  
+  ##
+  # Allows the session store to be configured.
+  #
+  # Incline::session_store = :cookie_store
+  mattr_accessor :session_store
+  self.session_store = :cookie_store
 
   ##
   # Gets the automatic email configuration for the Incline application.

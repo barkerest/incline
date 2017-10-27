@@ -84,7 +84,7 @@ module Incline
       Rails.backtrace_cleaner.add_silencer { |line| line =~ /rvm/ }
 
       # Set the session cookie name.
-      app.config.session_store :cookie_store, key: app.cookie_name('session')
+      app.config.session_store Incline::session_store, key: app.cookie_name('session')
 
       # Configure the app to work with the library.
       Incline::Engine::add_helpers_to app
