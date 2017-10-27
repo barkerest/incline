@@ -375,7 +375,7 @@ var inclineInline = {
         var i;
         var row_id = '#' + data.DT_RowId;
         var query_start = data.DT_Path.indexOf('?');
-        var base_path = (query_start === false) ? data.DT_Path : data.DT_Path.substr(0, query_start);
+        var base_path = (query_start >= 0) ? data.DT_Path.substr(0, query_start) : data.DT_Path;
 
         if (table.length < 1) return;
 
