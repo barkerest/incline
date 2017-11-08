@@ -260,7 +260,10 @@ module Incline
                     columns.reject {|c| !c[:searchable] || relation.model.column_names.include?(c[:name].to_s) }.any?
                 )
 
-        Incline::Log::debug "Filtering will be done #{filter_local ? 'application' : 'database'}-side."
+        order_local = ordering.blank? || ordering.reject{|k,_| relation.model.column_names.include?(k.to_s)}.any?
+
+        Incline::Log::debug "Filtering will be done #{(filter_local || order_local) ? 'application' : 'database'}-side."
+        Incline::Log::debug "Ordering will be done #{order_local ? 'application' : 'database'}-side."
 
         unless filter_local
           ###  Database Side Individual Filtering  (AND) ###
@@ -282,18 +285,22 @@ module Incline
         end
 
         ###  Database Side Ordering  ###
-        if ordering.blank?
-          relation = relation.order(id: :asc)
-        else
+        unless order_local
           relation = relation.order(ordering)
         end
 
-        # Now we have two paths, if we are filtering locally, we need to return everything up to this point and
+        # Now we have two paths, if we are filtering/ordering locally, we need to return everything up to this point and
         # perform our filters before limiting the results.
-        # If we filtered at the database, then we can limit the results there as well.
-        if filter_local
+        # If we filtered and ordered at the database, then we can limit the results there as well.
+        if filter_local || order_local
           # execute the query
           relation = relation.to_a
+
+          ###  Application Side Ordering  ###
+          if order_local
+            ordering_list = ordering.to_a
+            relation.sort{|a,b| local_sort(a, b, ordering_list) }
+          end
 
           ###  Local Individual Filtering   (AND) ###
           columns.reject{|c| c[:search].blank? || c[:name].blank?}.each do |col|
@@ -348,6 +355,27 @@ module Incline
         @config[:error] = err.message
         Incline::Log::error err
         [ ]
+      end
+    end
+
+    private
+
+    def local_sort(a, b, attribs, index = 0)
+      if index >= attribs.count
+        0
+      else
+        attr, dir = attribs[index]
+        val_a = a.send(attr)
+        val_b = b.send(attr)
+        if val_a == val_b
+          local_sort a, b, attribs, index + 1
+        else
+          if dir.to_s.downcase == 'desc'
+            val_b <=> val_a
+          else
+            val_a <=> val_b
+          end
+        end
       end
     end
 
