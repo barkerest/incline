@@ -457,25 +457,33 @@ function inlineAction(path, method) {
     // Otherwise, if "messages" are set in the response then we display them.
     $.fn.inlineAction = function () {
         var item = $(this);
-        var path = item.attr('href');
-        var method = item.attr('data-method');
-        if (!(method)) method = 'get';
-
-        item.click(function (e) {
-            e.preventDefault();
-            inclineInline.action(path, method);
-        });
+        if (item.length > 1) {
+            item.each($.fn.inlineAction);
+        } else {
+            var path = item.attr('href');
+            var method = item.attr('data-method');
+            if (!(method)) method = 'get';
+    
+            item.click(function (e) {
+                e.preventDefault();
+                inclineInline.action(path, method);
+            });
+        }
     };
     $.fn.inlineForm = function () {
         var item =$(this);
-        var path = item.attr('href');
-        var method = item.attr('data-method');
-        if (!(method)) method = 'get';
-
-        item.click(function (e) {
-            e.preventDefault();
-            inclineInline.form(path, method);
-        });
+        if (item.length > 1) {
+            item.each($.fn.inlineForm);
+        } else {
+            var path = item.attr('href');
+            var method = item.attr('data-method');
+            if (!(method)) method = 'get';
+    
+            item.click(function (e) {
+                e.preventDefault();
+                inclineInline.form(path, method);
+            });
+        }
     };
 })(jQuery);
 
