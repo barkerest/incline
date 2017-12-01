@@ -469,8 +469,10 @@ module Incline::Extensions
           kset = :"#{k}="
           vorig = copy.send(k)
           copy.send(kset, v)
+          assert_equal v, copy.send(k), message ? (message + ": (failed to set #{k})") : "Failed to set #{k}=#{v.inspect}."
           assert copy.valid?, message ? (message + ": !#{k}(#{v})") : "Duplicate model with #{k}=#{v.inspect} should be valid with #{attribute}=#{copy.send(attribute).inspect}."
           copy.send(kset, vorig)
+          assert_equal vorig, copy.send(k), message ? (message + ": (failed to reset #{k})") : "Failed to reset #{k}=#{v.inspect}."
           assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
           assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
         end
