@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'uglifier'
   s.add_dependency 'bootstrap-sass'
   s.add_dependency 'bcrypt'
-  s.add_dependency 'nokogiri'
+  s.add_dependency 'nokogiri',                      '~> 1.8.1'
   s.add_dependency 'spawnling',                     '~> 2.1.6'
   s.add_dependency 'shells',                        '~> 0.1.15'
   s.add_dependency 'ansi',                          '~> 1.5.0'
