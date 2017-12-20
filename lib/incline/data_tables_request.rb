@@ -299,7 +299,7 @@ module Incline
           ###  Application Side Ordering  ###
           if order_local
             ordering_list = ordering.to_a
-            relation.sort{|a,b| local_sort(a, b, ordering_list) }
+            relation.sort!{|a,b| local_sort(a, b, ordering_list) }
           end
 
           ###  Local Individual Filtering   (AND) ###
