@@ -1,3 +1,3 @@
 module Incline
-  VERSION = "0.2.36"
+  VERSION = "0.3.0"
 end
