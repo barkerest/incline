@@ -250,9 +250,9 @@ module Incline::Extensions
       unless contents[:script].blank?
         html += <<-EOS
 <script type="text/javascript">
-<![CDATA[
+//<![CDATA[
 #{contents[:script]}
-]]>
+//]]>
 </script>
         EOS
       end
