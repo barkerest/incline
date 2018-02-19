@@ -261,6 +261,7 @@ label.plain, div.plain-label label {
 }
 
 .field_with_errors {
+  display: inline;
   color: #ff0000;
   .form-control {
     background-color: $state-danger-bg;
