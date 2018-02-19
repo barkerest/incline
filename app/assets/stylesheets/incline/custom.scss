@@ -261,8 +261,12 @@ label.plain, div.plain-label label {
 }
 
 .field_with_errors {
-  padding: 2px;
-  background-color: red;
+  color: #ff0000;
+  background-color: #ff0000;
+  .form-control {
+    background-color: $state-danger-bg;
+    color: $state-danger-text;
+  }
 }
 
 .debug_dump {
