@@ -220,13 +220,13 @@ module Incline::Extensions
     def main_app
       Rails.application.class.routes.url_helpers
     end
-    
+
     ##
     # Make sure incline is available and working correctly in tests.
     def incline
       Incline::Engine.routes.url_helpers
     end
-    
+
     ##
     # Determines if a user is logged into the test session
     def is_logged_in?
@@ -425,6 +425,9 @@ module Incline::Extensions
     #     values, the model should once again be valid.
     #     The alternative scopes are processed one at a time and the original values are restored
     #     before moving onto the next scope.
+    #     A special key :unique_fields, allows you to provide values for other unique fields in the model so they
+    #     don't affect testing.  If the value of :unique_fields is not a hash, then it is put back into the
+    #     alternate_scopes hash for testing.
     #
     def assert_uniqueness(model, attribute, case_sensitive = false, message = nil, regex = /has already been taken/i, alternate_scopes = {})
       setter = :"#{attribute}="
@@ -447,6 +450,18 @@ module Incline::Extensions
 
       model.save!
       copy = model.dup
+
+      other_unique_fields = alternate_scopes.delete(:unique_fields)
+      if other_unique_fields
+        if other_unique_fields.is_a?(::Hash)
+          other_unique_fields.each do |attr,val|
+            setter = :"#{attr}="
+            copy.send setter, val
+          end
+        else
+          alternate_scopes[:unique_fields] = other_unique_fields
+        end
+      end
 
       assert_not copy.valid?, message ? (message + ": (#{copy.send(attribute).inspect})") : "Duplicate model with #{attribute}=#{copy.send(attribute).inspect} should not be valid."
       assert copy.errors[attribute].to_s =~ regex, message ? (message + ': (error message)') : "Did not fail for expected reason"
