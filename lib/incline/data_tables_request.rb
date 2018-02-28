@@ -209,10 +209,10 @@ module Incline
 
       dataset = load_records(relation, false)
       return -1 if dataset.blank?
-      
+
       first_item = dataset.first
       klass = first_item.class
-      
+
       id_field = klass.respond_to?('primary_key')       ? klass.primary_key   : nil
       id_field ||= first_item.respond_to?('id')         ? 'id'                : nil
 
@@ -223,7 +223,7 @@ module Incline
         loc_id = locate_id.to_s.downcase
         dataset.index{|item| item.send(id_field).to_s.downcase == loc_id} || -1
       end
-      
+
     end
 
     ##
@@ -246,14 +246,14 @@ module Incline
         # store the unfiltered count.
         @config[:records_total] = relation.count
 
-        # If we have search parameters and any of the search parameters is a regular expression or 
+        # If we have search parameters and any of the search parameters is a regular expression or
         # one or more columns being searched is not a database column, then filtering must be done
         # locally.
         filter_local =
             !(search.blank? && columns.reject{|c| c[:search].blank? }.blank?) &&
                 (
                     # main search is a regex.
-                    search.is_a?(::Regexp) ||
+                search.is_a?(::Regexp) ||
                     # one or more column searches is a regex.
                     columns.select{|c| c[:search].is_a?(::Regexp)}.any? ||
                     # one or more searchable columns is not in the database model
@@ -308,10 +308,10 @@ module Incline
             srch = col[:search]
             relation =
                 if srch.is_a?(::Regexp)
-                  relation.select { |item| item.respond_to?(name) && item.send(name) =~ srch }
+                  relation.select { |item| get_value(item, name) =~ srch }
                 else
                   srch = srch.to_s.upcase
-                  relation.select { |item| item.respond_to?(name) && item.send(name).to_s.upcase.include?(srch) }
+                  relation.select { |item| get_value(item, name).to_s.upcase.include?(srch) }
                 end
           end
 
@@ -320,10 +320,10 @@ module Incline
             cols = columns.select{|c| c[:searchable]}.map{|c| c[:name].to_s }.reject{|c| c.blank?}
             relation =
                 if search.is_a?(::Regexp)
-                  relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col) =~ search} }
+                  relation.select{|item| cols.find{|col| get_value(item,col) =~ search} }
                 else
                   srch = search.to_s.upcase
-                  relation.select{|item| cols.find{|col| item.respond_to?(col) && item.send(col).to_s.upcase.include?(srch) }}
+                  relation.select{|item| cols.find{|col| get_value(item,col).to_s.upcase.include?(srch) }}
                 end
           end
 
@@ -360,13 +360,27 @@ module Incline
 
     private
 
+    def get_value(item, name)
+      val = item
+      while item && name.to_s.strip != ''
+        top,_,name = name.to_s.partition('.')
+        begin
+          val = val.respond_to?(top) ? val.send(top) : nil
+        rescue =>e
+          ::Incline::Log::warn e
+          val = nil
+        end
+      end
+      val
+    end
+
     def local_sort(a, b, attribs, index = 0)
       if index >= attribs.count
         0
       else
         attr, dir = attribs[index]
-        val_a = a.send(attr)
-        val_b = b.send(attr)
+        val_a = get_value(a, attr)
+        val_b = get_value(b, attr)
         if val_a == val_b
           local_sort a, b, attribs, index + 1
         else
