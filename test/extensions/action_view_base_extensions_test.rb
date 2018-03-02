@@ -243,7 +243,7 @@ class ActionViewBaseExtensionsTest < ActiveSupport::TestCase
         "<li class=\"alert_52444\" style=\"display: none;\">This is error #9.</li>" +
         "<li class=\"alert_52444\" style=\"display: none;\">This is error #10.</li>" +
         "</ul></div>" +
-        "<script type=\"text/javascript\">\n<![CDATA[\nfunction show_alert_52444() { $('.alert_52444_show').hide(); $('.alert_52444').show(); }\n\n]]>\n</script>\n" +
+        "<script type=\"text/javascript\">\n//<![CDATA[\nfunction show_alert_52444() { $('.alert_52444_show').hide(); $('.alert_52444').show(); }\n\n//]]>\n</script>\n" +
         "</div></div>"
 
     val = @view.error_summary(TestModel.new)
