@@ -156,8 +156,8 @@ module Incline::Extensions
 
       # Extract field attributes.
       fields = { }
-      index = 1
-      methods.each do |(meth,label)|
+      methods.each_with_index do |(meth,label), index|
+        index += 1
         fields[meth] = options[:attrib].merge(options.delete(:"field_#{index}") || {})
         fields[meth][:readonly] = 'readonly' if options[:read_only]
         fields[meth][:class] ||= options[:class]
@@ -333,7 +333,7 @@ module Incline::Extensions
       form_group lbl, fld, gopt
     end
 
-    
+
     ##
     # Creates a form group including a label and a text area.
     #
