@@ -1,4 +1,5 @@
 require 'securerandom'
+require 'json'
 require 'shells'
 require 'io/console'
 require 'ansi/code'
