@@ -178,13 +178,12 @@ module Incline::Extensions
       # We want each field to have a width specified.
       remaining_width = 100.0
       remaining_fields = fields.count
-      width_match_1 = /^width:([^;]);/
-      width_match_2 = /;\s*width:([^;]);/
+      width_match = /(?:^|;)\s*width:\s*([^;]+);/
 
       # pass 1, compute remaining width.
       fields.each do |meth, attr|
-        width = width_match_1.match(attr[:style]) || width_match_2.match(attr[:style])
-        if width
+        if attr[:style] =~ width_match
+          width = $1
           if width[-1] == '%'
             width = width[0...-1].strip.to_f
             if width > remaining_width
@@ -205,8 +204,7 @@ module Incline::Extensions
 
       # pass 2, fill in missing widths.
       fields.each do |meth, attr|
-        width = width_match_1.match(attr[:style]) || width_match_2.match(attr[:style])
-        unless width
+        unless attr[:style] =~ width_match
           width =
             if remaining_fields > 1
               (remaining_width / remaining_fields).to_i
