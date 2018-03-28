@@ -284,9 +284,9 @@ module Incline::Extensions
 
         # an authenticated user must exist.
         unless logged_in?
-          
+
           store_location
-          
+
           if (auth_url = ::Incline::UserManager.begin_external_authentication(request))
             ::Incline::Log.debug 'Redirecting for external authentication.'
             redirect_to auth_url
@@ -493,11 +493,12 @@ module Incline::Extensions
 
           # if the id is in AAAAA_NNN format, then we can extract the ID from it.
           if id.include?('_')
-            params[:id] = id.split('_').last.to_i
+            id,_, item_id = id.rpartition('_')
+            params[:id] = item_id.to_i
           end
 
           # merge the item data into the params array.
-          params.merge! item
+          params.merge!(id => item)
         end
 
         # since we are processing for an API request, we should return JSON.
