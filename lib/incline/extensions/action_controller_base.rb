@@ -344,7 +344,7 @@ module Incline::Extensions
     # Redirects are generally bad when JSON data is requested.
     # For instance a `create` request in JSON format should return data, not redirect to `show`.
     def json_request? #:doc:
-      request.format.to_s.downcase == 'json'
+      request.format.to_s =~ /^(application\/)?json$/i
     end
 
     ##
