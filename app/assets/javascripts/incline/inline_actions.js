@@ -97,7 +97,7 @@ var inclineInline = {
                     var message = data.messages[i];
                     var html = '<div id="alert-' + ts.toString() + '" class="alert alert-' + escapeHTML(message.type) + ' alert-dismissible fade in" role="alert">' +
                         '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
-                        escapeHTML(message.text) +
+                        escapeHTML(message.text).replace(/\n/g, "<br>\n") +
                         '</div>';
                     var close = '$(\'#alert-' + ts.toString() + '\').alert(\'close\');';
                     alertDiv.prepend(html);
