@@ -39,7 +39,7 @@
 
 
 var inclineInline = {
-    action: function(path, method) {
+    action: function(path, method, post_data) {
         if (!(method)) method = 'get';
         if (path.indexOf('?') >= 0) {
             path += '&inline=1';
@@ -50,6 +50,7 @@ var inclineInline = {
             method: method.toUpperCase(),
             url: path,
             dataType: 'json',
+            data: post_data,
             success: function (data, status, xhr) {
                 inclineInline._handle_json_result(data);
             },
@@ -463,7 +464,7 @@ function inlineAction(path, method) {
             var path = item.attr('href');
             var method = item.attr('data-method');
             if (!(method)) method = 'get';
-    
+
             item.click(function (e) {
                 e.preventDefault();
                 inclineInline.action(path, method);
@@ -478,7 +479,7 @@ function inlineAction(path, method) {
             var path = item.attr('href');
             var method = item.attr('data-method');
             if (!(method)) method = 'get';
-    
+
             item.click(function (e) {
                 e.preventDefault();
                 inclineInline.form(path, method);
