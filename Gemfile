@@ -7,6 +7,7 @@ gemspec
 
 group :development do
   gem 'byebug'
+  gem 'tzinfo-data',  platform: [ :mswin, :mingw, :x64_mingw ]
 end
 
 group :test do

@@ -16,8 +16,13 @@ module Incline::Extensions
       pid = File.exist?(path) ? File.read(path).to_i : -1
       server_running = true
       begin
-        Process.getpgid pid
-      rescue Errno::ESRCH
+        if Gem.win_platform?
+          result = `tasklist /FO LIST /FI "PID eq #{pid}"`.strip
+          server_running = !!(result =~ /^PID:\s+#{pid}$/)
+        else
+          Process.getpgid pid
+        end
+      rescue Errno::ESRCH, NotImplementedError
         server_running = false
       end
       server_running
