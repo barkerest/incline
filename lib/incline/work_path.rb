@@ -62,7 +62,7 @@ module Incline
     end
 
     def self.get_location
-      (%w(/run/shm /var/run/shm /dev/shm /tmp) + []).each do |root|
+      (%w(/run/shm /var/run/shm /dev/shm /tmp) + [Dir.tmpdir]).each do |root|
         if Dir.exist?(root)
           loc = try_path(root)
           return loc unless loc.blank?
