@@ -2,7 +2,7 @@ module Incline
   class BitEnum < ConstantEnum
     
     def self.name_for(value, set_nil = false)
-      ret = values.select{|(v,k)| v == value}.map{|(v,k)| k}
+      ret = values.select{|(v,_)| v == value}.map{|(_,k)| k}
       return ret unless ret.blank?
       
       ret = []
@@ -52,9 +52,9 @@ module Incline
         if constants(false).include?(name)
           v = const_get(name)
           if a[0]
-            value |= v
+            @value |= v
           else
-            value &= ~v
+            @value &= ~v
           end
           @name = self.class.name_for(@value)
           return a[0]
@@ -79,7 +79,7 @@ module Incline
             end
             
             while max_bit > 0
-              unless tmp.index{|(v,k)| v == max_bit}
+              unless tmp.index{|(v,_)| v == max_bit}
                 tmp << [ max_bit, nil ]
               end
               max_bit >>= 1

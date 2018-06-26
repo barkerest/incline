@@ -24,13 +24,13 @@ end
     # Store the model class for use.
     @model_class = self.class.const_get TEST_TABLE_CLASS
 
-    @model_class.create name: 'Fred Flintstone', classification: 'Cartoon Character'
-    @model_class.create name: 'Barney Rubble', classification: 'Cartoon Character'
-    @model_class.create name: 'Homer Simpson', classification: 'Cartoon Character'
-    @model_class.create name: 'Percy Jackson', classification: 'Book Character'
-    @model_class.create name: 'Harry Potter', classification: 'Book Character'
-    @model_class.create name: 'George Washington', classification: 'Historical Figure'
-    @model_class.create name: 'Albert Einstein', classification: 'Historical Figure'
+    @model_class.create! name: 'Fred Flintstone', classification: 'Cartoon Character'
+    @model_class.create! name: 'Barney Rubble', classification: 'Cartoon Character'
+    @model_class.create! name: 'Homer Simpson', classification: 'Cartoon Character'
+    @model_class.create! name: 'Percy Jackson', classification: 'Book Character'
+    @model_class.create! name: 'Harry Potter', classification: 'Book Character'
+    @model_class.create! name: 'George Washington', classification: 'Historical Figure'
+    @model_class.create! name: 'Albert Einstein', classification: 'Historical Figure'
 
     @columns = [
         { data: 'dt_name', name: 'name', searchable: true, orderable: true },

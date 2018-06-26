@@ -51,7 +51,7 @@ module Incline
             msg += "\nInvalid Command: #{@command}\n"
           end
           msg += "\nValid Commands:\n"
-          commands.each do |(name,klass,params)|
+          commands.each do |(name,_,params)|
             msg += "  #{name}"
             pend = ''
             params.each do |t,p|

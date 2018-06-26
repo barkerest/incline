@@ -12,9 +12,12 @@ module ActionDispatch::Http::URL
   def self.propagated_params
     @propagated_params ||= []
   end
-  
+
+  class << self
+    alias :incline_original_path_for :path_for
+  end
+
   def self.path_for(options)
-    
     if (request = Incline::current_request)
       propagated_params.each do |k|
         if request.params.key? k
@@ -23,15 +26,8 @@ module ActionDispatch::Http::URL
         end
       end
     end
-    
-    path  = options[:script_name].to_s.chomp("/")
-    path << options[:path] if options.key?(:path)
 
-    add_trailing_slash(path) if options[:trailing_slash]
-    add_params(path, options[:params]) if options.key?(:params)
-    add_anchor(path, options[:anchor]) if options.key?(:anchor)
-
-    path
+    incline_original_path_for(options)
   end
 
 end

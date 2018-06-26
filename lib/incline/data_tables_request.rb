@@ -376,7 +376,16 @@ module Incline
 
     def local_sort(a, b, attribs, index = 0)
       if index >= attribs.count
-        0
+        if a.class == b.class && a.is_a?(::ActiveRecord::Base)
+          pk = a.class.primary_key
+          if a.respond_to?(pk)
+            a.send(pk) <=> b.send(pk)
+          else
+            0
+          end
+        else
+          0
+        end
       else
         attr, dir = attribs[index]
         val_a = get_value(a, attr)
